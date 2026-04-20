@@ -12,6 +12,9 @@ connectDB();
 
 const app = express();
 
+// Trust proxy for Vercel
+app.set('trust proxy', 1);
+
 // Middleware
 app.use(cors());
 app.use(express.json());
@@ -29,6 +32,7 @@ app.use(session({
   }),
   cookie: {
     secure: process.env.NODE_ENV === 'production', // Set to true if using HTTPS
+    sameSite: 'lax',
     maxAge: parseInt(process.env.SESSION_TIMEOUT_CUSTOMER) || 24 * 60 * 60 * 1000 
   }
 }));
