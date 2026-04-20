@@ -3,6 +3,7 @@ const express = require('express');
 const path = require('path');
 const cors = require('cors');
 const session = require('express-session');
+const MongoStore = require('connect-mongo');
 const connectDB = require('./config/db');
 const apiRoutes = require('./routes/api');
 
@@ -22,8 +23,12 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   rolling: true,
+  store: MongoStore.create({
+    mongoUrl: process.env.MONGODB_URI,
+    ttl: parseInt(process.env.SESSION_TIMEOUT_CUSTOMER) / 1000 || 24 * 60 * 60 // session TTL in seconds
+  }),
   cookie: {
-    secure: false, // Set to true if using HTTPS
+    secure: process.env.NODE_ENV === 'production', // Set to true if using HTTPS
     maxAge: parseInt(process.env.SESSION_TIMEOUT_CUSTOMER) || 24 * 60 * 60 * 1000 
   }
 }));
