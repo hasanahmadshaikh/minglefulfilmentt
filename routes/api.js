@@ -11,15 +11,9 @@ const path = require('path');
 const crypto = require('crypto');
 const { sendOTP, sendResetLink } = require('../utils/mailer');
 
-// Configure Multer Storage
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'uploads/');
-  },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + '-' + file.originalname);
-  }
-});
+// Configure Multer - use memoryStorage for Vercel compatibility
+// Vercel has a read-only filesystem so diskStorage is not supported
+const storage = multer.memoryStorage();
 
 const upload = multer({
   storage: storage,
@@ -53,8 +47,10 @@ router.post('/orders', ensureAuth, upload.array('attachments', 10), async (req, 
   try {
     const { type, productName, quantity, bundles, filesLink, notes } = req.body;
 
-    // Get file paths
-    const attachmentPaths = req.files ? req.files.map(f => `/uploads/${f.filename}`) : [];
+    // Note: On Vercel, the filesystem is read-only so uploaded files cannot
+    // be persisted to disk. Use filesLink to share files via URL instead.
+    // File names are captured for reference only.
+    const attachmentNames = req.files ? req.files.map(f => f.originalname) : [];
 
     const newOrder = await Order.create({
       user: req.session.userId,
@@ -62,7 +58,7 @@ router.post('/orders', ensureAuth, upload.array('attachments', 10), async (req, 
       productName,
       quantity,
       bundles,
-      attachments: attachmentPaths,
+      attachments: attachmentNames,
       filesLink,
       notes,
       status: 'Pending'

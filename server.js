@@ -8,7 +8,9 @@ const connectDB = require('./config/db');
 const apiRoutes = require('./routes/api');
 
 // Connect to MongoDB
-connectDB();
+connectDB().catch(err => {
+  console.error('Failed to connect to MongoDB:', err.message);
+});
 
 const app = express();
 
@@ -44,8 +46,13 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Serve uploads folder
 const fs = require('fs');
 const uploadDir = path.join(__dirname, 'uploads');
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir);
+try {
+  if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir);
+  }
+} catch (e) {
+  // Vercel has a read-only filesystem - uploads dir may not be writable
+  console.warn('Could not create uploads directory (expected in serverless):', e.message);
 }
 app.use('/uploads', express.static(uploadDir));
 
