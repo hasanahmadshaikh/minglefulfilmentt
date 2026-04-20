@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Portal - Mingle Fulfilment</title>
+    <link rel="icon" type="image/png" href="./img/WhatsApp Image 2025-10-18 at 03.34.27_60aa88be.jpg">
+    <link rel="stylesheet" href="./css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body class="portal-body">
+
+    <div class="portal-container">
+        <!-- Top Generic Banner -->
+        <header class="portal-header">
+            <div class="portal-title-section">
+                <h1>Customer Portal</h1>
+                <p id="welcomeGreeting">Welcome back,</p>
+            </div>
+            <button onclick="handleLogout()" class="logout-outline-btn">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="18" height="18">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
+                    </path>
+                </svg>
+                Logout
+            </button>
+        </header>
+
+        <!-- Tab Pills Navigation -->
+        <nav class="portal-tabs">
+            <button class="tab-pill active" onclick="switchTab('overview')">
+                <svg fill="currentColor" viewBox="0 0 20 20">
+                    <path
+                        d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z">
+                    </path>
+                </svg>
+                Overview
+            </button>
+            <button class="tab-pill" onclick="switchTab('my-orders')">
+                <svg fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"></path>
+                    <path fill-rule="evenodd"
+                        d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
+                        clip-rule="evenodd"></path>
+                </svg>
+                My Orders
+            </button>
+            <button class="tab-pill" onclick="switchTab('submit-fba')">
+                <svg fill="currentColor" viewBox="0 0 20 20">
+                    <path
+                        d="M11 3a1 1 0 10-2 0v1a1 1 0 102 0V3zM5.884 6.68a1 1 0 10-1.455-1.37l-.707.75a1 1 0 101.455 1.37l.707-.75zM12 8a1 1 0 110 2 1 1 0 010-2zM4.707 9.293a1 1 0 010 1.414l-1 1a1 1 0 01-1.414-1.414l1-1a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zM12.12 15.116a1 1 0 00-1.37-1.455l-.75.707a1 1 0 001.455 1.37l.75-.707zM6 14a1 1 0 110 2 1 1 0 010-2zM13.397 5.343a1 1 0 00-1.397 1.427l.75.733a1 1 0 001.397-1.427l-.75-.733z">
+                    </path>
+                </svg>
+                Submit FBA Order
+            </button>
+            <button class="tab-pill" onclick="switchTab('submit-fbm')">
+                <svg fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z">
+                    </path>
+                    <path
+                        d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1V5a1 1 0 00-1-1H3zM14 7a1 1 0 00-1 1v6.05a2.5 2.5 0 014.9 0H19a1 1 0 001-1V7a1 1 0 00-1-1h-5z">
+                    </path>
+                </svg>
+                Submit FBM Order
+            </button>
+            <button class="tab-pill" onclick="switchTab('invoices')">
+                <svg fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd"
+                        d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z"
+                        clip-rule="evenodd"></path>
+                </svg>
+                Invoices
+            </button>
+            <button class="tab-pill" onclick="switchTab('account')">
+                <svg fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd"
+                        d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z"
+                        clip-rule="evenodd"></path>
+                </svg>
+                Account
+            </button>
+        </nav>
+
+        <!-- Content Sections -->
+        <main class="portal-main">
+
+            <!-- Overview Tab -->
+            <section id="overview" class="tab-content active">
+                <div class="stats-row">
+                    <div class="portal-card">
+                        <div class="stat-header">
+                            <span class="stat-label">Active Orders</span>
+                            <div class="stat-icon-bg blue">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path
+                                        d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
+                                    <path d="m3.3 7 8.7 5 8.7-5" />
+                                    <path d="M12 22V12" />
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="stat-value">0</div>
+                        <div class="stat-subtext">No active orders</div>
+                    </div>
+                    <div class="portal-card">
+                        <div class="stat-header">
+                            <span class="stat-label">Pending Invoices</span>
+                            <div class="stat-icon-bg teal">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                    <path d="M14 2v6h6" />
+                                    <path d="M16 13H8" />
+                                    <path d="M16 17H8" />
+                                    <path d="M10 9H8" />
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="stat-value">$0.00</div>
+                        <div class="stat-subtext">All paid up!</div>
+                    </div>
+                    <div class="portal-card">
+                        <div class="stat-header">
+                            <span class="stat-label">Total Orders</span>
+                            <div class="stat-icon-bg indigo">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <rect width="18" height="18" x="3" y="3" rx="2" />
+                                    <path d="M9 3v18" />
+                                    <path d="M15 3v18" />
+                                    <path d="M3 9h18" />
+                                    <path d="M3 15h18" />
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="stat-value">0</div>
+                        <div class="stat-subtext">Lifetime orders</div>
+                    </div>
+                </div>
+
+                <div class="portal-card quick-actions-card">
+                    <div class="section-header">
+                        <h3>Quick Actions</h3>
+                        <p>Start a new order or manage your account</p>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="action-btn primary" onclick="switchTab('submit-fba')">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path
+                                    d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
+                            </svg>
+                            Submit FBA Order
+                        </button>
+                        <button class="action-btn secondary" onclick="switchTab('submit-fbm')">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path
+                                    d="M5 18H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h3.19M15 6h2a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-3.19" />
+                                <circle cx="12" cy="18" r="2" />
+                                <path d="M12 18V6l-3 4" />
+                                <path d="m15 10-3-4" />
+                            </svg>
+                            Submit FBM Order
+                        </button>
+                        <button class="action-btn secondary" onclick="switchTab('invoices')">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                <path d="M14 2v6h6" />
+                                <path d="M16 13H8" />
+                                <path d="M16 17H8" />
+                                <path d="M10 9H8" />
+                            </svg>
+                            View Invoices
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- My Orders Tab -->
+            <section id="my-orders" class="tab-content">
+                <div class="portal-card">
+                    <div class="form-card-header" style="margin-bottom: 0;">
+                        <div class="section-header">
+                            <div
+                                style="display: flex; align-items: center; gap: 10px; color: #0094FF; font-weight: 600; margin-bottom: 8px;">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+                                    <circle cx="12" cy="12" r="3" />
+                                </svg>
+                                My Orders
+                            </div>
+                            <p>View all your submitted orders and their current status</p>
+                        </div>
+                        <div class="filter-group" style="display: flex; gap: 12px; align-items: center; margin-top: 10px;">
+                            <select id="orderStatusFilter" class="admin-select" onchange="loadMyOrders(1)" style="padding: 8px 12px; border-radius: 6px; font-size:13px; border:1px solid #e2e8f0; min-width:140px;">
+                                <option value="All">All Statuses</option>
+                                <option value="Pending">Pending</option>
+                                <option value="Processing">Processing</option>
+                                <option value="Shipped">Shipped</option>
+                                <option value="Completed">Completed</option>
+                                <option value="Cancelled">Cancelled</option>
+                            </select>
+                            <input type="text" id="orderSearchInput" class="admin-select" placeholder="Search product name..." oninput="handleOrderSearch()" style="padding: 8px 12px; border-radius: 6px; font-size:13px; border:1px solid #e2e8f0; flex: 1;">
+                        </div>
+                        </div>
+                    </div>
+                    <div id="ordersTableContainer">
+                        <div class="empty-state">
+                            <svg class="empty-icon" fill="none" stroke="currentColor" stroke-width="1.5"
+                                viewBox="0 0 24 24">
+                                <path
+                                    d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
+                            </svg>
+                            <h4>No Orders Yet</h4>
+                            <p>Submit your first order to get started</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Submit FBA Order Tab -->
+            <section id="submit-fba" class="tab-content">
+                <div class="portal-card" style="max-width: 1000px; margin: 0 auto;">
+                    <div class="form-card-header">
+                        <div class="section-header">
+                            <div
+                                style="display: flex; align-items: center; gap: 10px; color: #0094FF; font-weight: 600; margin-bottom: 8px;">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path
+                                        d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
+                                </svg>
+                                FBA Order Submission
+                            </div>
+                            <p>Submit your FBA prep requirements and upload your FNSKU labels</p>
+                        </div>
+                    </div>
+                    <form class="portal-form" id="fbaForm" novalidate>
+                        <div class="form-grid">
+                            <div class="form-full">
+                                <label class="portal-label">Product Name *</label>
+                                <input type="text" id="fba_productName" class="portal-input"
+                                    placeholder="e.g., Blue Widget Set" required>
+                            </div>
+                            <div>
+                                <label class="portal-label">Number of Units *</label>
+                                <input type="number" id="fba_quantity" class="portal-input" placeholder="e.g., 500"
+                                    required>
+                            </div>
+                            <div>
+                                <label class="portal-label">Bundles (if applicable)</label>
+                                <input type="text" id="fba_bundles" class="portal-input" placeholder="e.g., 2-pack">
+                            </div>
+                            <div class="form-full">
+                                <label class="portal-label">Attachments (Images/Files)</label>
+                                <div class="upload-zone" id="fba_uploadZone">
+                                    <svg class="upload-icon" fill="none" stroke="currentColor" stroke-width="2"
+                                        viewBox="0 0 24 24">
+                                        <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                                    </svg>
+                                    <p class="upload-text">Click to upload or drag and drop<br>JPEG, PNG, PDF up to 5MB
+                                    </p>
+                                </div>
+                                <input type="file" id="fba_attachments" hidden multiple accept=".jpg,.jpeg,.png,.pdf">
+                                <p style="font-size: 11px; color: #64748b; margin-top: 6px;"><strong>Note:</strong> Max
+                                    file size 5MB. Only JPEG, PNG, and PDF files are allowed.</p>
+                                <div id="fba_fileList" style="margin-top: 10px; font-size: 13px; color: #64748b;"></div>
+                            </div>
+                            <div class="form-full">
+                                <label class="portal-label">FNSKU/Shipping Labels Link</label>
+                                <input type="url" id="fba_filesLink" class="portal-input"
+                                    placeholder="Paste Google Drive or Dropbox link here">
+                                <p style="font-size: 12px; color: #64748b; margin-top: 6px;">Share a link to your label
+                                    files (Google Drive, Dropbox, etc.)</p>
+                            </div>
+                            <div class="form-full">
+                                <label class="portal-label">Additional Notes</label>
+                                <textarea id="fba_notes" class="portal-textarea" rows="4"
+                                    placeholder="Any special instructions or requirements..."></textarea>
+                            </div>
+                        </div>
+                        <button type="submit" class="submit-full-btn">Submit FBA Order</button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- Submit FBM Order Tab -->
+            <section id="submit-fbm" class="tab-content">
+                <div class="portal-card" style="max-width: 1000px; margin: 0 auto;">
+                    <div class="form-card-header">
+                        <div class="section-header">
+                            <div
+                                style="display: flex; align-items: center; gap: 10px; color: #0094FF; font-weight: 600; margin-bottom: 8px;">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path
+                                        d="M5 18H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h3.19M15 6h2a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-3.19" />
+                                    <circle cx="12" cy="18" r="2" />
+                                    <path d="M12 18V6l-3 4" />
+                                    <path d="m15 10-3-4" />
+                                </svg>
+                                FBM Order Submission
+                            </div>
+                            <p>Submit your FBM fulfilment requirements</p>
+                        </div>
+                    </div>
+                    <form class="portal-form" id="fbmForm" novalidate>
+                        <div class="form-grid">
+                            <div class="form-full">
+                                <label class="portal-label">Product Name *</label>
+                                <input type="text" id="fbm_productName" class="portal-input"
+                                    placeholder="e.g., Red Gadget" required>
+                            </div>
+                            <div>
+                                <label class="portal-label">Number of Units *</label>
+                                <input type="number" id="fbm_quantity" class="portal-input" placeholder="e.g., 100"
+                                    required>
+                            </div>
+                            <div>
+                                <label class="portal-label">Bundles (if applicable)</label>
+                                <input type="text" id="fbm_bundles" class="portal-input" placeholder="e.g., 3-pack">
+                            </div>
+                            <div class="form-full">
+                                <label class="portal-label">Attachments (Images/Files)</label>
+                                <div class="upload-zone" id="fbm_uploadZone">
+                                    <svg class="upload-icon" fill="none" stroke="currentColor" stroke-width="2"
+                                        viewBox="0 0 24 24">
+                                        <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                                    </svg>
+                                    <p class="upload-text">Click to upload or drag and drop<br>JPEG, PNG, PDF up to 5MB
+                                    </p>
+                                </div>
+                                <input type="file" id="fbm_attachments" hidden multiple accept=".jpg,.jpeg,.png,.pdf">
+                                <p style="font-size: 11px; color: #64748b; margin-top: 6px;"><strong>Note:</strong> Max
+                                    file size 5MB. Only JPEG, PNG, and PDF files are allowed.</p>
+                                <div id="fbm_fileList" style="margin-top: 10px; font-size: 13px; color: #64748b;"></div>
+                            </div>
+                            <div class="form-full">
+                                <label class="portal-label">Order Files/Labels Link</label>
+                                <input type="url" id="fbm_filesLink" class="portal-input"
+                                    placeholder="Paste Google Drive or Dropbox link here">
+                                <p style="font-size: 12px; color: #64748b; margin-top: 6px;">Share a link to your order
+                                    files (Google Drive, Dropbox, etc.)</p>
+                            </div>
+                            <div class="form-full">
+                                <label class="portal-label">Additional Notes</label>
+                                <textarea id="fbm_notes" class="portal-textarea" rows="4"
+                                    placeholder="Any special instructions or requirements..."></textarea>
+                            </div>
+                        </div>
+                        <button type="submit" class="submit-full-btn">Submit FBM Order</button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- Invoices Tab -->
+            <section id="invoices" class="tab-content">
+                <div class="portal-card" style="max-width: 1000px; margin: 0 auto;">
+                    <div class="form-card-header" style="margin-bottom: 0;">
+                        <div class="section-header">
+                            <div
+                                style="display: flex; align-items: center; gap: 10px; color: #0094FF; font-weight: 600; margin-bottom: 8px;">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                    <path d="M14 2v6h6" />
+                                    <path d="M16 13H8" />
+                                    <path d="M16 17H8" />
+                                    <path d="M10 9H8" />
+                                </svg>
+                                Your Invoices
+                            </div>
+                            <p>View and manage your invoices and payment history</p>
+                        </div>
+                    </div>
+                    <div class="empty-state">
+                        <svg class="empty-icon" fill="none" stroke="currentColor" stroke-width="1.5"
+                            viewBox="0 0 24 24">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                            <path d="M14 2v6h6" />
+                            <path d="M9 13h6" />
+                            <path d="M9 17h3" />
+                        </svg>
+                        <h4>No Invoices Yet</h4>
+                        <p>Your invoices will appear here once you submit your first order.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Account Tab -->
+            <section id="account" class="tab-content">
+                <div class="portal-card" style="max-width: 1000px; margin: 0 auto;">
+                    <div class="form-card-header">
+                        <div class="section-header">
+                            <div
+                                style="display: flex; align-items: center; gap: 10px; color: #0094FF; font-weight: 600; margin-bottom: 8px;">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                                    <circle cx="12" cy="7" r="4" />
+                                </svg>
+                                Account Settings
+                            </div>
+                            <p>Manage your profile and security</p>
+                        </div>
+                    </div>
+                    <div class="account-details" id="accountDetails">
+                        <form id="accountForm" novalidate onsubmit="window.saveAccountDetails(event)" class="portal-form">
+                            <div class="form-grid">
+                                <div class="form-full">
+                                    <label class="portal-label">Business Name</label>
+                                    <input type="text" id="acc_businessName" class="portal-input"
+                                        placeholder="e.g., Mingle Fulfilment Ltd">
+                                </div>
+                                <div>
+                                    <label class="portal-label">Contact Name</label>
+                                    <input type="text" id="acc_contactName" class="portal-input"
+                                        placeholder="Your full name">
+                                </div>
+                                <div>
+                                    <label class="portal-label">Business Email</label>
+                                    <input type="email" id="acc_businessEmail" class="portal-input"
+                                        placeholder="business@example.com">
+                                </div>
+                                <div>
+                                    <label class="portal-label">Phone Number</label>
+                                    <input type="tel" id="acc_phoneNumber" class="portal-input"
+                                        placeholder="+1 (555) 000-0000">
+                                </div>
+                                <div>
+                                    <label class="portal-label">Business Website</label>
+                                    <input type="url" id="acc_businessWebsite" class="portal-input"
+                                        placeholder="https://www.example.com">
+                                </div>
+                            </div>
+                            <button type="submit" class="submit-full-btn"
+                                style="width: auto; padding: 12px 24px; margin-top: 20px;">Save Changes</button>
+                        </form>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+
+
+    <script src="./js/components.js"></script>
+    <script>
+        window.showLoader();
+        async function checkAuth() {
+            try {
+                const res = await fetch('/api/me');
+                const data = await res.json();
+                window.hideLoader();
+
+                if (data.success) {
+                    document.getElementById('welcomeGreeting').innerText = `Welcome back, ${data.user.name}`;
+
+                    // Populate Account Form
+                    const fields = ['businessName', 'contactName', 'businessEmail', 'phoneNumber', 'businessWebsite'];
+                    fields.forEach(field => {
+                        const input = document.getElementById(`acc_${field}`);
+                        if (input) input.value = data.user[field] || '';
+                    });
+
+                    // Load real data
+                    loadDashboardData();
+                } else {
+                    window.location.href = '/login.html';
+                }
+            } catch (error) {
+                console.error('Auth check failed:', error);
+                window.location.href = '/login.html';
+            }
+        }
+
+        let currentOrdersPage = 1;
+
+        async function loadDashboardData(page = 1) {
+            try {
+                // Fetch Stats
+                const statsRes = await fetch('/api/stats');
+                const statsData = await statsRes.json();
+                if (statsData.success) {
+                    const { totalOrders, activeOrders, pendingInvoices } = statsData.stats;
+                    document.querySelectorAll('.stat-value')[0].innerText = activeOrders;
+                    document.querySelectorAll('.stat-subtext')[0].innerText = activeOrders === 0 ? 'No active orders' : `${activeOrders} orders in progress`;
+
+                    document.querySelectorAll('.stat-value')[1].innerText = pendingInvoices;
+
+                    document.querySelectorAll('.stat-value')[2].innerText = totalOrders;
+                    document.querySelectorAll('.stat-subtext')[2].innerText = totalOrders === 1 ? '1 lifetime order' : `${totalOrders} lifetime orders`;
+                }
+
+                loadMyOrders(page);
+            } catch (error) {
+                console.error('Failed to load dashboard data:', error);
+            }
+        }
+
+        function switchTab(tabId) {
+            window.showLoader();
+            setTimeout(() => {
+                const tabs = document.querySelectorAll('.tab-content');
+                const menuItems = document.querySelectorAll('.tab-pill');
+                const actionBtns = document.querySelectorAll('.action-btn');
+
+                tabs.forEach(tab => tab.classList.remove('active'));
+                menuItems.forEach(item => item.classList.remove('active'));
+                actionBtns.forEach(btn => btn.classList.remove('primary'));
+
+                const activeTab = document.getElementById(tabId);
+                if (activeTab) {
+                    activeTab.classList.add('active');
+                }
+
+                const activeMenuItem = Array.from(menuItems).find(item =>
+                    item.getAttribute('onclick').includes(`'${tabId}'`)
+                );
+                if (activeMenuItem) {
+                    activeMenuItem.classList.add('active');
+                }
+
+                if (tabId === 'submit-fba') {
+                    const fbaBtn = Array.from(actionBtns).find(btn => btn.innerText.includes('FBA'));
+                    if (fbaBtn) fbaBtn.classList.add('primary');
+                } else if (tabId === 'submit-fbm') {
+                    const fbmBtn = Array.from(actionBtns).find(btn => btn.innerText.includes('FBM'));
+                    if (fbmBtn) fbmBtn.classList.add('primary');
+                }
+
+                if (tabId === 'my-orders') loadMyOrders(1);
+                
+                window.hideLoader();
+            }, 300);
+        }
+
+        let orderSearchTimer = null;
+        function handleOrderSearch() {
+            if (orderSearchTimer) clearTimeout(orderSearchTimer);
+            orderSearchTimer = setTimeout(() => {
+                loadMyOrders(1);
+            }, 300);
+        }
+
+        async function loadMyOrders(page = 1) {
+            window.showLoader();
+            try {
+                const status = document.getElementById('orderStatusFilter').value;
+                const search = document.getElementById('orderSearchInput').value;
+                const res = await fetch(`/api/orders?page=${page}&limit=10&status=${status}&search=${search}`);
+                const ordersData = await res.json();
+                
+                const tableContainer = document.getElementById('ordersTableContainer');
+
+                if (ordersData.success) {
+                    if (ordersData.orders.length === 0) {
+                        tableContainer.innerHTML = `
+                            <div class="empty-state" style="padding: 40px;">
+                                <svg class="empty-icon" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                                    <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
+                                </svg>
+                                <h4>No Orders Found</h4>
+                                <p>Try adjusting your filters or search query.</p>
+                            </div>
+                        `;
+                        return;
+                    }
+
+                    let tableHtml = `
+                        <div style="overflow-x: auto; margin-top: 20px; padding: 0 24px 24px;">
+                            <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+                                <thead>
+                                    <tr style="text-align: left; border-bottom: 1px solid #e2e8f0; color: #64748b;">
+                                        <th style="padding: 12px;">Date</th>
+                                        <th style="padding: 12px;">Product</th>
+                                        <th style="padding: 12px;">Type</th>
+                                        <th style="padding: 12px;">Units</th>
+                                        <th style="padding: 12px;">Files</th>
+                                        <th style="padding: 12px;">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                    `;
+
+                    ordersData.orders.forEach(order => {
+                        let fileLinks = '-';
+                        if (order.attachments && order.attachments.length > 0) {
+                            fileLinks = order.attachments.map((file) => {
+                                const fullFilename = file.split('/').pop();
+                                const dashIndex = fullFilename.indexOf('-');
+                                const displayName = dashIndex > -1 ? fullFilename.slice(dashIndex + 1) : fullFilename;
+
+                                return `<a href="${file}" target="_blank" title="${displayName}" style="color: #0094FF; text-decoration: none; display: block; margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 150px;">${displayName}</a>`;
+                            }).join('');
+                        }
+
+                        tableHtml += `
+                            <tr style="border-bottom: 1px solid #f1f5f9;">
+                                <td style="padding: 12px;">${new Date(order.createdAt).toLocaleDateString()}</td>
+                                <td style="padding: 12px; font-weight: 500; color: #0f172a;">${order.productName}</td>
+                                <td style="padding: 12px;"><span style="padding: 4px 8px; border-radius: 4px; background: #f1f5f9; font-size: 11px; font-weight: 600;">${order.type}</span></td>
+                                <td style="padding: 12px;">${order.quantity}</td>
+                                <td style="padding: 12px;">${fileLinks}</td>
+                                <td style="padding: 12px;"><span style="color: ${order.status === 'Pending' ? '#f59e0b' : '#10b981'}; font-weight: 600;">${order.status}</span></td>
+                            </tr>
+                        `;
+                    });
+
+                    tableHtml += '</tbody></table></div>';
+
+                    tableContainer.innerHTML = tableHtml;
+
+                    const pagDiv = document.createElement('div');
+                    pagDiv.id = 'pagination-container';
+                    pagDiv.style.borderTop = '1px solid #f1f5f9';
+                    pagDiv.style.padding = '20px';
+                    pagDiv.style.display = 'flex';
+                    pagDiv.style.justifyContent = 'center';
+                    tableContainer.appendChild(pagDiv);
+                    
+                    renderPagination('pagination-container', ordersData.pagination, 'loadMyOrders');
+                }
+            } catch (error) {
+                console.error('Failed to load orders:', error);
+            } finally {
+                window.hideLoader();
+            }
+        }
+
+        async function submitOrder(type, event) {
+            event.preventDefault();
+            if (!window.validateForm(`${type}Form`)) return;
+            
+            const form = event.target;
+            const btn = form.querySelector('button');
+            const originalBtnText = btn.innerText;
+
+            const formData = new FormData();
+            formData.append('type', type.toUpperCase());
+            formData.append('productName', document.getElementById(`${type}_productName`).value);
+            formData.append('quantity', document.getElementById(`${type}_quantity`).value);
+            formData.append('bundles', document.getElementById(`${type}_bundles`).value);
+            formData.append('filesLink', document.getElementById(`${type}_filesLink`).value);
+            formData.append('notes', document.getElementById(`${type}_notes`).value);
+
+            const fileInput = document.getElementById(`${type}_attachments`);
+            if (fileInput.files.length > 0) {
+                for (let i = 0; i < fileInput.files.length; i++) {
+                    formData.append('attachments', fileInput.files[i]);
+                }
+            }
+
+            try {
+                btn.innerHTML = '<span class="loader"></span> Submitting...';
+                btn.disabled = true;
+
+                const res = await fetch('/api/orders', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await res.json();
+
+                if (data.success) {
+                    showToast(data.message, 'success');
+                    form.reset();
+                    loadDashboardData();
+                    if (await showConfirm('Order Submitted', 'Your order was received successfully! Would you like to view your order history now?')) {
+                        switchTab('my-orders');
+                    }
+                } else {
+                    showToast(data.message || 'Submission failed', 'error');
+                }
+            } catch (error) {
+                showToast('Server error. Please try again later.', 'error');
+            } finally {
+                btn.innerText = originalBtnText;
+                btn.disabled = false;
+            }
+        }
+
+        async function handleLogout() {
+            if (!await showConfirm('Log Out?', 'Are you sure you want to securely log out of your customer portal?')) return;
+            try {
+                const res = await fetch('/api/logout', { method: 'POST' });
+                const data = await res.json();
+                if (data.success) {
+                    window.location.href = '/login.html';
+                }
+            } catch (error) {
+                window.location.href = '/login.html';
+            }
+        }
+
+        document.getElementById('fbaForm').onsubmit = (e) => submitOrder('fba', e);
+        document.getElementById('fbmForm').onsubmit = (e) => submitOrder('fbm', e);
+
+        function setupFileInput(type) {
+            const input = document.getElementById(`${type}_attachments`);
+            const list = document.getElementById(`${type}_fileList`);
+            const zone = document.getElementById(`${type}_uploadZone`);
+            let currentFiles = [];
+
+            zone.addEventListener('click', () => input.click());
+
+            input.addEventListener('change', (e) => {
+                const newFiles = Array.from(e.target.files);
+                const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+                const maxSize = 5 * 1024 * 1024;
+
+                for (let file of newFiles) {
+                    if (!allowedTypes.includes(file.type)) {
+                        showToast(`File "${file.name}" is not a supported type.`, 'error');
+                        continue;
+                    }
+                    if (file.size > maxSize) {
+                        showToast(`File "${file.name}" exceeds the 5MB limit.`, 'error');
+                        continue;
+                    }
+                    if (!currentFiles.some(f => f.name === file.name && f.size === file.size)) {
+                        currentFiles.push(file);
+                    }
+                }
+
+                updateFileList();
+            });
+
+            function updateFileList() {
+                const dt = new DataTransfer();
+                currentFiles.forEach(file => dt.items.add(file));
+                input.files = dt.files;
+
+                if (currentFiles.length > 0) {
+                    list.innerHTML = `<div style="font-weight: 600; margin-bottom: 8px;">Selected files (${currentFiles.length}):</div>`;
+                    currentFiles.forEach((file, index) => {
+                        const item = document.createElement('div');
+                        item.style.cssText = 'display: flex; align-items: center; justify-content: space-between; background: #f8fafc; padding: 6px 12px; border-radius: 6px; margin-bottom: 4px; border: 1px solid #f1f5f9;';
+                        item.innerHTML = `
+                            <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 200px;">${file.name}</span>
+                            <button type="button" onclick="window.removeFile('${type}', ${index})" style="background: none; border: none; color: #ef4444; font-size: 18px; cursor: pointer; padding: 0 4px; line-height: 1;">&times;</button>
+                        `;
+                        list.appendChild(item);
+                    });
+                    zone.style.borderColor = '#0094FF';
+                    zone.style.background = '#f0f9ff';
+                } else {
+                    list.innerHTML = '';
+                    zone.style.borderColor = '#e2e8f0';
+                    zone.style.background = '#f8fafc';
+                }
+            }
+
+            if (!window.fileManagers) window.fileManagers = {};
+            window.fileManagers[type] = {
+                remove: (index) => {
+                    currentFiles.splice(index, 1);
+                    updateFileList();
+                }
+            };
+
+            window.removeFile = (t, index) => {
+                if (window.fileManagers[t]) {
+                    window.fileManagers[t].remove(index);
+                }
+            };
+
+            const form = input.closest('form');
+            form.addEventListener('reset', () => {
+                currentFiles = [];
+                updateFileList();
+            });
+        }
+
+        setupFileInput('fba');
+        setupFileInput('fbm');
+
+        async function saveAccountDetails(event) {
+            event.preventDefault();
+            const btn = event.target.querySelector('button');
+            const originalText = btn.innerText;
+
+            const updateData = {
+                businessName: document.getElementById('acc_businessName').value,
+                contactName: document.getElementById('acc_contactName').value,
+                businessEmail: document.getElementById('acc_businessEmail').value,
+                phoneNumber: document.getElementById('acc_phoneNumber').value,
+                businessWebsite: document.getElementById('acc_businessWebsite').value
+            };
+
+            try {
+                btn.innerHTML = '<span class="loader"></span> Saving...';
+                btn.disabled = true;
+
+                const res = await fetch('/api/me', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(updateData)
+                });
+
+                const data = await res.json();
+                if (data.success) {
+                    showToast(data.message, 'success');
+                } else {
+                    showToast(data.message || 'Update failed', 'error');
+                }
+            } catch (error) {
+                showToast('Server error. Please try again.', 'error');
+            } finally {
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        window.saveAccountDetails = saveAccountDetails;
+
+        // Run auth check
+        checkAuth();
+    </script>
+
+</body>
+
+</html>

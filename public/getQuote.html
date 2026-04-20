@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submit Shipment Request</title>
+    <link rel="stylesheet" href="./css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+</head>
+
+<body>
+    <div class="modal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeModal()">×</button>
+            <div class="modal-title-wrapper">
+                <span class="icon">📦</span>
+                <div>
+                    <h2 class="modal-title">Submit Shipment Request</h2>
+                    <p class="modal-subtitle">Fill out the form below to request FBA prep or FBM fulfillment services.
+                        We'll review your submission and respond within 24 hours.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-body">
+            <form id="shipmentForm">
+                <div id="shipmentFormResult" style="padding:10px;text-align:center;"></div>
+                <!-- Business Information -->
+                <h3 class="section-title">Business Information</h3>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Business Name <span class="required">*</span></label>
+                        <input type="text" id="quoteCompany" class="form-input" placeholder="Your Business LLC" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Contact Name <span class="required">*</span></label>
+                        <input type="text" id="quoteName" class="form-input" placeholder="John Doe" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Email Address <span class="required">*</span></label>
+                        <input type="email" id="quoteEmail" class="form-input" placeholder="you@business.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Phone Number <span class="required">*</span></label>
+                        <input type="tel" id="quotePhone" class="form-input" placeholder="(555) 123-4567" required>
+                    </div>
+                </div>
+
+                <!-- Service Details -->
+                <h3 class="section-title">Service Details</h3>
+
+                <div class="form-group">
+                    <label class="form-label">Service Type <span class="required">*</span></label>
+                    <select id="quoteService" class="form-select" required>
+                        <option value="">Select service type</option>
+                        <option value="fba-prep">FBA Prep</option>
+                        <option value="fbm-fulfillment">FBM Fulfillment</option>
+                        <option value="storage">Storage</option>
+                        <option value="other">Other Services</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Product Name/Description <span class="required">*</span></label>
+                    <input type="text" id="quoteDetails" class="form-input" placeholder="e.g., Blue Widget 3-Pack" required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Number of Units <span class="required">*</span></label>
+                        <input type="number" id="quoteVolume" class="form-input" placeholder="e.g., 500" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Bundles/Multi-packs (if applicable)</label>
+                        <input type="text" class="form-input" placeholder="e.g., 2-pack, 3-pack">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Do you need storage?</label>
+                    <select class="form-select">
+                        <option value="no">No Storage Needed</option>
+                        <option value="yes">Yes, I need storage</option>
+                    </select>
+                </div>
+
+                <!-- Files & Additional Information -->
+                <h3 class="section-title">Files & Additional Information</h3>
+
+                <div class="form-group">
+                    <label class="form-label">Google Drive Link for Labels/Images</label>
+                    <input type="url" id="quoteLink" class="form-input" placeholder="https://drive.google.com/...">
+                    <p class="helper-text">Share a link to your FNSKU labels, shipping labels, or product images</p>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Additional Notes or Special Instructions</label>
+                    <textarea id="quoteNotes" class="form-textarea" placeholder="Any special handling requirements, rush processing needs, or other details we should know..."></textarea>
+                </div>
+            </form>
+        </div>
+
+        <div class="modal-footer">
+            <button type="button" class="btn btn-cancel" onclick="closeModal()">Cancel</button>
+            <button type="submit" class="btn btn-submit" form="shipmentForm" onclick="submitForm(event)">
+                <span>✈️</span>
+                Submit Request
+            </button>
+        </div>
+    </div>
+
+    <script>
+      async function submitForm(e) {
+        e.preventDefault();
+        
+        const company = document.getElementById('quoteCompany').value;
+        const name = document.getElementById('quoteName').value;
+        const email = document.getElementById('quoteEmail').value;
+        const service = document.getElementById('quoteService').value;
+        const details = document.getElementById('quoteDetails').value;
+        const monthlyVolume = document.getElementById('quoteVolume').value;
+        
+        const btn = document.querySelector('.btn-submit');
+        const originalBtnText = btn.innerHTML;
+        btn.innerHTML = '<span class="btn-loader"></span> Submitting...';
+        btn.disabled = true;
+
+        try {
+          const res = await fetch('/api/quote', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, email, company, service, details, monthlyVolume })
+          });
+          const data = await res.json();
+          if (data.success) {
+            window.showToast(data.message, 'success');
+            document.getElementById('shipmentForm').reset();
+            setTimeout(closeModal, 2000);
+          } else {
+            window.showToast(data.error || 'Failed to submit', 'error');
+          }
+        } catch (error) {
+          window.showToast('Error connecting to backend!', 'error');
+        } finally {
+          btn.innerHTML = originalBtnText;
+          btn.disabled = false;
+        }
+      }
+
+      function closeModal() {
+        // Simple close function or redirect to index
+        window.location.href = '/index.html';
+      }
+    </script>
+  <script src="./js/components.js"></script>
+</body>
+
+</html>

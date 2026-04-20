@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mingle Fulfilment</title>
+    <link rel="icon" type="image/png" href="./img/WhatsApp Image 2025-10-18 at 03.34.27_60aa88be.jpg">
+    <link rel="stylesheet" href="./css/style.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .timer-text {
+            font-size: 14px;
+            color: #64748b;
+            margin-top: 10px;
+            text-align: center;
+        }
+        .resend-link {
+            color: #0094FF;
+            text-decoration: none;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .resend-link.disabled {
+            color: #cbd5e1;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <app-header></app-header>
+
+    <br />
+    <div class="login-container">
+        <!-- Header -->
+        <div class="login-header">
+            <h1 class="login-title">Customer Portal</h1>
+            <p class="login-subtitle">Access your account or create a new one</p>
+        </div>
+
+        <!-- Tab Buttons -->
+        <div class="tab-buttons" id="tab-nav">
+            <button class="tab-btn active" onclick="showTab('login')">Login</button>
+            <button class="tab-btn" onclick="showTab('signup')">Sign Up</button>
+        </div>
+
+        <!-- Form Card -->
+        <div class="form-card">
+            <!-- Login Form -->
+            <div id="login-form" class="form-section active">
+                <div class="form-header">
+                    <h2 class="form-title">Welcome Back</h2>
+                    <p class="form-description">Enter your credentials to access your account</p>
+                </div>
+
+                <form onsubmit="handleLoginInitiate(event)">
+                    <div id="loginResult" style="padding-bottom:10px;text-align:center;"></div>
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">✉️</span>
+                            <input type="email" id="loginEmail" class="form-input" placeholder="Enter your email" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Password</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">🔒</span>
+                            <input type="password" id="loginPassword" class="form-input" placeholder="••••••••" required>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="submit-btn" id="loginSubmitBtn">Login</button>
+                    <a class="forgot-link" onclick="showTab('forgot')">Forgot password?</a>
+                </form>
+            </div>
+
+            <!-- Sign Up Form -->
+            <div id="signup-form" class="form-section">
+                <div class="form-header">
+                    <h2 class="form-title">Create Account</h2>
+                    <p class="form-description">Sign up to start using our services</p>
+                </div>
+
+                <form id="signupForm" onsubmit="handleSignupInitiate(event)">
+                    <div class="form-group">
+                        <label class="form-label">Full Name</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">👤</span>
+                            <input type="text" id="signupName" class="form-input" placeholder="Enter your full name" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">✉️</span>
+                            <input type="email" id="signupEmail" class="form-input" placeholder="Enter your email" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Password</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">🔒</span>
+                            <input type="password" id="signupPassword" class="form-input" placeholder="••••••••" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Confirm Password</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">🔒</span>
+                            <input type="password" id="signupConfirmPassword" class="form-input" placeholder="••••••••" required>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="submit-btn">Continue to Verification</button>
+                </form>
+            </div>
+
+            <!-- OTP Verification Form -->
+            <div id="otp-form" class="form-section">
+                <div class="form-header">
+                    <h1 style="font-size: 24px; color: #0094FF; margin-bottom: 8px;">Verify Identity</h1>
+                    <p style="color: #64748b; font-size: 14px;">We've sent a 6-digit code to your email.</p>
+                </div>
+
+                <form onsubmit="handleVerify(event)">
+                    <div class="form-group">
+                        <label class="form-label">Enter 6-Digit Code</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">🔑</span>
+                            <input type="text" id="otpCode" class="form-input" placeholder="000000" maxlength="6" pattern="\d{6}" required style="letter-spacing: 8px; font-size: 20px; font-weight: bold; text-align: center;">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="submit-btn" id="verifyBtn">Verify and Continue</button>
+                    <div class="timer-text" id="timer-container">
+                        <span id="expiry-text">OTP expires in: <span id="timer">120</span>s</span><br>
+                        <a id="resendBtn" class="resend-link disabled" onclick="handleResendOTP()">Resend Code</a>
+                    </div>
+                    <a class="back-link" onclick="cancelOTP()" style="display: block; text-align: center; margin-top: 16px; cursor: pointer;">← Go Back</a>
+                </form>
+            </div>
+
+            <!-- Forgot Password Form -->
+            <div id="forgot-form" class="form-section">
+                <div class="form-header">
+                    <h2 class="form-title">Reset Password</h2>
+                    <p class="form-description">Enter your email to receive reset instructions</p>
+                </div>
+
+                <form onsubmit="handleForgot(event)">
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">✉️</span>
+                            <input type="email" id="forgotEmail" class="form-input" placeholder="your@email.com" required>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="submit-btn">Send Reset Link</button>
+                    <a class="back-link" onclick="showTab('login')">← Back to Login</a>
+                </form>
+            </div>
+        </div>
+
+        <!-- Help Text -->
+        <div class="help-text">
+            Need help? Contact us at <a href="mailto:info@minglefulfilment.com">info@minglefulfilment.com</a>
+        </div>
+    </div>
+    <br />
+
+    <!-- Footer -->
+    <app-footer></app-footer>
+
+    <script>
+        let pendingEmail = '';
+        let currentFlow = ''; // 'signup' or 'login'
+        let timerInterval = null;
+        let timeLeft = 120;
+
+        window.onload = function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('logout') === 'success') {
+                window.showToast('You have been successfully logged out', 'success');
+                // Clean URL
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+        };
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            timeLeft = 120;
+            const timerEl = document.getElementById('timer');
+            const expiryText = document.getElementById('expiry-text');
+            const resendBtn = document.getElementById('resendBtn');
+            resendBtn.classList.add('disabled');
+            expiryText.style.display = 'inline'; // Show text
+            
+            timerEl.innerText = timeLeft;
+            
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                timerEl.innerText = timeLeft;
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    expiryText.style.display = 'none'; // Hide text
+                    resendBtn.classList.remove('disabled');
+                }
+            }, 1000);
+        }
+
+        function cancelOTP() {
+            clearInterval(timerInterval);
+            showTab(currentFlow === 'signup' ? 'signup' : 'login');
+        }
+
+        function showTab(tabName) {
+            const tabs = document.querySelectorAll('.tab-btn');
+            const forms = document.querySelectorAll('.form-section');
+            const tabNav = document.getElementById('tab-nav');
+
+            tabs.forEach(tab => tab.classList.remove('active'));
+            forms.forEach(form => form.classList.remove('active'));
+
+            if (tabName === 'login') {
+                tabNav.style.display = 'flex';
+                document.querySelector('.tab-btn:nth-child(1)').classList.add('active');
+                document.getElementById('login-form').classList.add('active');
+            } else if (tabName === 'signup') {
+                tabNav.style.display = 'flex';
+                document.querySelector('.tab-btn:nth-child(2)').classList.add('active');
+                document.getElementById('signup-form').classList.add('active');
+            } else if (tabName === 'otp') {
+                tabNav.style.display = 'none';
+                document.getElementById('otp-form').classList.add('active');
+                startTimer();
+            } else if (tabName === 'forgot') {
+                tabNav.style.display = 'none';
+                document.getElementById('forgot-form').classList.add('active');
+            }
+        }
+
+        async function handleLoginInitiate(event) {
+            event.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            const btn = document.getElementById('loginSubmitBtn');
+            const originalBtnText = btn.innerHTML;
+            btn.innerHTML = '<span class="btn-loader"></span> Verifying...';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch('/api/login/initiate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    if (data.needsOTP) {
+                        pendingEmail = email;
+                        currentFlow = 'login';
+                        window.showToast(data.message, 'success');
+                        setTimeout(() => showTab('otp'), 500);
+                    } else {
+                        // Admin direct login
+                        window.showToast(data.message, 'success');
+                        setTimeout(() => {
+                            window.location.href = data.user.role === 'admin' ? '/admin.html' : '/dashboard.html';
+                        }, 1000);
+                    }
+                } else {
+                    window.showToast(data.message || 'Login failed', 'error');
+                }
+            } catch (error) {
+                window.showToast('Error connecting to server', 'error');
+            } finally {
+                btn.innerHTML = originalBtnText;
+                btn.disabled = false;
+            }
+        }
+
+        async function handleSignupInitiate(event) {
+            event.preventDefault();
+            const name = document.getElementById('signupName').value;
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+            const confirmPassword = document.getElementById('signupConfirmPassword').value;
+
+            if (password !== confirmPassword) {
+                window.showToast('Passwords do not match', 'error');
+                return;
+            }
+
+            const btn = event.target.querySelector('button[type="submit"]');
+            const originalBtnText = btn.innerHTML;
+            btn.innerHTML = '<span class="btn-loader"></span> Processing...';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch('/api/signup/initiate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, password, confirmPassword })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    pendingEmail = email;
+                    currentFlow = 'signup';
+                    window.showToast(data.message, 'success');
+                    setTimeout(() => showTab('otp'), 500);
+                } else {
+                    window.showToast(data.message || 'Signup failed', 'error');
+                }
+            } catch (error) {
+                window.showToast('Error connecting to server', 'error');
+            } finally {
+                btn.innerHTML = originalBtnText;
+                btn.disabled = false;
+            }
+        }
+
+        async function handleVerify(event) {
+            event.preventDefault();
+            const otpCode = document.getElementById('otpCode').value;
+            const endpoint = currentFlow === 'signup' ? '/api/signup/verify' : '/api/login/verify';
+
+            const btn = document.getElementById('verifyBtn');
+            const originalBtnText = btn.innerHTML;
+            btn.innerHTML = '<span class="btn-loader"></span> Verifying...';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: pendingEmail, otp: otpCode })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    clearInterval(timerInterval);
+                    window.showToast(data.message, 'success');
+                    setTimeout(() => {
+                        if (currentFlow === 'signup') {
+                            showTab('login');
+                        } else {
+                            window.location.href = '/dashboard.html';
+                        }
+                    }, 1500);
+                } else {
+                    window.showToast(data.message || 'Verification failed', 'error');
+                }
+            } catch (error) {
+                window.showToast('Error connecting to server', 'error');
+            } finally {
+                btn.innerHTML = originalBtnText;
+                btn.disabled = false;
+            }
+        }
+
+        async function handleResendOTP() {
+            if (timeLeft > 0) return;
+            
+            const resendBtn = document.getElementById('resendBtn');
+            resendBtn.classList.add('disabled'); // Disable immediately to prevent double-click
+
+            try {
+                const res = await fetch('/api/otp/resend', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: pendingEmail, type: currentFlow })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    window.showToast(data.message, 'success');
+                    startTimer();
+                } else {
+                    window.showToast(data.message, 'error');
+                    resendBtn.classList.remove('disabled'); // Re-enable if failed
+                }
+            } catch (error) {
+                window.showToast('Error resending OTP', 'error');
+                resendBtn.classList.remove('disabled'); // Re-enable if failed
+            }
+        }
+
+        async function handleForgot(event) {
+            event.preventDefault();
+            const email = document.getElementById('forgotEmail').value;
+            
+            const btn = event.target.querySelector('button[type="submit"]');
+            const originalBtnText = btn.innerHTML;
+            btn.innerHTML = '<span class="btn-loader"></span> Sending Link...';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch('/api/forgot-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+                const data = await res.json();
+                window.showToast(data.message, 'info');
+                if (data.success) {
+                    event.target.reset();
+                    setTimeout(() => showTab('login'), 2000);
+                }
+            } catch (error) {
+                window.showToast('Error connecting to server', 'error');
+            } finally {
+                btn.innerHTML = originalBtnText;
+                btn.disabled = false;
+            }
+        }
+    </script>
+
+    <script src="./js/components.js"></script>
+</body>
+
+</html>

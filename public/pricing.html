@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact | MingleFulfilment</title>
+    <link rel="stylesheet" href="./css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <!-- Header -->
+  <app-header></app-header>
+
+    <main>
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="container hero-content">
+                <h1>Transparent Pricing</h1>
+                <p>Affordable rates designed for small to medium eCommerce sellers</p>
+            </div>
+        </section>
+    </main>
+    <br />
+
+    <div class="container">
+        <!-- Feature Cards -->
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="icon">$</div>
+                <div class="feature-title">Starting at $0.50/unit</div>
+                <div class="feature-description">Competitive rates for small and medium sellers</div>
+            </div>
+            <div class="feature-card">
+                <div class="icon">📊</div>
+                <div class="feature-title">No Hidden Fees</div>
+                <div class="feature-description">Transparent pricing with no surprises</div>
+            </div>
+            <div class="feature-card">
+                <div class="icon">📦</div>
+                <div class="feature-title">Bulk Discounts</div>
+                <div class="feature-description">Contact us for volume pricing</div>
+            </div>
+        </div>
+
+        <!-- Pricing Table -->
+        <div class="pricing-section">
+            <h2 class="pricing-title">Our Pricing</h2>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Service</th>
+                            <th>Description</th>
+                            <th>Price</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>FBA Prep (per unit)</td>
+                            <td>Labeling, polybagging, bundling, carton forwarding</td>
+                            <td class="price">$0.45 – $1.50</td>
+                        </tr>
+                        <tr>
+                            <td>FBM Order Fulfilment</td>
+                            <td>Pick, pack & ship to customers</td>
+                            <td class="price">$2.00/order + $0.20/unit</td>
+                        </tr>
+                        <tr>
+                            <td>Storage</td>
+                            <td>Per pallet per month</td>
+                            <td class="price">$40/pallet/month</td>
+                        </tr>
+                        <tr>
+                            <td>Box Fee</td>
+                            <td>Standard boxes & materials</td>
+                            <td class="price">$0.50/each</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <br />
+
+    <section class="booking-card">
+        <div class="booking-content">
+            <h3>Need a Custom Quote?</h3>
+            <p>
+                For custom quotes or bulk volume discounts, contact us using the form on our Contact page or submit your
+                details through our Google Form. We'll work with you to create a pricing plan that fits your business
+                needs and budget.
+            </p>
+            <a href="#" class="btn">Get Custom Quote</a>
+            <a href="#" class="btn">Quick Estimate</a>
+        </div>
+    </section>
+
+    <br />
+
+    <div class="container">
+        <h1 class="main-title">What's Included</h1>
+
+        <div class="services-grid">
+            <!-- FBA Prep Pricing -->
+            <div class="service-card">
+                <h3 class="service-title">FBA Prep Pricing Includes:</h3>
+                <ul class="service-list">
+                    <li>FNSKU labeling</li>
+                    <li>Polybagging or bubble wrap</li>
+                    <li>Product bundling</li>
+                    <li>Box preparation & labeling</li>
+                    <li>Quality inspection</li>
+                    <li>Carton forwarding coordination</li>
+                </ul>
+            </div>
+
+            <!-- FBM Fulfillment -->
+            <div class="service-card">
+                <h3 class="service-title">FBM Fulfilment Pricing Includes:</h3>
+                <ul class="service-list">
+                    <li>Order picking</li>
+                    <li>Custom packing</li>
+                    <li>Shipping label creation</li>
+                    <li>Box and materials</li>
+                    <li>Real-time email updates</li>
+                    <li>Same-day processing available</li>
+                </ul>
+            </div>
+
+            <!-- Storage Pricing -->
+            <div class="service-card">
+                <h3 class="service-title">Storage Pricing Includes:</h3>
+                <ul class="service-list">
+                    <li>Safe, organized storage</li>
+                    <li>Monthly inventory reports</li>
+                    <li>Easy access scheduling</li>
+                    <li>Flexible terms (no long-term commitment)</li>
+                    <li>Climate-controlled environment</li>
+                </ul>
+            </div>
+
+            <!-- Additional Services -->
+            <div class="service-card">
+                <h3 class="service-title">Additional Services:</h3>
+                <ul class="service-list">
+                    <li>Returns inspection & processing</li>
+                    <li>Repackaging services</li>
+                    <li>Relabeling</li>
+                    <li>Custom kitting & bundling</li>
+                    <li>Photography (upon request)</li>
+                    <li>Rush processing available</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- CTA Section -->
+        <div class="cta-section">
+            <h2 class="cta-title">Ready to Get Started?</h2>
+            <p class="cta-subtitle">Submit your inventory details and we'll confirm pricing within 24 hours.</p>
+            <button class="cta-button">Get Your Quote</button>
+        </div>
+    </div>
+
+    <br />
+
+    <!-- Footer -->
+  <app-footer></app-footer>
+    <script>
+        const menuToggle = document.getElementById('menuToggle');
+        const navLinks = document.getElementById('navLinks');
+        menuToggle.addEventListener('click', () => navLinks.classList.toggle('active'));
+    </script>
+  <script src="./js/components.js"></script>
+</body>
+
+</html>

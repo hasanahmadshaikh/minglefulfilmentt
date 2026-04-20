@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Mingle Fulfilment</title>
+    <link rel="icon" type="image/png" href="./img/WhatsApp Image 2025-10-18 at 03.34.27_60aa88be.jpg">
+    <link rel="stylesheet" href="./css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --sidebar-width: 260px;
+            --admin-primary: #0094FF;
+            --admin-bg: #f8fafc;
+            --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        body.admin-body {
+            background-color: var(--admin-bg);
+            margin: 0;
+            display: flex;
+            min-height: 100vh;
+            font-family: 'Inter', sans-serif;
+            color: #1e293b;
+        }
+
+        /* Sidebar Styling */
+        .admin-sidebar {
+            width: var(--sidebar-width);
+            background: white;
+            border-right: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            z-index: 100;
+        }
+
+        .sidebar-header {
+            padding: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .sidebar-logo {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+        }
+
+        .sidebar-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .sidebar-menu {
+            padding: 24px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex-grow: 1;
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 10px;
+            color: #64748b;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s;
+            cursor: pointer;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+            font-size: 14px;
+        }
+
+        .menu-item:hover {
+            background: #f1f5f9;
+            color: #0f172a;
+        }
+
+        .menu-item.active {
+            background: #e0f2fe;
+            color: var(--admin-primary);
+        }
+
+        .sidebar-footer {
+            padding: 24px 16px;
+            border-top: 1px solid #f1f5f9;
+        }
+
+        /* Main Content */
+        .admin-main {
+            flex-grow: 1;
+            margin-left: var(--sidebar-width);
+            padding: 32px;
+            max-width: calc(100% - var(--sidebar-width));
+        }
+
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+
+        .page-title h1 {
+            font-size: 24px;
+            margin: 0;
+            color: #0f172a;
+        }
+
+        .page-title p {
+            color: #64748b;
+            margin: 4px 0 0 0;
+            font-size: 14px;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .admin-stat-card {
+            background: white;
+            padding: 24px;
+            border-radius: 16px;
+            box-shadow: var(--card-shadow);
+            border: 1px solid #f1f5f9;
+        }
+
+        .stat-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+        }
+
+        .stat-icon.blue { background: #e0f2fe; color: #0094FF; }
+        .stat-icon.orange { background: #ffedd5; color: #f97316; }
+        .stat-icon.green { background: #dcfce7; color: #10b981; }
+        .stat-icon.purple { background: #f3e8ff; color: #8b5cf6; }
+
+        .stat-info .label {
+            font-size: 14px;
+            color: #64748b;
+            margin-bottom: 4px;
+        }
+
+        .stat-info .value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        /* Table Card */
+        .admin-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: var(--card-shadow);
+            border: 1px solid #f1f5f9;
+            overflow: hidden;
+            margin-bottom: 32px;
+        }
+
+        .card-header {
+            padding: 24px;
+            border-bottom: 1px solid #f1f5f9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-header h3 {
+            margin: 0;
+            font-size: 18px;
+            color: #0f172a;
+        }
+
+        .admin-table-container {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        .admin-table th {
+            text-align: left;
+            padding: 16px 24px;
+            background: #f8fafc;
+            color: #64748b;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-size: 12px;
+        }
+
+        .admin-table td {
+            padding: 16px 24px;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: middle;
+        }
+
+        .user-cell {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .user-name { font-weight: 600; color: #0f172a; }
+        .user-email { font-size: 12px; color: #64748b; }
+
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-pending { background: #fef3c7; color: #d97706; }
+        .status-processing { background: #e0f2fe; color: #0369a1; }
+        .status-shipped { background: #dcfce7; color: #15803d; }
+        .status-cancelled { background: #fee2e2; color: #b91c1c; }
+        .role-badge { 
+            padding: 2px 8px; 
+            border-radius: 4px; 
+            font-size: 11px; 
+            font-weight: bold; 
+            text-transform: uppercase;
+        }
+        .role-admin { background: #fee2e2; color: #b91c1c; }
+        .role-user { background: #e0f2fe; color: #0369a1; }
+
+        .admin-select {
+            padding: 6px 12px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            background-color: white;
+            font-size: 13px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .admin-select:focus {
+            border-color: var(--admin-primary);
+        }
+
+        /* Modal Overlays (if needed for status changing loader) */
+        .admin-tab-content {
+            display: none;
+        }
+
+        .admin-tab-content.active {
+            display: block;
+        }
+
+        @media (max-width: 1024px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .admin-sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s;
+            }
+            .admin-sidebar.open {
+                transform: translateX(0);
+            }
+            .admin-main {
+                margin-left: 0;
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body class="admin-body">
+
+    <!-- Sidebar -->
+    <aside class="admin-sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <img src="./img/WhatsApp Image 2025-10-18 at 03.34.27_60aa88be.jpg" class="sidebar-logo" alt="Logo">
+            <span class="sidebar-title">Admin Panel</span>
+        </div>
+        <nav class="sidebar-menu">
+            <button class="menu-item active" onclick="switchAdminTab('dashboard')">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <rect x="3" y="3" width="7" height="7" rx="1"></rect>
+                    <rect x="14" y="3" width="7" height="7" rx="1"></rect>
+                    <rect x="14" y="14" width="7" height="7" rx="1"></rect>
+                    <rect x="3" y="14" width="7" height="7" rx="1"></rect>
+                </svg>
+                Dashboard
+            </button>
+            <button class="menu-item" onclick="switchAdminTab('orders')">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"></path>
+                    <path d="m3.3 7 8.7 5 8.7-5"></path>
+                    <path d="M12 22V12"></path>
+                </svg>
+                Orders Management
+            </button>
+            <button class="menu-item" onclick="switchAdminTab('users')">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+                User Management
+            </button>
+            <button class="menu-item" onclick="switchAdminTab('messages')">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                    <polyline points="22,6 12,13 2,6"></polyline>
+                </svg>
+                Customer Messages
+            </button>
+            <button class="menu-item" onclick="switchAdminTab('settings')">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-1.82.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 13 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                </svg>
+                System Settings
+            </button>
+        </nav>
+        <div class="sidebar-footer">
+            <button class="menu-item" onclick="handleAdminLogout()" style="color: #ef4444;">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                </svg>
+                Logout
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="admin-main">
+        <header class="admin-header">
+            <div class="page-title">
+                <h1 id="tabTitle">Admin Dashboard</h1>
+                <p id="tabSubtitle">Overview of your fulfilment business</p>
+            </div>
+            <div class="admin-profile">
+                <span id="adminGreeting" style="font-weight: 500;">Hello, Admin</span>
+            </div>
+        </header>
+
+        <!-- Dashboard Content -->
+        <section id="dashboard" class="admin-tab-content active">
+            <div class="stats-grid">
+                <div class="admin-stat-card">
+                    <div class="stat-icon blue">📦</div>
+                    <div class="stat-info">
+                        <div class="label">Total Orders</div>
+                        <div class="value" id="stat-totalOrders">0</div>
+                    </div>
+                </div>
+                <div class="admin-stat-card">
+                    <div class="stat-icon orange">⏳</div>
+                    <div class="stat-info">
+                        <div class="label">Pending Orders</div>
+                        <div class="value" id="stat-pendingOrders">0</div>
+                    </div>
+                </div>
+                <div class="admin-stat-card">
+                    <div class="stat-icon green">⚙️</div>
+                    <div class="stat-info">
+                        <div class="label">Processing</div>
+                        <div class="value" id="stat-activeOrders">0</div>
+                    </div>
+                </div>
+                <div class="admin-stat-card">
+                    <div class="stat-icon purple">👥</div>
+                    <div class="stat-info">
+                        <div class="label">Total Customers</div>
+                        <div class="value" id="stat-totalUsers">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="admin-card">
+                <div class="card-header">
+                    <h3>Recent Global Orders</h3>
+                    <button class="dashboard-action-btn view-all" onclick="switchAdminTab('orders')">View All</button>
+                </div>
+                <div class="admin-table-container">
+                    <table class="admin-table" id="recentOrdersTable">
+                        <thead>
+                            <tr>
+                                <th>Client</th>
+                                <th>Product</th>
+                                <th>Order Type</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Loaded via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Orders Management Content -->
+        <section id="orders" class="admin-tab-content">
+            <div class="admin-card">
+                <div class="card-header">
+                    <h3>All Platform Orders</h3>
+                    <div class="filter-group" style="display: flex; align-items: center; gap: 12px;">
+                        <select id="orderStatusFilter" class="admin-select" onchange="loadAdminOrders(1)" style="padding: 6px 12px; border-radius: 6px; font-size:13px; border:1px solid #e2e8f0;">
+                            <option value="All">All Statuses</option>
+                            <option value="Pending">Pending</option>
+                            <option value="Processing">Processing</option>
+                            <option value="Shipped">Shipped</option>
+                            <option value="Completed">Completed</option>
+                            <option value="Cancelled">Cancelled</option>
+                        </select>
+                        <select id="orderTypeFilter" class="admin-select" onchange="loadAdminOrders(1)" style="padding: 6px 12px; border-radius: 6px; font-size:13px; border:1px solid #e2e8f0;">
+                            <option value="All">All Types</option>
+                            <option value="FBA">FBA</option>
+                            <option value="FBM">FBM</option>
+                        </select>
+                        <input type="text" id="orderSearchInput" class="admin-select" placeholder="Search orders..." oninput="handleSearch('orders')" style="padding: 6px 12px; border-radius: 6px; font-size:13px; border:1px solid #e2e8f0; width: 200px;">
+                    </div>
+                </div>
+                <div class="admin-table-container">
+                    <table class="admin-table" id="allOrdersTable">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Client</th>
+                                <th>Product Details</th>
+                                <th>Type</th>
+                                <th>Quantity</th>
+                                <th>Current Status</th>
+                                <th>Change Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Loaded via JS -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="ordersPagination" style="padding: 16px; border-top: 1px solid #f1f5f9; display: flex; justify-content: center; gap: 10px;"></div>
+            </div>
+        </section>
+
+        <!-- Users Management Content -->
+        <section id="users" class="admin-tab-content">
+            <div class="admin-card">
+                <div class="card-header">
+                    <h3>Registered Platform Users</h3>
+                    <div class="filter-group" style="display: flex; align-items: center; gap: 12px;">
+                        <span style="font-size: 13px; color: #64748b; font-weight: 500;">Filter by Role:</span>
+                        <select class="admin-select" id="roleFilter" onchange="loadAdminUsers(1)">
+                            <option value="all">All Users</option>
+                            <option value="user">Customers Only</option>
+                            <option value="admin">Admins Only</option>
+                        </select>
+                        <input type="text" id="userSearchInput" class="admin-select" placeholder="Search users..." oninput="handleSearch('users')" style="padding: 6px 12px; border-radius: 6px; font-size:13px; border:1px solid #e2e8f0; width: 200px;">
+                    </div>
+                </div>
+                <div class="admin-table-container">
+                    <table class="admin-table" id="allUsersTable">
+                        <thead>
+                            <tr>
+                                <th>User Name</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Business Name</th>
+                                <th>Joined Date</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Loaded via JS -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="usersPagination" style="padding: 16px; border-top: 1px solid #f1f5f9; display: flex; justify-content: center; gap: 10px;"></div>
+            </div>
+            </div>
+
+            <!-- Create Admin Section -->
+            <div class="admin-card">
+                <div class="card-header">
+                    <h3>Create New Administrator</h3>
+                </div>
+                <div style="padding: 24px;">
+                    <form onsubmit="handleCreateAdmin(event)" id="createAdminForm" novalidate style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; align-items: end;">
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label style="display:block; margin-bottom:8px; font-size:13px; color:#64748b;">Full Name</label>
+                            <input type="text" id="adminName" class="admin-select" style="width:100%; height:40px;" placeholder="John Doe" required>
+                        </div>
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label style="display:block; margin-bottom:8px; font-size:13px; color:#64748b;">Email Address</label>
+                            <input type="email" id="adminEmail" class="admin-select" style="width:100%; height:40px;" placeholder="admin@example.com" required>
+                        </div>
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label style="display:block; margin-bottom:8px; font-size:13px; color:#64748b;">Password</label>
+                            <input type="password" id="adminPassword" class="admin-select" style="width:100%; height:40px;" placeholder="••••••••" required>
+                        </div>
+                        <div style="grid-column: span 3; text-align: right; margin-top: 10px;">
+                            <button type="submit" class="outline-btn" id="createAdminBtn" style="padding: 10px 24px; background: var(--admin-primary); color: white; border: none; cursor: pointer;">Create Admin Account</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <!-- Messages Content -->
+        <section id="messages" class="admin-tab-content">
+            <div class="admin-card">
+                <div class="card-header">
+                    <h3>Contact Form Submissions</h3>
+                    <input type="text" id="messageSearchInput" class="admin-select" placeholder="Search messages..." oninput="handleSearch('messages')" style="padding: 6px 12px; border-radius: 6px; font-size:13px; border:1px solid #e2e8f0; width: 250px;">
+                </div>
+                <div class="admin-table-container">
+                    <table class="admin-table" id="messagesTable">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Sender</th>
+                                <th>Subject</th>
+                                <th>Message</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Loaded via JS -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="messagesPagination" style="padding: 16px; border-top: 1px solid #f1f5f9; display: flex; justify-content: center; gap: 10px;"></div>
+            </div>
+        </section>
+
+        <!-- User Details Modal -->
+        <div id="userDetailsModal" class="modal-overlay" style="display:none; z-index: 10001;">
+            <div class="modal-popup" style="max-width: 600px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
+                    <h3>Customer Profile Details</h3>
+                    <button onclick="closeUserDetailsModal()" style="background:none; border:none; font-size:24px; cursor:pointer; color:#64748b;">×</button>
+                </div>
+                <div id="userDetailsContent">
+                    <!-- Loaded via JS -->
+                </div>
+                <div style="text-align: right; margin-top: 30px;">
+                    <button class="modal-btn confirm" onclick="closeUserDetailsModal()">Close</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Content -->
+        <section id="settings" class="admin-tab-content">
+            <div class="admin-card">
+                <div class="card-header">
+                    <h3>Admin Settings</h3>
+                </div>
+                <div style="padding: 40px; text-align: center; color: #64748b;">
+                    <p>System configuration options will appear here in future updates.</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script src="./js/components.js"></script>
+    <script>
+        window.showLoader();
+        let currentAdminId = null;
+        async function checkAdminAuth() {
+            try {
+                const res = await fetch('/api/me');
+                const data = await res.json();
+                if (data.success && data.user.role === 'admin') {
+                    currentAdminId = data.user._id;
+                    document.getElementById('adminGreeting').innerText = `Hello, ${data.user.name}`;
+                    loadAdminData();
+                } else {
+                    window.location.href = '/login.html';
+                }
+            } catch (err) {
+                window.location.href = '/login.html';
+            } finally {
+                window.hideLoader();
+            }
+        }
+
+        async function loadAdminData() {
+            try {
+                // Load Stats
+                const statsRes = await fetch('/api/admin/stats');
+                const statsData = await statsRes.json();
+                if (statsData.success) {
+                    const s = statsData.stats;
+                    document.getElementById('stat-totalOrders').innerText = s.totalOrders;
+                    document.getElementById('stat-pendingOrders').innerText = s.pendingOrders;
+                    document.getElementById('stat-activeOrders').innerText = s.activeOrders;
+                    document.getElementById('stat-totalUsers').innerText = s.totalUsers;
+                }
+
+                // Load Orders for the main tab
+                loadAdminOrders(1);
+                
+                // Load Recent Orders for Dashboard
+                const recentRes = await fetch('/api/admin/orders?limit=5');
+                const recentData = await recentRes.json();
+                const recentBody = document.querySelector('#recentOrdersTable tbody');
+                recentBody.innerHTML = '';
+                
+                recentData.orders.forEach(order => {
+                    recentBody.innerHTML += `
+                        <tr>
+                            <td>
+                                <div class="user-cell">
+                                    <span class="user-name">${order.user?.name || 'Unknown'}</span>
+                                    <span class="user-email">${order.user?.email || '-'}</span>
+                                </div>
+                            </td>
+                            <td>${order.productName}</td>
+                            <td><span style="font-weight:600; font-size:12px;">${order.type}</span></td>
+                            <td><span class="status-badge status-${order.status.toLowerCase()}">${order.status}</span></td>
+                            <td><button class="dashboard-action-btn" onclick="goToOrder('${order._id}')">Update</button></td>
+                        </tr>
+                    `;
+                });
+
+                // Load Users
+                loadAdminUsers(1);
+                
+                // Load Messages if needed
+                loadAdminMessages(1);
+
+            } catch (err) {
+                console.error('Admin data load failed:', err);
+            }
+        }
+
+        let searchTimers = {};
+        function handleSearch(tab) {
+            if (searchTimers[tab]) clearTimeout(searchTimers[tab]);
+            searchTimers[tab] = setTimeout(() => {
+                if (tab === 'orders') loadAdminOrders(1);
+                if (tab === 'users') loadAdminUsers(1);
+                if (tab === 'messages') loadAdminMessages(1);
+            }, 300);
+        }
+
+        let highlightedOrderId = null;
+        function goToOrder(orderId) {
+            highlightedOrderId = orderId;
+            switchAdminTab('orders');
+            loadAdminOrders(1); // Usually recent orders are on page 1
+        }
+
+        async function loadAdminUsers(page = 1) {
+            try {
+                const role = document.getElementById('roleFilter').value;
+                const search = document.getElementById('userSearchInput').value;
+                const usersRes = await fetch(`/api/admin/users?role=${role}&page=${page}&limit=10&search=${search}`);
+                const usersData = await usersRes.json();
+                const usersBody = document.querySelector('#allUsersTable tbody');
+                usersBody.innerHTML = '';
+                usersData.users.forEach(u => {
+                    const isSelf = u._id === currentAdminId;
+                    usersBody.innerHTML += `
+                        <tr>
+                            <td><strong>${u.name}</strong></td>
+                            <td>${u.email}</td>
+                            <td><span class="role-badge role-${u.role}">${u.role}</span></td>
+                            <td>${u.businessName || '-'}</td>
+                            <td>${new Date(u.createdAt).toLocaleDateString()}</td>
+                            <td>
+                                <div style="display:flex; gap:8px;">
+                                    <button class="admin-table-btn details" onclick="handleViewUserDetails('${u._id}')">Details</button>
+                                    <button class="admin-table-btn delete" ${isSelf ? 'disabled' : ''} onclick="handleDeleteUser('${u._id}', '${u.name}')">Delete</button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+
+                renderPagination('usersPagination', usersData.pagination, 'loadAdminUsers');
+            } catch (err) {
+                window.showToast('Failed to load users', 'error');
+            }
+        }
+
+        async function handleDeleteUser(userId, userName) {
+            const confirmed = await window.showConfirm('Delete User', `Are you sure you want to delete ${userName}? This action cannot be undone.`);
+            if (confirmed) {
+                try {
+                    const res = await fetch(`/api/admin/users/${userId}`, { method: 'DELETE' });
+                    const data = await res.json();
+                    if (data.success) {
+                        window.showToast(data.message, 'success');
+                        loadAdminUsers();
+                    } else {
+                        window.showToast(data.message, 'error');
+                    }
+                } catch (err) {
+                    window.showToast('Failed to delete user', 'error');
+                }
+            }
+        }
+
+        async function loadAdminOrders(page = 1) {
+            const status = document.getElementById('orderStatusFilter').value;
+            const type = document.getElementById('orderTypeFilter').value;
+            const search = document.getElementById('orderSearchInput').value;
+            const res = await fetch(`/api/admin/orders?page=${page}&limit=10&status=${status}&type=${type}&search=${search}`);
+            const data = await res.json();
+            const body = document.querySelector('#allOrdersTable tbody');
+            body.innerHTML = '';
+            
+            data.orders.forEach(order => {
+                const row = document.createElement('tr');
+                if (highlightedOrderId === order._id) {
+                    row.className = 'row-highlight';
+                    setTimeout(() => {
+                        row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 100);
+                }
+                
+                row.innerHTML = `
+                    <td>${new Date(order.createdAt).toLocaleDateString()}</td>
+                    <td>
+                        <div class="user-cell">
+                            <span class="user-name">${order.user?.name || 'Unknown'}</span>
+                            <span class="user-business" style="font-size:11px; color:#64748b;">${order.user?.businessName || 'Regular User'}</span>
+                        </div>
+                    </td>
+                    <td><strong>${order.productName}</strong><br><small>${order.notes?.substring(0, 30) || 'No notes'}...</small></td>
+                    <td>${order.type}</td>
+                    <td>${order.quantity}</td>
+                    <td><span class="status-badge status-${order.status.toLowerCase()}">${order.status}</span></td>
+                    <td>
+                        <select class="admin-status-dropdown" onchange="updateOrderStatus('${order._id}', this.value)">
+                            <option value="Pending" ${order.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                            <option value="Processing" ${order.status === 'Processing' ? 'selected' : ''}>Processing</option>
+                            <option value="Shipped" ${order.status === 'Shipped' ? 'selected' : ''}>Shipped</option>
+                            <option value="Completed" ${order.status === 'Completed' ? 'selected' : ''}>Completed</option>
+                            <option value="Cancelled" ${order.status === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
+                        </select>
+                    </td>
+                `;
+                body.appendChild(row);
+            });
+
+            // Reusable Pagination logic
+            renderPagination('ordersPagination', data.pagination, 'loadAdminOrders');
+        }
+
+        async function handleViewUserDetails(userId) {
+            try {
+                const res = await fetch(`/api/admin/users?role=all`); // We could have a specific fetch by ID but reusing existing for now or filtered
+                const data = await res.json();
+                const user = data.users.find(u => u._id === userId);
+                
+                if (!user) return window.showToast('User not found', 'error');
+
+                const content = document.getElementById('userDetailsContent');
+                content.innerHTML = `
+                    <div class="user-details-grid">
+                        <div class="detail-item"><label>Full Name</label><span>${user.name}</span></div>
+                        <div class="detail-item"><label>Email</label><span>${user.email}</span></div>
+                        <div class="detail-item"><label>Business Name</label><span>${user.businessName || 'N/A'}</span></div>
+                        <div class="detail-item"><label>Role</label><span>${user.role}</span></div>
+                        <div class="detail-item"><label>Phone</label><span>${user.phone || 'N/A'}</span></div>
+                        <div class="detail-item"><label>Member Since</label><span>${new Date(user.createdAt).toLocaleDateString()}</span></div>
+                    </div>
+                `;
+                document.getElementById('userDetailsModal').style.display = 'flex';
+            } catch (err) {
+                window.showToast('Failed to load user details', 'error');
+            }
+        }
+
+        function closeUserDetailsModal() {
+            document.getElementById('userDetailsModal').style.display = 'none';
+        }
+
+        async function loadAdminMessages(page = 1) {
+            try {
+                const search = document.getElementById('messageSearchInput').value;
+                const res = await fetch(`/api/admin/messages?page=${page}&limit=10&search=${search}`);
+                const data = await res.json();
+                const body = document.querySelector('#messagesTable tbody');
+                body.innerHTML = '';
+                
+                if (data.messages.length === 0) {
+                    body.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:40px; color:#64748b;">No messages yet</td></tr>';
+                    return;
+                }
+
+                data.messages.forEach(msg => {
+                    body.innerHTML += `
+                        <tr>
+                            <td style="white-space:nowrap;">${new Date(msg.createdAt).toLocaleDateString()}</td>
+                            <td>
+                                <div class="user-cell">
+                                    <span class="user-name">${msg.name}</span>
+                                    <span class="user-email">${msg.email}</span>
+                                </div>
+                            </td>
+                            <td><strong>${msg.subject || 'No Subject'}</strong></td>
+                            <td style="max-width:300px; font-size:13px;">${msg.message}</td>
+                        </tr>
+                    `;
+                });
+
+                renderPagination('messagesPagination', data.pagination, 'loadAdminMessages');
+            } catch (err) {
+                console.error('Failed to load messages');
+            }
+        }
+
+        async function updateOrderStatus(orderId, newStatus) {
+            try {
+                const res = await fetch(`/api/admin/orders/${orderId}/status`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: newStatus })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    window.showToast(data.message, 'success');
+                    loadAdminData(); // Refresh everything
+                }
+            } catch (err) {
+                window.showToast('Failed to update status', 'error');
+            }
+        }
+
+        async function switchAdminTab(tabId) {
+            window.showLoader();
+            setTimeout(() => {
+                const tabs = document.querySelectorAll('.admin-tab-content');
+                const menuItems = document.querySelectorAll('.menu-item');
+
+                tabs.forEach(tab => tab.classList.remove('active'));
+                menuItems.forEach(item => item.classList.remove('active'));
+
+                const activeTab = document.getElementById(tabId);
+                if (activeTab) activeTab.classList.add('active');
+
+                const activeMenu = Array.from(menuItems).find(item => item.getAttribute('onclick')?.includes(`'${tabId}'`));
+                if (activeMenu) activeMenu.classList.add('active');
+
+                // Update Titles
+                const titles = {
+                    dashboard: { t: 'Admin Dashboard', s: 'Overview of your fulfilment business' },
+                    orders: { t: 'Order Management', s: 'Monitor and update platform-wide orders' },
+                    users: { t: 'User Management', s: 'View and manage registered clients and team members' },
+                    messages: { t: 'Customer Messages', s: 'View submissions from the contact form' },
+                    settings: { t: 'Settings', s: 'Configure platform parameters' }
+                };
+                if (titles[tabId]) {
+                    document.getElementById('tabTitle').innerText = titles[tabId].t;
+                    document.getElementById('tabSubtitle').innerText = titles[tabId].s;
+                }
+
+                // Reset highlight flag when switching tabs manually
+                if (tabId !== 'orders') highlightedOrderId = null;
+
+                // Sidebar click triggers API reloads
+                if (tabId === 'dashboard') loadAdminData();
+                if (tabId === 'orders') loadAdminOrders(1);
+                if (tabId === 'users') loadAdminUsers(1);
+                if (tabId === 'messages') loadAdminMessages(1);
+
+                window.hideLoader();
+            }, 300);
+        }
+
+        async function handleAdminLogout() {
+            const res = await fetch('/api/logout', { method: 'POST' });
+            if ((await res.json()).success) {
+                window.location.href = '/login.html?logout=success';
+            }
+        }
+
+        async function handleCreateAdmin(event) {
+            event.preventDefault();
+            if (!window.validateForm('createAdminForm')) return;
+
+            const name = document.getElementById('adminName').value;
+            const email = document.getElementById('adminEmail').value;
+            const password = document.getElementById('adminPassword').value;
+
+            const btn = document.getElementById('createAdminBtn');
+            const originalText = btn.innerText;
+            btn.innerText = 'Creating...';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch('/api/admin/create-admin', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, password })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    window.showToast(data.message, 'success');
+                    document.getElementById('createAdminForm').reset();
+                    loadAdminUsers();
+                } else {
+                    window.showToast(data.message || 'Failed to create admin', 'error');
+                }
+            } catch (err) {
+                window.showToast('Server error', 'error');
+            } finally {
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        checkAdminAuth();
+    </script>
+</body>
+
+</html>
