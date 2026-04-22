@@ -8,291 +8,7 @@
     <link rel="icon" type="image/png" href="./img/WhatsApp Image 2025-10-18 at 03.34.27_60aa88be.jpg">
     <link rel="stylesheet" href="./css/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --sidebar-width: 260px;
-            --admin-primary: #0094FF;
-            --admin-bg: #f8fafc;
-            --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-        }
 
-        body.admin-body {
-            background-color: var(--admin-bg);
-            margin: 0;
-            display: flex;
-            min-height: 100vh;
-            font-family: 'Inter', sans-serif;
-            color: #1e293b;
-        }
-
-        /* Sidebar Styling */
-        .admin-sidebar {
-            width: var(--sidebar-width);
-            background: white;
-            border-right: 1px solid #e2e8f0;
-            display: flex;
-            flex-direction: column;
-            position: fixed;
-            height: 100vh;
-            z-index: 100;
-        }
-
-        .sidebar-header {
-            padding: 24px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            border-bottom: 1px solid #f1f5f9;
-        }
-
-        .sidebar-logo {
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
-        }
-
-        .sidebar-title {
-            font-size: 18px;
-            font-weight: 700;
-            color: #0f172a;
-        }
-
-        .sidebar-menu {
-            padding: 24px 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            flex-grow: 1;
-        }
-
-        .menu-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px 16px;
-            border-radius: 10px;
-            color: #64748b;
-            text-decoration: none;
-            font-weight: 500;
-            transition: all 0.2s;
-            cursor: pointer;
-            border: none;
-            background: none;
-            width: 100%;
-            text-align: left;
-            font-size: 14px;
-        }
-
-        .menu-item:hover {
-            background: #f1f5f9;
-            color: #0f172a;
-        }
-
-        .menu-item.active {
-            background: #e0f2fe;
-            color: var(--admin-primary);
-        }
-
-        .sidebar-footer {
-            padding: 24px 16px;
-            border-top: 1px solid #f1f5f9;
-        }
-
-        /* Main Content */
-        .admin-main {
-            flex-grow: 1;
-            margin-left: var(--sidebar-width);
-            padding: 32px;
-            max-width: calc(100% - var(--sidebar-width));
-        }
-
-        .admin-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 32px;
-        }
-
-        .page-title h1 {
-            font-size: 24px;
-            margin: 0;
-            color: #0f172a;
-        }
-
-        .page-title p {
-            color: #64748b;
-            margin: 4px 0 0 0;
-            font-size: 14px;
-        }
-
-        /* Stats Grid */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 24px;
-            margin-bottom: 32px;
-        }
-
-        .admin-stat-card {
-            background: white;
-            padding: 24px;
-            border-radius: 16px;
-            box-shadow: var(--card-shadow);
-            border: 1px solid #f1f5f9;
-        }
-
-        .stat-icon {
-            width: 44px;
-            height: 44px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 16px;
-        }
-
-        .stat-icon.blue { background: #e0f2fe; color: #0094FF; }
-        .stat-icon.orange { background: #ffedd5; color: #f97316; }
-        .stat-icon.green { background: #dcfce7; color: #10b981; }
-        .stat-icon.purple { background: #f3e8ff; color: #8b5cf6; }
-
-        .stat-info .label {
-            font-size: 14px;
-            color: #64748b;
-            margin-bottom: 4px;
-        }
-
-        .stat-info .value {
-            font-size: 28px;
-            font-weight: 700;
-            color: #0f172a;
-        }
-
-        /* Table Card */
-        .admin-card {
-            background: white;
-            border-radius: 16px;
-            box-shadow: var(--card-shadow);
-            border: 1px solid #f1f5f9;
-            overflow: hidden;
-            margin-bottom: 32px;
-        }
-
-        .card-header {
-            padding: 24px;
-            border-bottom: 1px solid #f1f5f9;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .card-header h3 {
-            margin: 0;
-            font-size: 18px;
-            color: #0f172a;
-        }
-
-        .admin-table-container {
-            width: 100%;
-            overflow-x: auto;
-        }
-
-        .admin-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 14px;
-        }
-
-        .admin-table th {
-            text-align: left;
-            padding: 16px 24px;
-            background: #f8fafc;
-            color: #64748b;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            font-size: 12px;
-        }
-
-        .admin-table td {
-            padding: 16px 24px;
-            border-bottom: 1px solid #f1f5f9;
-            vertical-align: middle;
-        }
-
-        .user-cell {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-        }
-
-        .user-name { font-weight: 600; color: #0f172a; }
-        .user-email { font-size: 12px; color: #64748b; }
-
-        .status-badge {
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        .status-pending { background: #fef3c7; color: #d97706; }
-        .status-processing { background: #e0f2fe; color: #0369a1; }
-        .status-shipped { background: #dcfce7; color: #15803d; }
-        .status-cancelled { background: #fee2e2; color: #b91c1c; }
-        .role-badge { 
-            padding: 2px 8px; 
-            border-radius: 4px; 
-            font-size: 11px; 
-            font-weight: bold; 
-            text-transform: uppercase;
-        }
-        .role-admin { background: #fee2e2; color: #b91c1c; }
-        .role-user { background: #e0f2fe; color: #0369a1; }
-
-        .admin-select {
-            padding: 6px 12px;
-            border-radius: 8px;
-            border: 1px solid #e2e8f0;
-            background-color: white;
-            font-size: 13px;
-            outline: none;
-            cursor: pointer;
-        }
-
-        .admin-select:focus {
-            border-color: var(--admin-primary);
-        }
-
-        /* Modal Overlays (if needed for status changing loader) */
-        .admin-tab-content {
-            display: none;
-        }
-
-        .admin-tab-content.active {
-            display: block;
-        }
-
-        @media (max-width: 1024px) {
-            .stats-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-
-        @media (max-width: 768px) {
-            .admin-sidebar {
-                transform: translateX(-100%);
-                transition: transform 0.3s;
-            }
-            .admin-sidebar.open {
-                transform: translateX(0);
-            }
-            .admin-main {
-                margin-left: 0;
-                max-width: 100%;
-            }
-        }
-    </style>
 </head>
 
 <body class="admin-body">
@@ -346,7 +62,7 @@
             </button>
         </nav>
         <div class="sidebar-footer">
-            <button class="menu-item" onclick="handleAdminLogout()" style="color: #ef4444;">
+            <button class="menu-item menu-item--danger" onclick="handleAdminLogout()">
                 <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
                 </svg>
@@ -363,7 +79,7 @@
                 <p id="tabSubtitle">Overview of your fulfilment business</p>
             </div>
             <div class="admin-profile">
-                <span id="adminGreeting" style="font-weight: 500;">Hello, Admin</span>
+                <span id="adminGreeting" class="admin-greeting">Hello, Admin</span>
             </div>
         </header>
 
@@ -430,7 +146,7 @@
                 <div class="card-header">
                     <h3>All Platform Orders</h3>
                     <div class="filter-group" style="display: flex; align-items: center; gap: 12px;">
-                        <select id="orderStatusFilter" class="admin-select" onchange="loadAdminOrders(1)" style="padding: 6px 12px; border-radius: 6px; font-size:13px; border:1px solid #e2e8f0;">
+                        <select id="orderStatusFilter" class="admin-select" onchange="loadAdminOrders(1)">
                             <option value="All">All Statuses</option>
                             <option value="Pending">Pending</option>
                             <option value="Processing">Processing</option>
@@ -438,12 +154,12 @@
                             <option value="Completed">Completed</option>
                             <option value="Cancelled">Cancelled</option>
                         </select>
-                        <select id="orderTypeFilter" class="admin-select" onchange="loadAdminOrders(1)" style="padding: 6px 12px; border-radius: 6px; font-size:13px; border:1px solid #e2e8f0;">
+                        <select id="orderTypeFilter" class="admin-select" onchange="loadAdminOrders(1)">
                             <option value="All">All Types</option>
                             <option value="FBA">FBA</option>
                             <option value="FBM">FBM</option>
                         </select>
-                        <input type="text" id="orderSearchInput" class="admin-select" placeholder="Search orders..." oninput="handleSearch('orders')" style="padding: 6px 12px; border-radius: 6px; font-size:13px; border:1px solid #e2e8f0; width: 200px;">
+                        <input type="text" id="orderSearchInput" class="admin-select filter-search-wide" placeholder="Search orders..." oninput="handleSearch('orders')">
                     </div>
                 </div>
                 <div class="admin-table-container">
@@ -464,7 +180,7 @@
                         </tbody>
                     </table>
                 </div>
-                <div id="ordersPagination" style="padding: 16px; border-top: 1px solid #f1f5f9; display: flex; justify-content: center; gap: 10px;"></div>
+                <div id="ordersPagination" class="admin-pagination"></div>
             </div>
         </section>
 
@@ -474,13 +190,13 @@
                 <div class="card-header">
                     <h3>Registered Platform Users</h3>
                     <div class="filter-group" style="display: flex; align-items: center; gap: 12px;">
-                        <span style="font-size: 13px; color: #64748b; font-weight: 500;">Filter by Role:</span>
+                        <span class="filter-label">Filter by Role:</span>
                         <select class="admin-select" id="roleFilter" onchange="loadAdminUsers(1)">
                             <option value="all">All Users</option>
                             <option value="user">Customers Only</option>
                             <option value="admin">Admins Only</option>
                         </select>
-                        <input type="text" id="userSearchInput" class="admin-select" placeholder="Search users..." oninput="handleSearch('users')" style="padding: 6px 12px; border-radius: 6px; font-size:13px; border:1px solid #e2e8f0; width: 200px;">
+                        <input type="text" id="userSearchInput" class="admin-select filter-search-wide" placeholder="Search users..." oninput="handleSearch('users')">
                     </div>
                 </div>
                 <div class="admin-table-container">
@@ -500,7 +216,7 @@
                         </tbody>
                     </table>
                 </div>
-                <div id="usersPagination" style="padding: 16px; border-top: 1px solid #f1f5f9; display: flex; justify-content: center; gap: 10px;"></div>
+                <div id="usersPagination" class="admin-pagination"></div>
             </div>
             </div>
 
@@ -509,22 +225,22 @@
                 <div class="card-header">
                     <h3>Create New Administrator</h3>
                 </div>
-                <div style="padding: 24px;">
-                    <form onsubmit="handleCreateAdmin(event)" id="createAdminForm" novalidate style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; align-items: end;">
-                        <div class="form-group" style="margin-bottom:0;">
-                            <label style="display:block; margin-bottom:8px; font-size:13px; color:#64748b;">Full Name</label>
-                            <input type="text" id="adminName" class="admin-select" style="width:100%; height:40px;" placeholder="John Doe" required>
+                <div class="admin-card-body">
+                    <form onsubmit="handleCreateAdmin(event)" id="createAdminForm" novalidate class="create-admin-form">
+                        <div class="form-group form-group--no-mb">
+                            <label class="admin-field-label">Full Name</label>
+                            <input type="text" id="adminName" class="admin-select admin-input-full" placeholder="John Doe" required>
                         </div>
-                        <div class="form-group" style="margin-bottom:0;">
-                            <label style="display:block; margin-bottom:8px; font-size:13px; color:#64748b;">Email Address</label>
-                            <input type="email" id="adminEmail" class="admin-select" style="width:100%; height:40px;" placeholder="admin@example.com" required>
+                        <div class="form-group form-group--no-mb">
+                            <label class="admin-field-label">Email Address</label>
+                            <input type="email" id="adminEmail" class="admin-select admin-input-full" placeholder="admin@example.com" required>
                         </div>
-                        <div class="form-group" style="margin-bottom:0;">
-                            <label style="display:block; margin-bottom:8px; font-size:13px; color:#64748b;">Password</label>
-                            <input type="password" id="adminPassword" class="admin-select" style="width:100%; height:40px;" placeholder="••••••••" required>
+                        <div class="form-group form-group--no-mb">
+                            <label class="admin-field-label">Password</label>
+                            <input type="password" id="adminPassword" class="admin-select admin-input-full" placeholder="••••••••" required>
                         </div>
-                        <div style="grid-column: span 3; text-align: right; margin-top: 10px;">
-                            <button type="submit" class="outline-btn" id="createAdminBtn" style="padding: 10px 24px; background: var(--admin-primary); color: white; border: none; cursor: pointer;">Create Admin Account</button>
+                        <div class="create-admin-submit">
+                            <button type="submit" class="outline-btn outline-btn--primary" id="createAdminBtn">Create Admin Account</button>
                         </div>
                     </form>
                 </div>
@@ -536,7 +252,7 @@
             <div class="admin-card">
                 <div class="card-header">
                     <h3>Contact Form Submissions</h3>
-                    <input type="text" id="messageSearchInput" class="admin-select" placeholder="Search messages..." oninput="handleSearch('messages')" style="padding: 6px 12px; border-radius: 6px; font-size:13px; border:1px solid #e2e8f0; width: 250px;">
+                    <input type="text" id="messageSearchInput" class="admin-select filter-search-wide" placeholder="Search messages..." oninput="handleSearch('messages')">
                 </div>
                 <div class="admin-table-container">
                     <table class="admin-table" id="messagesTable">
@@ -553,21 +269,21 @@
                         </tbody>
                     </table>
                 </div>
-                <div id="messagesPagination" style="padding: 16px; border-top: 1px solid #f1f5f9; display: flex; justify-content: center; gap: 10px;"></div>
+                <div id="messagesPagination" class="admin-pagination"></div>
             </div>
         </section>
 
         <!-- User Details Modal -->
-        <div id="userDetailsModal" class="modal-overlay" style="display:none; z-index: 10001;">
-            <div class="modal-popup" style="max-width: 600px;">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
+        <div id="userDetailsModal" class="modal-overlay modal-overlay--top">
+            <div class="modal-popup modal-popup--wide">
+                <div class="modal-popup-header">
                     <h3>Customer Profile Details</h3>
-                    <button onclick="closeUserDetailsModal()" style="background:none; border:none; font-size:24px; cursor:pointer; color:#64748b;">×</button>
+                    <button onclick="closeUserDetailsModal()" class="modal-close-btn">&times;</button>
                 </div>
                 <div id="userDetailsContent">
                     <!-- Loaded via JS -->
                 </div>
-                <div style="text-align: right; margin-top: 30px;">
+                <div class="modal-popup-footer">
                     <button class="modal-btn confirm" onclick="closeUserDetailsModal()">Close</button>
                 </div>
             </div>
@@ -579,7 +295,7 @@
                 <div class="card-header">
                     <h3>Admin Settings</h3>
                 </div>
-                <div style="padding: 40px; text-align: center; color: #64748b;">
+                <div class="admin-card-body admin-card-body--centered">
                     <p>System configuration options will appear here in future updates.</p>
                 </div>
             </div>

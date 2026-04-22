@@ -8,25 +8,7 @@
     <link rel="icon" type="image/png" href="./img/WhatsApp Image 2025-10-18 at 03.34.27_60aa88be.jpg">
     <link rel="stylesheet" href="./css/style.css" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        .timer-text {
-            font-size: 14px;
-            color: #64748b;
-            margin-top: 10px;
-            text-align: center;
-        }
-        .resend-link {
-            color: #0094FF;
-            text-decoration: none;
-            cursor: pointer;
-            font-weight: 600;
-        }
-        .resend-link.disabled {
-            color: #cbd5e1;
-            cursor: not-allowed;
-            pointer-events: none;
-        }
-    </style>
+
 </head>
 
 <body>
@@ -57,12 +39,13 @@
                 </div>
 
                 <form onsubmit="handleLoginInitiate(event)">
-                    <div id="loginResult" style="padding-bottom:10px;text-align:center;"></div>
+                    <div id="loginResult" class="form-result"></div>
                     <div class="form-group">
                         <label class="form-label">Email</label>
                         <div class="input-wrapper">
                             <span class="input-icon">✉️</span>
-                            <input type="email" id="loginEmail" class="form-input" placeholder="Enter your email" required>
+                            <input type="email" id="loginEmail" class="form-input" placeholder="Enter your email"
+                                required>
                         </div>
                     </div>
 
@@ -70,7 +53,8 @@
                         <label class="form-label">Password</label>
                         <div class="input-wrapper">
                             <span class="input-icon">🔒</span>
-                            <input type="password" id="loginPassword" class="form-input" placeholder="••••••••" required>
+                            <input type="password" id="loginPassword" class="form-input" placeholder="••••••••"
+                                required>
                         </div>
                     </div>
 
@@ -91,7 +75,8 @@
                         <label class="form-label">Full Name</label>
                         <div class="input-wrapper">
                             <span class="input-icon">👤</span>
-                            <input type="text" id="signupName" class="form-input" placeholder="Enter your full name" required>
+                            <input type="text" id="signupName" class="form-input" placeholder="Enter your full name"
+                                required>
                         </div>
                     </div>
 
@@ -99,7 +84,8 @@
                         <label class="form-label">Email</label>
                         <div class="input-wrapper">
                             <span class="input-icon">✉️</span>
-                            <input type="email" id="signupEmail" class="form-input" placeholder="Enter your email" required>
+                            <input type="email" id="signupEmail" class="form-input" placeholder="Enter your email"
+                                required>
                         </div>
                     </div>
 
@@ -107,7 +93,8 @@
                         <label class="form-label">Password</label>
                         <div class="input-wrapper">
                             <span class="input-icon">🔒</span>
-                            <input type="password" id="signupPassword" class="form-input" placeholder="••••••••" required>
+                            <input type="password" id="signupPassword" class="form-input" placeholder="••••••••"
+                                required>
                         </div>
                     </div>
 
@@ -115,7 +102,8 @@
                         <label class="form-label">Confirm Password</label>
                         <div class="input-wrapper">
                             <span class="input-icon">🔒</span>
-                            <input type="password" id="signupConfirmPassword" class="form-input" placeholder="••••••••" required>
+                            <input type="password" id="signupConfirmPassword" class="form-input" placeholder="••••••••"
+                                required>
                         </div>
                     </div>
 
@@ -126,8 +114,8 @@
             <!-- OTP Verification Form -->
             <div id="otp-form" class="form-section">
                 <div class="form-header">
-                    <h1 style="font-size: 24px; color: #0094FF; margin-bottom: 8px;">Verify Identity</h1>
-                    <p style="color: #64748b; font-size: 14px;">We've sent a 6-digit code to your email.</p>
+                    <h1 class="otp-title">Verify Identity</h1>
+                    <p class="otp-subtitle">We've sent a 6-digit code to your email.</p>
                 </div>
 
                 <form onsubmit="handleVerify(event)">
@@ -135,7 +123,8 @@
                         <label class="form-label">Enter 6-Digit Code</label>
                         <div class="input-wrapper">
                             <span class="input-icon">🔑</span>
-                            <input type="text" id="otpCode" class="form-input" placeholder="000000" maxlength="6" pattern="\d{6}" required style="letter-spacing: 8px; font-size: 20px; font-weight: bold; text-align: center;">
+                            <input type="text" id="otpCode" class="form-input otp-input" placeholder="000000" maxlength="6"
+                                pattern="\d{6}" required>
                         </div>
                     </div>
 
@@ -144,7 +133,7 @@
                         <span id="expiry-text">OTP expires in: <span id="timer">120</span>s</span><br>
                         <a id="resendBtn" class="resend-link disabled" onclick="handleResendOTP()">Resend Code</a>
                     </div>
-                    <a class="back-link" onclick="cancelOTP()" style="display: block; text-align: center; margin-top: 16px; cursor: pointer;">← Go Back</a>
+                    <a class="back-link" onclick="cancelOTP()">← Go Back</a>
                 </form>
             </div>
 
@@ -160,7 +149,8 @@
                         <label class="form-label">Email</label>
                         <div class="input-wrapper">
                             <span class="input-icon">✉️</span>
-                            <input type="email" id="forgotEmail" class="form-input" placeholder="your@email.com" required>
+                            <input type="email" id="forgotEmail" class="form-input" placeholder="your@email.com"
+                                required>
                         </div>
                     </div>
 
@@ -186,7 +176,7 @@
         let timerInterval = null;
         let timeLeft = 120;
 
-        window.onload = function() {
+        window.onload = function () {
             const urlParams = new URLSearchParams(window.location.search);
             if (urlParams.get('logout') === 'success') {
                 window.showToast('You have been successfully logged out', 'success');
@@ -203,9 +193,9 @@
             const resendBtn = document.getElementById('resendBtn');
             resendBtn.classList.add('disabled');
             expiryText.style.display = 'inline'; // Show text
-            
+
             timerEl.innerText = timeLeft;
-            
+
             timerInterval = setInterval(() => {
                 timeLeft--;
                 timerEl.innerText = timeLeft;
@@ -252,7 +242,7 @@
             event.preventDefault();
             const email = document.getElementById('loginEmail').value;
             const password = document.getElementById('loginPassword').value;
-            
+
             const btn = document.getElementById('loginSubmitBtn');
             const originalBtnText = btn.innerHTML;
             btn.innerHTML = '<span class="btn-loader"></span> Verifying...';
@@ -369,7 +359,7 @@
 
         async function handleResendOTP() {
             if (timeLeft > 0) return;
-            
+
             const resendBtn = document.getElementById('resendBtn');
             resendBtn.classList.add('disabled'); // Disable immediately to prevent double-click
 
@@ -396,7 +386,7 @@
         async function handleForgot(event) {
             event.preventDefault();
             const email = document.getElementById('forgotEmail').value;
-            
+
             const btn = event.target.querySelector('button[type="submit"]');
             const originalBtnText = btn.innerHTML;
             btn.innerHTML = '<span class="btn-loader"></span> Sending Link...';

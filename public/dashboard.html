@@ -185,10 +185,9 @@
             <!-- My Orders Tab -->
             <section id="my-orders" class="tab-content">
                 <div class="portal-card">
-                    <div class="form-card-header" style="margin-bottom: 0;">
+                    <div class="form-card-header">
                         <div class="section-header">
-                            <div
-                                style="display: flex; align-items: center; gap: 10px; color: #0094FF; font-weight: 600; margin-bottom: 8px;">
+                            <div class="section-icon-header">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                     stroke-width="2">
                                     <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
@@ -198,8 +197,8 @@
                             </div>
                             <p>View all your submitted orders and their current status</p>
                         </div>
-                        <div class="filter-group" style="display: flex; gap: 12px; align-items: center; margin-top: 10px;">
-                            <select id="orderStatusFilter" class="admin-select" onchange="loadMyOrders(1)" style="padding: 8px 12px; border-radius: 6px; font-size:13px; border:1px solid #e2e8f0; min-width:140px;">
+                        <div class="filter-row">
+                            <select id="orderStatusFilter" class="admin-select filter-select" onchange="loadMyOrders(1)">
                                 <option value="All">All Statuses</option>
                                 <option value="Pending">Pending</option>
                                 <option value="Processing">Processing</option>
@@ -207,7 +206,7 @@
                                 <option value="Completed">Completed</option>
                                 <option value="Cancelled">Cancelled</option>
                             </select>
-                            <input type="text" id="orderSearchInput" class="admin-select" placeholder="Search product name..." oninput="handleOrderSearch()" style="padding: 8px 12px; border-radius: 6px; font-size:13px; border:1px solid #e2e8f0; flex: 1;">
+                            <input type="text" id="orderSearchInput" class="admin-select filter-search" placeholder="Search product name..." oninput="handleOrderSearch()">
                         </div>
                         </div>
                     </div>
@@ -227,11 +226,10 @@
 
             <!-- Submit FBA Order Tab -->
             <section id="submit-fba" class="tab-content">
-                <div class="portal-card" style="max-width: 1000px; margin: 0 auto;">
+                <div class="portal-card portal-card-centered">
                     <div class="form-card-header">
                         <div class="section-header">
-                            <div
-                                style="display: flex; align-items: center; gap: 10px; color: #0094FF; font-weight: 600; margin-bottom: 8px;">
+                            <div class="section-icon-header">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                     stroke-width="2">
                                     <path
@@ -269,15 +267,15 @@
                                     </p>
                                 </div>
                                 <input type="file" id="fba_attachments" hidden multiple accept=".jpg,.jpeg,.png,.pdf">
-                                <p style="font-size: 11px; color: #64748b; margin-top: 6px;"><strong>Note:</strong> Max
+                                <p class="field-note field-note-sm"><strong>Note:</strong> Max
                                     file size 5MB. Only JPEG, PNG, and PDF files are allowed.</p>
-                                <div id="fba_fileList" style="margin-top: 10px; font-size: 13px; color: #64748b;"></div>
+                                <div id="fba_fileList" class="file-list"></div>
                             </div>
                             <div class="form-full">
                                 <label class="portal-label">FNSKU/Shipping Labels Link</label>
                                 <input type="url" id="fba_filesLink" class="portal-input"
                                     placeholder="Paste Google Drive or Dropbox link here">
-                                <p style="font-size: 12px; color: #64748b; margin-top: 6px;">Share a link to your label
+                                <p class="field-note">Share a link to your label
                                     files (Google Drive, Dropbox, etc.)</p>
                             </div>
                             <div class="form-full">
@@ -293,11 +291,10 @@
 
             <!-- Submit FBM Order Tab -->
             <section id="submit-fbm" class="tab-content">
-                <div class="portal-card" style="max-width: 1000px; margin: 0 auto;">
+                <div class="portal-card portal-card-centered">
                     <div class="form-card-header">
                         <div class="section-header">
-                            <div
-                                style="display: flex; align-items: center; gap: 10px; color: #0094FF; font-weight: 600; margin-bottom: 8px;">
+                            <div class="section-icon-header">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                     stroke-width="2">
                                     <path
@@ -338,15 +335,15 @@
                                     </p>
                                 </div>
                                 <input type="file" id="fbm_attachments" hidden multiple accept=".jpg,.jpeg,.png,.pdf">
-                                <p style="font-size: 11px; color: #64748b; margin-top: 6px;"><strong>Note:</strong> Max
+                                <p class="field-note field-note-sm"><strong>Note:</strong> Max
                                     file size 5MB. Only JPEG, PNG, and PDF files are allowed.</p>
-                                <div id="fbm_fileList" style="margin-top: 10px; font-size: 13px; color: #64748b;"></div>
+                                <div id="fbm_fileList" class="file-list"></div>
                             </div>
                             <div class="form-full">
                                 <label class="portal-label">Order Files/Labels Link</label>
                                 <input type="url" id="fbm_filesLink" class="portal-input"
                                     placeholder="Paste Google Drive or Dropbox link here">
-                                <p style="font-size: 12px; color: #64748b; margin-top: 6px;">Share a link to your order
+                                <p class="field-note">Share a link to your order
                                     files (Google Drive, Dropbox, etc.)</p>
                             </div>
                             <div class="form-full">
@@ -362,11 +359,10 @@
 
             <!-- Invoices Tab -->
             <section id="invoices" class="tab-content">
-                <div class="portal-card" style="max-width: 1000px; margin: 0 auto;">
-                    <div class="form-card-header" style="margin-bottom: 0;">
+                <div class="portal-card portal-card-centered">
+                    <div class="form-card-header">
                         <div class="section-header">
-                            <div
-                                style="display: flex; align-items: center; gap: 10px; color: #0094FF; font-weight: 600; margin-bottom: 8px;">
+                            <div class="section-icon-header">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                     stroke-width="2">
                                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
@@ -396,11 +392,10 @@
 
             <!-- Account Tab -->
             <section id="account" class="tab-content">
-                <div class="portal-card" style="max-width: 1000px; margin: 0 auto;">
+                <div class="portal-card portal-card-centered">
                     <div class="form-card-header">
                         <div class="section-header">
-                            <div
-                                style="display: flex; align-items: center; gap: 10px; color: #0094FF; font-weight: 600; margin-bottom: 8px;">
+                            <div class="section-icon-header">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                     stroke-width="2">
                                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
@@ -440,8 +435,7 @@
                                         placeholder="https://www.example.com">
                                 </div>
                             </div>
-                            <button type="submit" class="submit-full-btn"
-                                style="width: auto; padding: 12px 24px; margin-top: 20px;">Save Changes</button>
+                            <button type="submit" class="submit-full-btn submit-full-btn--auto">Save Changes</button>
                         </form>
                     </div>
                 </div>
