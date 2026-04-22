@@ -10,135 +10,114 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 
-<body class="portal-body">
+<body class="admin-body">
 
-    <div class="portal-container">
-        <!-- Top Generic Banner -->
-        <header class="portal-header">
-            <div class="portal-title-section">
-                <h1>Customer Portal</h1>
-                <p id="welcomeGreeting">Welcome back,</p>
-            </div>
-            <button onclick="handleLogout()" class="logout-outline-btn">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="18" height="18">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
-                    </path>
-                </svg>
-                Logout
-            </button>
-        </header>
-
-        <!-- Tab Pills Navigation -->
-        <nav class="portal-tabs">
-            <button class="tab-pill active" onclick="switchTab('overview')">
-                <svg fill="currentColor" viewBox="0 0 20 20">
-                    <path
-                        d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z">
-                    </path>
-                </svg>
+    <aside class="admin-sidebar">
+        <div class="sidebar-header">
+            <img src="./svg/orderBox.svg" alt="Logo" class="sidebar-logo">
+            <div class="sidebar-title">Mingle Fulfilment</div>
+        </div>
+        <nav class="sidebar-menu">
+            <button class="menu-item active" onclick="switchTab('overview')">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
                 Overview
             </button>
-            <button class="tab-pill" onclick="switchTab('my-orders')">
-                <svg fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"></path>
-                    <path fill-rule="evenodd"
-                        d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
-                        clip-rule="evenodd"></path>
-                </svg>
+            <button class="menu-item" onclick="switchTab('my-orders')">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
                 My Orders
             </button>
-            <button class="tab-pill" onclick="switchTab('submit-fba')">
-                <svg fill="currentColor" viewBox="0 0 20 20">
-                    <path
-                        d="M11 3a1 1 0 10-2 0v1a1 1 0 102 0V3zM5.884 6.68a1 1 0 10-1.455-1.37l-.707.75a1 1 0 101.455 1.37l.707-.75zM12 8a1 1 0 110 2 1 1 0 010-2zM4.707 9.293a1 1 0 010 1.414l-1 1a1 1 0 01-1.414-1.414l1-1a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zM12.12 15.116a1 1 0 00-1.37-1.455l-.75.707a1 1 0 001.455 1.37l.75-.707zM6 14a1 1 0 110 2 1 1 0 010-2zM13.397 5.343a1 1 0 00-1.397 1.427l.75.733a1 1 0 001.397-1.427l-.75-.733z">
-                    </path>
-                </svg>
+            <button class="menu-item" onclick="switchTab('submit-fba')">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
                 Submit FBA Order
             </button>
-            <button class="tab-pill" onclick="switchTab('submit-fbm')">
-                <svg fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z">
-                    </path>
-                    <path
-                        d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1V5a1 1 0 00-1-1H3zM14 7a1 1 0 00-1 1v6.05a2.5 2.5 0 014.9 0H19a1 1 0 001-1V7a1 1 0 00-1-1h-5z">
-                    </path>
-                </svg>
+            <button class="menu-item" onclick="switchTab('submit-fbm')">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
                 Submit FBM Order
             </button>
-            <button class="tab-pill" onclick="switchTab('invoices')">
-                <svg fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd"
-                        d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z"
-                        clip-rule="evenodd"></path>
-                </svg>
+            <button class="menu-item" onclick="switchTab('invoices')">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
                 Invoices
             </button>
-            <button class="tab-pill" onclick="switchTab('account')">
-                <svg fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd"
-                        d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z"
-                        clip-rule="evenodd"></path>
-                </svg>
+            <button class="menu-item" onclick="switchTab('account')">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
                 Account
             </button>
         </nav>
+        <div class="sidebar-footer">
+            <button class="menu-item menu-item--danger" onclick="handleLogout()">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                </svg>
+                Logout
+            </button>
+        </div>
+    </aside>
 
-        <!-- Content Sections -->
-        <main class="portal-main">
+    <main class="admin-main">
+        <header class="admin-header">
+            <div class="page-title">
+                <h1>Customer Portal</h1>
+                <p id="welcomeGreeting">Welcome back,</p>
+            </div>
+            <div class="admin-profile">
+                <span style="font-weight: 500; font-size: 14px; color: #64748b; background: white; padding: 8px 16px; border-radius: 20px; border: 1px solid #e2e8f0; display: inline-flex; align-items: center; gap: 8px;">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="7" r="4"></circle><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path></svg>
+                    My Session
+                </span>
+            </div>
+        </header>
 
-            <!-- Overview Tab -->
-            <section id="overview" class="tab-content active">
-                <div class="stats-row">
-                    <div class="portal-card">
-                        <div class="stat-header">
-                            <span class="stat-label">Active Orders</span>
-                            <div class="stat-icon-bg blue">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2">
-                                    <path
-                                        d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
-                                    <path d="m3.3 7 8.7 5 8.7-5" />
-                                    <path d="M12 22V12" />
-                                </svg>
-                            </div>
+        <div class="admin-tab-content active" id="overview">
+                <div class="stats-grid">
+                    <div class="admin-stat-card">
+                        <div class="stat-icon blue">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path
+                                    d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
+                                <path d="m3.3 7 8.7 5 8.7-5" />
+                                <path d="M12 22V12" />
+                            </svg>
                         </div>
-                        <div class="stat-value">0</div>
-                        <div class="stat-subtext">No active orders</div>
+                        <div class="stat-info">
+                            <div class="label">Active Orders</div>
+                            <div class="value stat-value">0</div>
+                            <div class="label stat-subtext">No active orders</div>
+                        </div>
                     </div>
-                    <div class="portal-card">
-                        <div class="stat-header">
-                            <span class="stat-label">Pending Invoices</span>
-                            <div class="stat-icon-bg teal">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2">
-                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                                    <path d="M14 2v6h6" />
-                                    <path d="M16 13H8" />
-                                    <path d="M16 17H8" />
-                                    <path d="M10 9H8" />
-                                </svg>
-                            </div>
+                    <div class="admin-stat-card">
+                        <div class="stat-icon green">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                <path d="M14 2v6h6" />
+                                <path d="M16 13H8" />
+                                <path d="M16 17H8" />
+                                <path d="M10 9H8" />
+                            </svg>
                         </div>
-                        <div class="stat-value">$0.00</div>
-                        <div class="stat-subtext">All paid up!</div>
+                        <div class="stat-info">
+                            <div class="label">Pending Invoices</div>
+                            <div class="value stat-value">$0.00</div>
+                            <div class="label stat-subtext">All paid up!</div>
+                        </div>
                     </div>
-                    <div class="portal-card">
-                        <div class="stat-header">
-                            <span class="stat-label">Total Orders</span>
-                            <div class="stat-icon-bg indigo">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2">
-                                    <rect width="18" height="18" x="3" y="3" rx="2" />
-                                    <path d="M9 3v18" />
-                                    <path d="M15 3v18" />
-                                    <path d="M3 9h18" />
-                                    <path d="M3 15h18" />
-                                </svg>
-                            </div>
+                    <div class="admin-stat-card">
+                        <div class="stat-icon purple">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <rect width="18" height="18" x="3" y="3" rx="2" />
+                                <path d="M9 3v18" />
+                                <path d="M15 3v18" />
+                                <path d="M3 9h18" />
+                                <path d="M3 15h18" />
+                            </svg>
                         </div>
-                        <div class="stat-value">0</div>
-                        <div class="stat-subtext">Lifetime orders</div>
+                        <div class="stat-info">
+                            <div class="label">Total Orders</div>
+                            <div class="value stat-value">0</div>
+                            <div class="label stat-subtext">Lifetime orders</div>
+                        </div>
                     </div>
                 </div>
 
@@ -180,10 +159,10 @@
                         </button>
                     </div>
                 </div>
-            </section>
+        </div>
 
             <!-- My Orders Tab -->
-            <section id="my-orders" class="tab-content">
+            <div id="my-orders" class="admin-tab-content">
                 <div class="portal-card">
                     <div class="form-card-header">
                         <div class="section-header">
@@ -222,10 +201,10 @@
                         </div>
                     </div>
                 </div>
-            </section>
+        </div>
 
             <!-- Submit FBA Order Tab -->
-            <section id="submit-fba" class="tab-content">
+            <div id="submit-fba" class="admin-tab-content">
                 <div class="portal-card portal-card-centered">
                     <div class="form-card-header">
                         <div class="section-header">
@@ -287,10 +266,10 @@
                         <button type="submit" class="submit-full-btn">Submit FBA Order</button>
                     </form>
                 </div>
-            </section>
+        </div>
 
             <!-- Submit FBM Order Tab -->
-            <section id="submit-fbm" class="tab-content">
+            <div id="submit-fbm" class="admin-tab-content">
                 <div class="portal-card portal-card-centered">
                     <div class="form-card-header">
                         <div class="section-header">
@@ -355,10 +334,10 @@
                         <button type="submit" class="submit-full-btn">Submit FBM Order</button>
                     </form>
                 </div>
-            </section>
+        </div>
 
             <!-- Invoices Tab -->
-            <section id="invoices" class="tab-content">
+            <div id="invoices" class="admin-tab-content">
                 <div class="portal-card portal-card-centered">
                     <div class="form-card-header">
                         <div class="section-header">
@@ -388,10 +367,10 @@
                         <p>Your invoices will appear here once you submit your first order.</p>
                     </div>
                 </div>
-            </section>
+        </div>
 
             <!-- Account Tab -->
-            <section id="account" class="tab-content">
+            <div id="account" class="admin-tab-content">
                 <div class="portal-card portal-card-centered">
                     <div class="form-card-header">
                         <div class="section-header">
@@ -439,10 +418,8 @@
                         </form>
                     </div>
                 </div>
-            </section>
-
-        </main>
-    </div>
+        </div>
+    </main>
 
 
 

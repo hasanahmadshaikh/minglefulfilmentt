@@ -60,14 +60,14 @@ async function loadDashboardData(page = 1) {
 function switchTab(tabId) {
   window.showLoader();
   setTimeout(() => {
-    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.tab-pill').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.admin-tab-content').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.menu-item').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.action-btn').forEach(b => b.classList.remove('primary'));
 
     const activeTab = document.getElementById(tabId);
     if (activeTab) activeTab.classList.add('active');
 
-    const activeMenuItem = Array.from(document.querySelectorAll('.tab-pill'))
+    const activeMenuItem = Array.from(document.querySelectorAll('.menu-item'))
       .find(item => item.getAttribute('onclick')?.includes(`'${tabId}'`));
     if (activeMenuItem) activeMenuItem.classList.add('active');
 
