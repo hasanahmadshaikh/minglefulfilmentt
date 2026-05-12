@@ -11,11 +11,11 @@
 
 <body>
     <!-- Header -->
-  <app-header></app-header>
+    <app-header></app-header>
 
     <main>
         <!-- Hero Section -->
-        <section class="hero">
+        <section class="pricing-hero">
             <div class="container hero-content">
                 <h1>Transparent Pricing</h1>
                 <p>Affordable rates designed for small to medium eCommerce sellers</p>
@@ -101,79 +101,169 @@
     <br />
 
     <div class="container">
-        <h1 class="main-title">What's Included</h1>
-
-        <div class="services-grid">
-            <!-- FBA Prep Pricing -->
-            <div class="service-card">
-                <h3 class="service-title">FBA Prep Pricing Includes:</h3>
-                <ul class="service-list">
-                    <li>FNSKU labeling</li>
-                    <li>Polybagging or bubble wrap</li>
-                    <li>Product bundling</li>
-                    <li>Box preparation & labeling</li>
-                    <li>Quality inspection</li>
-                    <li>Carton forwarding coordination</li>
-                </ul>
+        <section class="comparison-section">
+            <h2 class="comparison-title">Our Fulfilment Packages</h2>
+            <div class="comparison-table-wrapper">
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th class="feature-col"></th>
+                            <th class="package-header">
+                                <div class="package-name">
+                                    <span class="package-icon">📦</span>
+                                    BRONZE
+                                </div>
+                            </th>
+                            <th class="package-header">
+                                <div class="package-name">
+                                    <span class="package-icon">💰</span>
+                                    GOLD
+                                </div>
+                            </th>
+                            <th class="package-header">
+                                <div class="package-name">
+                                    <span class="package-icon">💎</span>
+                                    PLATINUM
+                                </div>
+                            </th>
+                            <th class="package-header">
+                                <div class="package-name">
+                                    <span class="package-icon">⚙️</span>
+                                    CUSTOM
+                                </div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="feature-col">Best For</td>
+                            <td>New Sellers</td>
+                            <td>Growing Brands</td>
+                            <td>High-Volume Businesses</td>
+                            <td>Tailored Operations</td>
+                        </tr>
+                        <tr>
+                            <td class="feature-col">Starting Price</td>
+                            <td>$0.70/unit</td>
+                            <td>$0.95/unit</td>
+                            <td>Custom Pricing</td>
+                            <td>Request Quote</td>
+                        </tr>
+                        <tr>
+                            <td class="feature-col">Order Processing</td>
+                            <td>Standard</td>
+                            <td>Priority</td>
+                            <td>Same-Day Options</td>
+                            <td>Custom Workflow</td>
+                        </tr>
+                        <tr>
+                            <td class="feature-col">No. of shipments</td>
+                            <td>1000</td>
+                            <td>1500 - 2000</td>
+                            <td>2000+</td>
+                            <td>Custom Shipments</td>
+                        </tr>
+                        <tr>
+                            <td class="feature-col">FBA Prep</td>
+                            <td class="check-icon">✔</td>
+                            <td class="check-icon">✔</td>
+                            <td class="check-icon">✔</td>
+                            <td class="check-icon">✔</td>
+                        </tr>
+                        <tr>
+                            <td class="feature-col">FBM Fulfilment</td>
+                            <td class="check-icon">✔</td>
+                            <td class="check-icon">✔</td>
+                            <td class="check-icon">✔</td>
+                            <td class="check-icon">✔</td>
+                        </tr>
+                        <tr>
+                            <td class="feature-col">Labeling & Polybagging</td>
+                            <td class="check-icon">✔</td>
+                            <td class="check-icon">✔</td>
+                            <td class="check-icon">✔</td>
+                            <td class="check-icon">✔</td>
+                        </tr>
+                        <tr>
+                            <td class="feature-col">Bundling & Kitting</td>
+                            <td class="dash-icon">—</td>
+                            <td class="check-icon">✔</td>
+                            <td class="check-icon">✔</td>
+                            <td class="check-icon">✔</td>
+                        </tr>
+                        <tr>
+                            <td class="feature-col">Inventory Reporting</td>
+                            <td class="dash-icon">—</td>
+                            <td class="check-icon">✔</td>
+                            <td class="check-icon">✔</td>
+                            <td class="check-icon">✔</td>
+                        </tr>
+                        <tr>
+                            <td class="feature-col">Dedicated Support</td>
+                            <td>Basic</td>
+                            <td>Priority</td>
+                            <td>Dedicated Manager</td>
+                            <td>Dedicated Team</td>
+                        </tr>
+                        <tr>
+                            <td class="feature-col">Returns Handling</td>
+                            <td class="dash-icon">—</td>
+                            <td>Optional</td>
+                            <td class="check-icon">✔</td>
+                            <td class="check-icon">✔</td>
+                        </tr>
+                        <tr>
+                            <td class="feature-col">Storage Solutions</td>
+                            <td>Basic</td>
+                            <td>Standard</td>
+                            <td>Advanced</td>
+                            <td>Flexible</td>
+                        </tr>
+                        <tr>
+                            <td class="feature-col">Custom Packaging</td>
+                            <td class="dash-icon">—</td>
+                            <td>Optional</td>
+                            <td class="check-icon">✔</td>
+                            <td class="check-icon">✔</td>
+                        </tr>
+                        <tr>
+                            <td class="feature-col">Turnaround Time</td>
+                            <td>48-72h</td>
+                            <td>24-48h</td>
+                            <td>Same-Day Available</td>
+                            <td>Custom SLA</td>
+                        </tr>
+                        <tr class="cta-row">
+                            <td class="feature-col">CTA Button</td>
+                            <td><a href="#" class="btn-table btn-bronze">Get Started</a></td>
+                            <td><a href="#" class="btn-table btn-gold">Get Started</a></td>
+                            <td><a href="#" class="btn-table btn-platinum">Scale Now</a></td>
+                            <td><a href="#" class="btn-table btn-custom">Contact Sales</a></td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
+        </section>
+    </div>
 
-            <!-- FBM Fulfillment -->
-            <div class="service-card">
-                <h3 class="service-title">FBM Fulfilment Pricing Includes:</h3>
-                <ul class="service-list">
-                    <li>Order picking</li>
-                    <li>Custom packing</li>
-                    <li>Shipping label creation</li>
-                    <li>Box and materials</li>
-                    <li>Real-time email updates</li>
-                    <li>Same-day processing available</li>
-                </ul>
-            </div>
-
-            <!-- Storage Pricing -->
-            <div class="service-card">
-                <h3 class="service-title">Storage Pricing Includes:</h3>
-                <ul class="service-list">
-                    <li>Safe, organized storage</li>
-                    <li>Monthly inventory reports</li>
-                    <li>Easy access scheduling</li>
-                    <li>Flexible terms (no long-term commitment)</li>
-                    <li>Climate-controlled environment</li>
-                </ul>
-            </div>
-
-            <!-- Additional Services -->
-            <div class="service-card">
-                <h3 class="service-title">Additional Services:</h3>
-                <ul class="service-list">
-                    <li>Returns inspection & processing</li>
-                    <li>Repackaging services</li>
-                    <li>Relabeling</li>
-                    <li>Custom kitting & bundling</li>
-                    <li>Photography (upon request)</li>
-                    <li>Rush processing available</li>
-                </ul>
-            </div>
-        </div>
-
-        <!-- CTA Section -->
-        <div class="cta-section">
-            <h2 class="cta-title">Ready to Get Started?</h2>
-            <p class="cta-subtitle">Submit your inventory details and we'll confirm pricing within 24 hours.</p>
-            <button class="cta-button">Get Your Quote</button>
-        </div>
+    <!-- CTA Section -->
+    <div class="cta-section">
+        <h2 class="cta-title">Ready to Get Started?</h2>
+        <p class="cta-subtitle">Submit your inventory details and we'll confirm pricing within 24 hours.</p>
+        <button class="cta-button">Get Your Quote</button>
+    </div>
     </div>
 
     <br />
 
     <!-- Footer -->
-  <app-footer></app-footer>
+    <app-footer></app-footer>
     <script>
         const menuToggle = document.getElementById('menuToggle');
         const navLinks = document.getElementById('navLinks');
         menuToggle.addEventListener('click', () => navLinks.classList.toggle('active'));
     </script>
-  <script src="./js/components.js"></script>
+    <script src="./js/components.js"></script>
 </body>
 
 </html>
