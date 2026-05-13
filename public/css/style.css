@@ -726,21 +726,6 @@ body {
   line-height: 1.5
 }
 
-.pricing-section {
-  background: #fff;
-  border-radius: 12px;
-  padding: 40px 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, .08)
-}
-
-.pricing-title {
-  text-align: center;
-  font-size: 32px;
-  font-weight: 700;
-  color: #1f2937;
-  margin-bottom: 40px
-}
-
 .table-wrapper {
   overflow-x: auto
 }
@@ -1091,128 +1076,146 @@ tbody tr:last-child td {
 
 /* Fulfillment Packages Comparison Table */
 .comparison-section {
-    padding: 4rem 0;
-    overflow-x: auto;
+  padding: 4rem 0;
+  overflow-x: auto;
 }
 
 .comparison-title {
-    text-align: center;
-    font-size: 2.2rem;
-    font-weight: 700;
-    margin-bottom: 3rem;
-    color: var(--text-dark);
+  text-align: center;
+  font-size: 2.2rem;
+  font-weight: 700;
+  margin-bottom: 3rem;
+  color: var(--text-dark);
 }
 
 .comparison-table-wrapper {
-    background: #fff;
-    border-radius: 16px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-    overflow: hidden;
-    margin-bottom: 2rem;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  margin-bottom: 2rem;
 }
 
 .comparison-table {
-    width: 100%;
-    border-collapse: collapse;
-    text-align: left;
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
 }
 
-.comparison-table th, .comparison-table td {
-    padding: 1.2rem 1.5rem;
-    border-bottom: 1px solid #f0f0f0;
-    font-size: 0.95rem;
+.comparison-table th,
+.comparison-table td {
+  padding: 1.2rem 1.5rem;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 0.95rem;
+  text-align: center;
 }
 
 .comparison-table th {
-    background: #f8fafc;
-    color: #64748b;
-    font-weight: 600;
-    text-transform: uppercase;
-    font-size: 0.8rem;
-    letter-spacing: 1px;
+  /*background: #f8fafc;*/
+  color: #ffffff;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  letter-spacing: 1px;
 }
 
 .comparison-table .package-header {
-    text-align: center;
-    background: #fff;
+  text-align: center;
+  /*background: #fff;*/
 }
 
 .comparison-table .package-name {
-    font-size: 1.2rem;
-    font-weight: 700;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.5rem;
+  font-size: 1.2rem;
+  font-weight: 700;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .comparison-table .package-icon {
-    font-size: 1.5rem;
+  font-size: 1.5rem;
 }
 
 .comparison-table .popular-plan {
-    background: #fffdf2;
-    position: relative;
+  background: #fffdf2;
+  position: relative;
 }
 
 .comparison-table .popular-plan::after {
-    content: 'MOST POPULAR';
-    position: absolute;
-    top: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    background: var(--primary);
-    color: #fff;
-    font-size: 0.7rem;
-    font-weight: 700;
-    padding: 2px 10px;
-    border-radius: 0 0 8px 8px;
+  content: 'MOST POPULAR';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--primary);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 10px;
+  border-radius: 0 0 8px 8px;
 }
 
 .comparison-table .check-icon {
-    color: #22c55e;
-    font-weight: 700;
+  color: #22c55e;
+  font-weight: 700;
 }
 
 .comparison-table .dash-icon {
-    color: #cbd5e1;
+  color: #cbd5e1;
 }
 
 .comparison-table tr:hover td {
-    background-color: #fcfcfc;
+  background-color: #fcfcfc;
 }
 
 .comparison-table .feature-col {
-    font-weight: 600;
-    color: var(--text-dark);
-    width: 200px;
-    background: #fdfdfd;
+  font-weight: 600;
+  color: var(--text-dark);
+  width: 200px;
+  text-align: left;
+  /*background: #fdfdfd;*/
 }
 
 .comparison-table .cta-row td {
-    text-align: center;
-    padding: 2rem 1.5rem;
+  text-align: center;
+  padding: 2rem 1.5rem;
 }
 
 .comparison-table .btn-table {
-    display: inline-block;
-    padding: 10px 20px;
-    border-radius: 6px;
-    font-weight: 600;
-    text-decoration: none;
-    transition: 0.3s;
-    font-size: 0.9rem;
+  display: inline-block;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: 0.3s;
+  font-size: 0.9rem;
 }
 
-.comparison-table .btn-bronze { background: #f1f5f9; color: #475569; }
-.comparison-table .btn-gold { background: var(--primary); color: #fff; }
-.comparison-table .btn-platinum { background: #000; color: #fff; }
-.comparison-table .btn-custom { border: 2px solid var(--primary); color: var(--primary); }
+.comparison-table .btn-bronze {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.comparison-table .btn-gold {
+  background: var(--primary);
+  color: #fff;
+}
+
+.comparison-table .btn-platinum {
+  background: #000;
+  color: #fff;
+}
+
+.comparison-table .btn-custom {
+  border: 2px solid var(--primary);
+  color: var(--primary);
+}
 
 @media (max-width: 992px) {
-    .comparison-table {
-        min-width: 800px;
-    }
+  .comparison-table {
+    min-width: 800px;
+  }
 }
 
 .values-grid {
