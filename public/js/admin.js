@@ -67,8 +67,8 @@ async function loadRecentOrders() {
           <span class="user-email">${order.user?.email || '-'}</span>
         </div>
       </td>
-      <td>${order.productName}</td>
-      <td><span class="order-type-badge">${order.type}</span></td>
+      <td>${order.orderId || '-'}</td>
+      <td>${order.shipmentName}</td>
       <td><span class="status-badge status-${order.status.toLowerCase()}">${order.status}</span></td>
       <td><button class="dashboard-action-btn" onclick="goToOrder('${order._id}')">Update</button></td>
     </tr>`).join('');
@@ -94,6 +94,7 @@ function switchAdminTab(tabId) {
       orders:    { t: 'Order Management',  s: 'Monitor and update platform-wide orders' },
       users:     { t: 'User Management',   s: 'View and manage registered clients and team members' },
       messages:  { t: 'Customer Messages', s: 'View submissions from the contact form' },
+      inventory: { t: 'Inventory Management', s: 'Manage product stock levels for clients' },
       settings:  { t: 'Settings',          s: 'Configure platform parameters' }
     };
 
@@ -108,6 +109,7 @@ function switchAdminTab(tabId) {
     if (tabId === 'orders')    loadAdminOrders(1);
     if (tabId === 'users')     loadAdminUsers(1);
     if (tabId === 'messages')  loadAdminMessages(1);
+    if (tabId === 'inventory') initAdminInventory();
 
     window.hideLoader();
   }, 300);
@@ -134,11 +136,10 @@ function goToOrder(orderId) {
 
 async function loadAdminOrders(page = 1) {
   const status = document.getElementById('orderStatusFilter').value;
-  const type   = document.getElementById('orderTypeFilter').value;
   const search = document.getElementById('orderSearchInput').value;
 
   const data = await window.apiFetch(
-    `/api/admin/orders?page=${page}&limit=10&status=${status}&type=${type}&search=${encodeURIComponent(search)}`
+    `/api/admin/orders?page=${page}&limit=10&status=${status}&search=${encodeURIComponent(search)}`
   );
 
   const tbody = document.querySelector('#allOrdersTable tbody');
@@ -158,15 +159,22 @@ async function loadAdminOrders(page = 1) {
           <span class="user-email">${order.user?.businessName || 'Regular User'}</span>
         </div>
       </td>
-      <td><strong>${order.productName}</strong><br><small>${order.notes?.substring(0, 30) || 'No notes'}...</small></td>
-      <td>${order.type}</td>
-      <td>${order.quantity}</td>
-      <td><span class="status-badge status-${order.status.toLowerCase()}">${order.status}</span></td>
+      <td><strong>${order.orderId || '-'}</strong></td>
+      <td>${order.shipmentName}</td>
+      <td>${order.trackingNumber}</td>
+      <td><span class="status-badge status-${order.status.toLowerCase().replace(/\s/g, '-')}">${order.status}</span></td>
       <td>
-        <select class="admin-status-dropdown" onchange="updateOrderStatus('${order._id}', this.value)">
-          ${['Pending','Processing','Shipped','Completed','Cancelled'].map(s => `
-            <option value="${s}" ${order.status === s ? 'selected' : ''}>${s}</option>`).join('')}
-        </select>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <select class="admin-status-dropdown" onchange="updateOrderStatus('${order._id}', this.value)">
+            ${['Pending Arrival','Received','In Inspection','Stored','Processing','Shipped','Completed','Cancelled'].map(s => `
+              <option value="${s}" ${order.status === s ? 'selected' : ''}>${s}</option>`).join('')}
+          </select>
+          <button class="portal-btn-sm" style="background: #fee2e2; color: #b91c1c; border-color: #fecaca;" onclick="deleteShipment('${order._id}', '${order.status}')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 6h18m-2 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            </svg>
+          </button>
+        </div>
       </td>`;
     tbody.appendChild(row);
   });
@@ -174,13 +182,106 @@ async function loadAdminOrders(page = 1) {
   window.renderPagination('ordersPagination', data.pagination, 'loadAdminOrders');
 }
 
+/* ─── Inventory (admin) ──────────────────────────────────── */
+
+async function initAdminInventory() {
+  const data = await window.apiFetch('/api/admin/users?role=user');
+  const select = document.getElementById('inventoryUserFilter');
+  if (!select) return;
+
+  select.innerHTML = '<option value="">Select Client to Manage</option>' + 
+    (data.users || []).map(u => `<option value="${u._id}">${u.name} (${u.businessName || u.email})</option>`).join('');
+  
+  loadAdminInventory();
+}
+
+async function loadAdminInventory() {
+  const userId = document.getElementById('inventoryUserFilter').value;
+  const controls = document.getElementById('inventoryControls');
+  
+  if (userId) {
+    controls.style.display = 'block';
+  } else {
+    controls.style.display = 'none';
+  }
+
+  const url = userId ? `/api/admin/inventory?userId=${userId}` : '/api/admin/inventory';
+  const data = await window.apiFetch(url);
+  const tbody = document.querySelector('#adminInventoryTable tbody');
+  if (!tbody || !data.success) return;
+
+  if (data.inventory.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px;">No inventory found</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = data.inventory.map(item => `
+    <tr>
+      <td>${item.user?.name || 'Unknown'}</td>
+      <td><strong>${item.productName}</strong></td>
+      <td>${item.sku || '-'}</td>
+      <td>${item.quantity}</td>
+      <td>${new Date(item.updatedAt).toLocaleDateString()}</td>
+      <td>
+        <button class="portal-btn-sm" style="background: #fee2e2; color: #b91c1c; border-color: #fecaca;" onclick="deleteInventoryItem('${item._id}')">Delete</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+async function handleInventorySubmit(event) {
+  event.preventDefault();
+  const userId = document.getElementById('inventoryUserFilter').value;
+  const productName = document.getElementById('inv_productName').value;
+  const sku = document.getElementById('inv_sku').value;
+  const quantity = document.getElementById('inv_quantity').value;
+
+  if (!userId) return window.showToast('Select a user first', 'error');
+
+  const data = await window.apiPost('/api/admin/inventory', { userId, productName, sku, quantity });
+  if (data.success) {
+    window.showToast(data.message, 'success');
+    document.getElementById('inventoryForm').reset();
+    loadAdminInventory();
+  } else {
+    window.showToast(data.message, 'error');
+  }
+}
+
+async function deleteInventoryItem(id) {
+  if (!await window.showConfirm('Delete Item?', 'Are you sure you want to remove this product from inventory?')) return;
+  const data = await window.apiDelete(`/api/admin/inventory/${id}`);
+  if (data.success) {
+    window.showToast(data.message, 'success');
+    loadAdminInventory();
+  }
+}
+
 async function updateOrderStatus(orderId, newStatus) {
   const data = await window.apiPut(`/api/admin/orders/${orderId}/status`, { status: newStatus });
+  if (data.success) {
+    window.showToast('Shipment status updated', 'success');
+    loadAdminData();
+  } else {
+    window.showToast(data.message || 'Failed to update status', 'error');
+  }
+}
+
+async function deleteShipment(shipmentId, status) {
+  const restricted = ['Processing', 'Shipped', 'Completed'];
+  if (restricted.includes(status)) {
+    window.showToast(`Shipments in "${status}" status cannot be deleted for safety.`, 'error');
+    return;
+  }
+
+  if (!await window.showConfirm('Delete Shipment?', 'Are you sure you want to delete this shipment? This action cannot be undone.')) return;
+
+  const data = await window.apiDelete(`/api/admin/orders/${shipmentId}`);
   if (data.success) {
     window.showToast(data.message, 'success');
     loadAdminData();
   } else {
-    window.showToast('Failed to update status', 'error');
+    window.showToast(data.message || 'Delete failed', 'error');
   }
 }
 

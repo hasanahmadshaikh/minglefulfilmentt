@@ -153,6 +153,21 @@ window.showAlert = function (title, message) {
 };
 
 
+/* Global Button Loading Helper */
+window.setBtnLoading = function (btn, loadingText) {
+  if (!btn) return () => {};
+  const originalHtml = btn.innerHTML;
+  const originalDisabled = btn.disabled;
+
+  btn.disabled = true;
+  btn.innerHTML = `<span class="spinner-sm"></span> ${loadingText}`;
+
+  return function restore() {
+    btn.innerHTML = originalHtml;
+    btn.disabled = originalDisabled;
+  };
+};
+
 window.renderPagination = function (containerId, pagination, loadFuncName) {
   const container = document.getElementById(containerId);
   if (!container) return;

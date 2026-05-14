@@ -12,9 +12,24 @@
 window.apiFetch = async function (url, options = {}) {
   try {
     const res = await fetch(url, options);
+
+    if (!res.ok) {
+      const text = await res.text();
+      console.error(`API Fetch Error [${res.status}]:`, text);
+
+      try {
+        // Try to parse as JSON if possible (e.g. {success: false, message: "..."})
+        return JSON.parse(text);
+      } catch (e) {
+        // Fallback for HTML error pages (like 404/500)
+        return { success: false, message: `Server error (${res.status})` };
+      }
+    }
+
     const data = await res.json();
     return data;
-  } catch {
+  } catch (err) {
+    console.error('API Fetch Exception:', err);
     return { success: false, message: 'Network error. Please try again.' };
   }
 };

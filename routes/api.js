@@ -4,12 +4,15 @@ const User = require('../models/User');
 const Quote = require('../models/Quote');
 const Contact = require('../models/Contact');
 const Order = require('../models/Order');
+const Inventory = require('../models/Inventory');
 const bcrypt = require('bcryptjs');
 const UserVerification = require('../models/UserVerification');
 const multer = require('multer');
 const path = require('path');
 const crypto = require('crypto');
 const { sendOTP, sendResetLink } = require('../utils/mailer');
+const Counter = require('../models/Counter');
+const mongoose = require('mongoose');
 
 // Configure Multer - use memoryStorage for Vercel compatibility
 // Vercel has a read-only filesystem so diskStorage is not supported
@@ -40,54 +43,164 @@ const ensureAdmin = async (req, res, next) => {
   res.status(403).json({ success: false, message: 'Access denied: Admin only' });
 };
 
-// ... (rest of search/replace will handle the position)
+// --- Inventory Routes ---
 
-// POST /api/orders
-router.post('/orders', ensureAuth, upload.array('attachments', 10), async (req, res) => {
+// GET /api/inventory - View own inventory
+router.get('/inventory', ensureAuth, async (req, res) => {
   try {
-    const { type, productName, quantity, bundles, filesLink, notes } = req.body;
-
-    // Note: On Vercel, the filesystem is read-only so uploaded files cannot
-    // be persisted to disk. Use filesLink to share files via URL instead.
-    // File names are captured for reference only.
-    const attachmentNames = req.files ? req.files.map(f => f.originalname) : [];
-
-    const newOrder = await Order.create({
-      user: req.session.userId,
-      type,
-      productName,
-      quantity,
-      bundles,
-      attachments: attachmentNames,
-      filesLink,
-      notes,
-      status: 'Pending'
-    });
-
-    res.status(201).json({
-      success: true,
-      message: 'Order submitted successfully!',
-      order: newOrder
-    });
+    const inventory = await Inventory.find({ user: req.session.userId });
+    res.json({ success: true, inventory });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 });
 
+// GET /api/admin/inventory - List all inventory for admin
+router.get('/admin/inventory', ensureAdmin, async (req, res) => {
+  try {
+    const { userId } = req.query;
+    const filter = userId ? { user: userId } : {};
+    const inventory = await Inventory.find(filter).populate('user', 'name email businessName');
+    res.json({ success: true, inventory });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// POST /api/admin/inventory - Create or update inventory
+router.post('/admin/inventory', ensureAdmin, async (req, res) => {
+  try {
+    const { userId, productName, sku, quantity } = req.body;
+    if (!userId || !productName) {
+      return res.status(400).json({ success: false, message: 'User ID and Product Name are required' });
+    }
+
+    // Upsert inventory item
+    const inventory = await Inventory.findOneAndUpdate(
+      { user: userId, productName: productName },
+      { sku, $set: { quantity: quantity }, updatedAt: Date.now() },
+      { upsert: true, new: true }
+    );
+
+    res.json({ success: true, message: 'Inventory updated successfully', inventory });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// DELETE /api/admin/inventory/:id - Delete inventory item
+router.delete('/admin/inventory/:id', ensureAdmin, async (req, res) => {
+  try {
+    await Inventory.findByIdAndDelete(req.params.id);
+    res.json({ success: true, message: 'Inventory item removed' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// GET /api/shipment-details
+router.get('/shipment-details', ensureAuth, async (req, res) => {
+  console.log('API HIT: /api/shipment-details', req.query);
+  try {
+    const { id } = req.query;
+    if (!id) return res.status(400).json({ success: false, message: 'ID required' });
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ success: false, message: 'Invalid format' });
+    }
+
+    const order = await Order.findOne({ _id: id, user: req.session.userId });
+    if (!order) return res.status(404).json({ success: false, message: 'Shipment not found' });
+    res.json({ success: true, order });
+  } catch (error) {
+    console.error('Shipment detail error:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// ... (rest of search/replace will handle the position)
+
+// POST /api/orders
+router.post('/orders', ensureAuth, upload.fields([
+  { name: 'productImages', maxCount: 10 },
+  { name: 'commercialInvoices', maxCount: 5 },
+  { name: 'packingListPDFs', maxCount: 5 }
+]), async (req, res) => {
+  try {
+    const {
+      shipmentName, supplierName, trackingNumber, carrier,
+      estimatedArrival, skuList, productQuantities, packingDetails,
+      notes, googleDriveDocs, type, products
+    } = req.body;
+
+    // Auto-generate orderId
+    let counter = await Counter.findOne({ id: 'orderId' });
+    if (!counter) {
+      counter = await Counter.create({ id: 'orderId', seq: 1000 });
+    }
+    counter.seq += 1;
+    await counter.save();
+    const generatedId = `INB-${counter.seq}`;
+
+    // Handle files
+    const productImages = req.files['productImages'] ? req.files['productImages'].map(f => f.originalname) : [];
+    const commercialInvoices = req.files['commercialInvoices'] ? req.files['commercialInvoices'].map(f => f.originalname) : [];
+    const packingListPDFs = req.files['packingListPDFs'] ? req.files['packingListPDFs'].map(f => f.originalname) : [];
+
+    const newOrder = await Order.create({
+      user: req.session.userId,
+      orderId: generatedId,
+      shipmentName,
+      supplierName,
+      trackingNumber,
+      carrier,
+      estimatedArrival,
+      skuList,
+      productQuantities,
+      productImages,
+      packingDetails,
+      notes,
+      googleDriveDocs,
+      commercialInvoices,
+      packingListPDFs,
+      type: type || 'inbound',
+      products: type === 'outbound' ? JSON.parse(products || '[]') : [],
+      status: type === 'outbound' ? 'Processing' : 'Pending Arrival'
+    });
+
+    res.status(201).json({
+      success: true,
+      message: `Order ${generatedId} submitted successfully!`,
+      order: newOrder
+    });
+  } catch (error) {
+    console.error('Order creation error:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+
 // GET /api/orders
 router.get('/orders', ensureAuth, async (req, res) => {
   try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
+    const { page = 1, limit = 10, status, search, type } = req.query;
     const skip = (page - 1) * limit;
-    const { status, search } = req.query;
 
     const filter = { user: req.session.userId };
+    if (type) filter.type = type;
     if (status && status !== 'All') {
-      filter.status = status;
+      const statusList = status.split(',');
+      if (statusList.length > 1) {
+        filter.status = { $in: statusList };
+      } else {
+        filter.status = status;
+      }
     }
     if (search) {
-      filter.productName = { $regex: search, $options: 'i' };
+      filter.$or = [
+        { shipmentName: { $regex: search, $options: 'i' } },
+        { orderId: { $regex: search, $options: 'i' } }
+      ];
     }
 
     const totalOrders = await Order.countDocuments(filter);
@@ -118,7 +231,7 @@ router.get('/stats', ensureAuth, async (req, res) => {
     const totalOrders = await Order.countDocuments({ user: userId });
     const activeOrders = await Order.countDocuments({
       user: userId,
-      status: { $in: ['Pending', 'Processing', 'Shipped'] }
+      status: { $in: ['Pending Arrival', 'Received', 'In Inspection', 'Stored', 'Processing', 'Shipped'] }
     });
 
     // For now, pending invoices is static $0.00 as per design, 
@@ -492,7 +605,7 @@ router.put('/me', ensureAuth, async (req, res) => {
 router.get('/admin/stats', ensureAdmin, async (req, res) => {
   try {
     const totalOrders = await Order.countDocuments();
-    const pendingOrders = await Order.countDocuments({ status: 'Pending' });
+    const pendingOrders = await Order.countDocuments({ status: 'Pending Arrival' });
     const totalUsers = await User.countDocuments({ role: 'user' });
     const processingOrders = await Order.countDocuments({ status: 'Processing' });
 
@@ -519,11 +632,20 @@ router.get('/admin/orders', ensureAdmin, async (req, res) => {
     const { status, type, search } = req.query;
 
     const filter = {};
-    if (status && status !== 'All') filter.status = status;
-    if (type && type !== 'All') filter.type = type.toUpperCase();
+    if (status && status !== 'All') {
+      const statusList = status.split(',');
+      if (statusList.length > 1) {
+        filter.status = { $in: statusList };
+      } else {
+        filter.status = status;
+      }
+    }
 
     if (search) {
-      filter.productName = { $regex: search, $options: 'i' };
+      filter.$or = [
+        { shipmentName: { $regex: search, $options: 'i' } },
+        { orderId: { $regex: search, $options: 'i' } }
+      ];
     }
 
     const totalOrders = await Order.countDocuments(filter);
@@ -562,7 +684,29 @@ router.put('/admin/orders/:id/status', ensureAdmin, async (req, res) => {
 
     if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
 
-    res.json({ success: true, message: `Order status updated to ${status}`, order });
+    res.json({ success: true, message: `Shipment status updated to ${status}`, order });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// DELETE /api/admin/orders/:id
+router.delete('/admin/orders/:id', ensureAdmin, async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id);
+    if (!order) return res.status(404).json({ success: false, message: 'Shipment not found' });
+
+    // Restriction: Cannot delete if processing, shipped or completed
+    const restrictedStatuses = ['Processing', 'Shipped', 'Completed'];
+    if (restrictedStatuses.includes(order.status)) {
+      return res.status(400).json({
+        success: false,
+        message: `Shipments with status "${order.status}" cannot be deleted for safety.`
+      });
+    }
+
+    await Order.findByIdAndDelete(req.params.id);
+    res.json({ success: true, message: 'Shipment deleted successfully' });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

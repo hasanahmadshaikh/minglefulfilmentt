@@ -61,6 +61,11 @@ app.use('/api', apiRoutes);
 
 // Fallback to index.html
 app.use((req, res) => {
+  // If it's an API request, return JSON 404
+  if (req.path.startsWith('/api')) {
+    return res.status(404).json({ success: false, message: `API Route ${req.path} not found` });
+  }
+  // Otherwise serve index.html
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 

@@ -60,6 +60,12 @@
                 </svg>
                 System Settings
             </button>
+            <button class="menu-item" onclick="switchAdminTab('inventory')">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                </svg>
+                Inventory Management
+            </button>
         </nav>
         <div class="sidebar-footer">
             <button class="menu-item menu-item--danger" onclick="handleAdminLogout()">
@@ -126,8 +132,8 @@
                         <thead>
                             <tr>
                                 <th>Client</th>
-                                <th>Product</th>
-                                <th>Order Type</th>
+                                <th>Order ID</th>
+                                <th>Shipment</th>
                                 <th>Status</th>
                                 <th>Actions</th>
                             </tr>
@@ -144,22 +150,20 @@
         <section id="orders" class="admin-tab-content">
             <div class="admin-card">
                 <div class="card-header">
-                    <h3>All Platform Orders</h3>
+                    <h3>All Platform Shipments</h3>
                     <div class="filter-group" style="display: flex; align-items: center; gap: 12px;">
-                        <select id="orderStatusFilter" class="admin-select" onchange="loadAdminOrders(1)">
-                            <option value="All">All Statuses</option>
-                            <option value="Pending">Pending</option>
-                            <option value="Processing">Processing</option>
-                            <option value="Shipped">Shipped</option>
-                            <option value="Completed">Completed</option>
-                            <option value="Cancelled">Cancelled</option>
-                        </select>
-                        <select id="orderTypeFilter" class="admin-select" onchange="loadAdminOrders(1)">
-                            <option value="All">All Types</option>
-                            <option value="FBA">FBA</option>
-                            <option value="FBM">FBM</option>
-                        </select>
-                        <input type="text" id="orderSearchInput" class="admin-select filter-search-wide" placeholder="Search orders..." oninput="handleSearch('orders')">
+                        <select class="admin-select" id="orderStatusFilter" onchange="loadAdminOrders(1)">
+                             <option value="All">All Statuses</option>
+                             <option value="Pending Arrival">Pending Arrival</option>
+                             <option value="Received">Received</option>
+                             <option value="In Inspection">In Inspection</option>
+                             <option value="Stored">Stored</option>
+                             <option value="Processing">Processing</option>
+                             <option value="Shipped">Shipped</option>
+                             <option value="Completed">Completed</option>
+                             <option value="Cancelled">Cancelled</option>
+                         </select>
+                         <input type="text" id="orderSearchInput" class="admin-select filter-search-wide" placeholder="Search Shipment ID or Shipment..." oninput="handleSearch('orders')">
                     </div>
                 </div>
                 <div class="admin-table-container">
@@ -168,11 +172,11 @@
                             <tr>
                                 <th>Date</th>
                                 <th>Client</th>
-                                <th>Product Details</th>
-                                <th>Type</th>
-                                <th>Quantity</th>
-                                <th>Current Status</th>
-                                <th>Change Status</th>
+                                <th>Shipment ID</th>
+                                <th>Shipment</th>
+                                <th>Tracking</th>
+                                <th>Status</th>
+                                <th>Action</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -249,27 +253,59 @@
 
         <!-- Messages Content -->
         <section id="messages" class="admin-tab-content">
+            ...
+        </section>
+
+        <!-- Inventory Management Content -->
+        <section id="inventory" class="admin-tab-content">
             <div class="admin-card">
                 <div class="card-header">
-                    <h3>Contact Form Submissions</h3>
-                    <input type="text" id="messageSearchInput" class="admin-select filter-search-wide" placeholder="Search messages..." oninput="handleSearch('messages')">
+                    <h3>Client Inventory Management</h3>
+                    <div style="display: flex; gap: 12px;">
+                        <select id="inventoryUserFilter" class="admin-select" onchange="loadAdminInventory()">
+                            <option value="">Select Client to Manage</option>
+                            <!-- Populated dynamically -->
+                        </select>
+                    </div>
                 </div>
-                <div class="admin-table-container">
-                    <table class="admin-table" id="messagesTable">
-                        <thead>
-                            <tr>
-                                <th>Date</th>
-                                <th>Sender</th>
-                                <th>Subject</th>
-                                <th>Message</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <!-- Loaded via JS -->
-                        </tbody>
-                    </table>
+                <div class="admin-card-body">
+                    <div id="inventoryControls" style="display: none; margin-bottom: 24px; padding: 20px; background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0;">
+                        <h4 style="margin-bottom: 16px;">Add/Update Product</h4>
+                        <form id="inventoryForm" onsubmit="handleInventorySubmit(event)" style="display: grid; grid-template-columns: 1fr 1fr 100px 150px; gap: 12px; align-items: flex-end;">
+                            <div>
+                                <label class="admin-field-label">Product Name</label>
+                                <input type="text" id="inv_productName" class="admin-select" placeholder="e.g. Laptop" required>
+                            </div>
+                            <div>
+                                <label class="admin-field-label">SKU (Optional)</label>
+                                <input type="text" id="inv_sku" class="admin-select" placeholder="e.g. LAP-001">
+                            </div>
+                            <div>
+                                <label class="admin-field-label">Quantity</label>
+                                <input type="number" id="inv_quantity" class="admin-select" value="0" min="0" required>
+                            </div>
+                            <button type="submit" class="outline-btn outline-btn--primary">Update Stock</button>
+                        </form>
+                    </div>
+
+                    <div class="admin-table-container">
+                        <table class="admin-table" id="adminInventoryTable">
+                            <thead>
+                                <tr>
+                                    <th>Client</th>
+                                    <th>Product</th>
+                                    <th>SKU</th>
+                                    <th>Quantity</th>
+                                    <th>Last Updated</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Loaded dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-                <div id="messagesPagination" class="admin-pagination"></div>
             </div>
         </section>
 

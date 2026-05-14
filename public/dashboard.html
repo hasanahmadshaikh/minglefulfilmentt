@@ -19,34 +19,55 @@
         </div>
         <nav class="sidebar-menu">
             <button class="menu-item active" onclick="switchTab('overview')">
-                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                </svg>
                 Overview
             </button>
-            <button class="menu-item" onclick="switchTab('my-orders')">
-                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                My Orders
+            <button class="menu-item" onclick="switchTab('submit-order')">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M12 5v14M5 12h14"></path>
+                </svg>
+                Submit Shipment
             </button>
-            <button class="menu-item" onclick="switchTab('submit-fba')">
-                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
-                Submit FBA Order
+            <button class="menu-item" onclick="switchTab('inventory')">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                </svg>
+                Inventory
             </button>
-            <button class="menu-item" onclick="switchTab('submit-fbm')">
-                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
-                Submit FBM Order
+            <div class="menu-label"
+                style="padding: 10px 20px; font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em;">
+                Shipments</div>
+            <button class="menu-item" onclick="switchTab('inbound-shipments')">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"></path>
+                </svg>
+                Inbound Shipments
             </button>
-            <button class="menu-item" onclick="switchTab('invoices')">
-                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                Invoices
+            <button class="menu-item" onclick="switchTab('outbound-shipments')">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                </svg>
+                Outbound Shipments
             </button>
+            <div class="menu-label"
+                style="padding: 10px 20px; font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em;">
+                Settings</div>
             <button class="menu-item" onclick="switchTab('account')">
-                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                </svg>
                 Account
             </button>
         </nav>
         <div class="sidebar-footer">
             <button class="menu-item menu-item--danger" onclick="handleLogout()">
                 <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                    <path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
+                    </path>
                 </svg>
                 Logout
             </button>
@@ -60,368 +81,461 @@
                 <p id="welcomeGreeting">Welcome back,</p>
             </div>
             <div class="admin-profile">
-                <span style="font-weight: 500; font-size: 14px; color: #64748b; background: white; padding: 8px 16px; border-radius: 20px; border: 1px solid #e2e8f0; display: inline-flex; align-items: center; gap: 8px;">
-                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="7" r="4"></circle><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path></svg>
+                <span
+                    style="font-weight: 500; font-size: 14px; color: #64748b; background: white; padding: 8px 16px; border-radius: 20px; border: 1px solid #e2e8f0; display: inline-flex; align-items: center; gap: 8px;">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <circle cx="12" cy="7" r="4"></circle>
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    </svg>
                     My Session
                 </span>
             </div>
         </header>
 
         <div class="admin-tab-content active" id="overview">
-                <div class="stats-grid">
-                    <div class="admin-stat-card">
-                        <div class="stat-icon blue">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2">
-                                <path
-                                    d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
-                                <path d="m3.3 7 8.7 5 8.7-5" />
-                                <path d="M12 22V12" />
-                            </svg>
-                        </div>
-                        <div class="stat-info">
-                            <div class="label">Active Orders</div>
-                            <div class="value stat-value">0</div>
-                            <div class="label stat-subtext">No active orders</div>
-                        </div>
+            <div class="stats-grid">
+                <div class="admin-stat-card">
+                    <div class="stat-icon blue">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+                        </svg>
                     </div>
-                    <div class="admin-stat-card">
-                        <div class="stat-icon green">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2">
-                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                                <path d="M14 2v6h6" />
-                                <path d="M16 13H8" />
-                                <path d="M16 17H8" />
-                                <path d="M10 9H8" />
-                            </svg>
-                        </div>
-                        <div class="stat-info">
-                            <div class="label">Pending Invoices</div>
-                            <div class="value stat-value">$0.00</div>
-                            <div class="label stat-subtext">All paid up!</div>
-                        </div>
-                    </div>
-                    <div class="admin-stat-card">
-                        <div class="stat-icon purple">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2">
-                                <rect width="18" height="18" x="3" y="3" rx="2" />
-                                <path d="M9 3v18" />
-                                <path d="M15 3v18" />
-                                <path d="M3 9h18" />
-                                <path d="M3 15h18" />
-                            </svg>
-                        </div>
-                        <div class="stat-info">
-                            <div class="label">Total Orders</div>
-                            <div class="value stat-value">0</div>
-                            <div class="label stat-subtext">Lifetime orders</div>
-                        </div>
+                    <div class="stat-info">
+                        <div class="label">Active Shipments</div>
+                        <div class="value stat-value" id="stat-active-orders">0</div>
+                        <div class="label stat-subtext">Current logistics</div>
                     </div>
                 </div>
-
-                <div class="portal-card quick-actions-card">
-                    <div class="section-header">
-                        <h3>Quick Actions</h3>
-                        <p>Start a new order or manage your account</p>
-                    </div>
-                    <div class="action-buttons">
-                        <button class="action-btn primary" onclick="switchTab('submit-fba')">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2">
-                                <path
-                                    d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
-                            </svg>
-                            Submit FBA Order
-                        </button>
-                        <button class="action-btn secondary" onclick="switchTab('submit-fbm')">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2">
-                                <path
-                                    d="M5 18H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h3.19M15 6h2a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-3.19" />
-                                <circle cx="12" cy="18" r="2" />
-                                <path d="M12 18V6l-3 4" />
-                                <path d="m15 10-3-4" />
-                            </svg>
-                            Submit FBM Order
-                        </button>
-                        <button class="action-btn secondary" onclick="switchTab('invoices')">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2">
-                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                                <path d="M14 2v6h6" />
-                                <path d="M16 13H8" />
-                                <path d="M16 17H8" />
-                                <path d="M10 9H8" />
-                            </svg>
-                            View Invoices
-                        </button>
-                    </div>
-                </div>
-        </div>
-
-            <!-- My Orders Tab -->
-            <div id="my-orders" class="admin-tab-content">
-                <div class="portal-card">
-                    <div class="form-card-header">
-                        <div class="section-header">
-                            <div class="section-icon-header">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2">
-                                    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
-                                    <circle cx="12" cy="12" r="3" />
-                                </svg>
-                                My Orders
-                            </div>
-                            <p>View all your submitted orders and their current status</p>
-                        </div>
-                        <div class="filter-row">
-                            <select id="orderStatusFilter" class="admin-select filter-select" onchange="loadMyOrders(1)">
-                                <option value="All">All Statuses</option>
-                                <option value="Pending">Pending</option>
-                                <option value="Processing">Processing</option>
-                                <option value="Shipped">Shipped</option>
-                                <option value="Completed">Completed</option>
-                                <option value="Cancelled">Cancelled</option>
-                            </select>
-                            <input type="text" id="orderSearchInput" class="admin-select filter-search" placeholder="Search product name..." oninput="handleOrderSearch()">
-                        </div>
-                        </div>
-                    </div>
-                    <div id="ordersTableContainer">
-                        <div class="empty-state">
-                            <svg class="empty-icon" fill="none" stroke="currentColor" stroke-width="1.5"
-                                viewBox="0 0 24 24">
-                                <path
-                                    d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
-                            </svg>
-                            <h4>No Orders Yet</h4>
-                            <p>Submit your first order to get started</p>
-                        </div>
-                    </div>
-                </div>
-        </div>
-
-            <!-- Submit FBA Order Tab -->
-            <div id="submit-fba" class="admin-tab-content">
-                <div class="portal-card portal-card-centered">
-                    <div class="form-card-header">
-                        <div class="section-header">
-                            <div class="section-icon-header">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2">
-                                    <path
-                                        d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
-                                </svg>
-                                FBA Order Submission
-                            </div>
-                            <p>Submit your FBA prep requirements and upload your FNSKU labels</p>
-                        </div>
-                    </div>
-                    <form class="portal-form" id="fbaForm" novalidate>
-                        <div class="form-grid">
-                            <div class="form-full">
-                                <label class="portal-label">Product Name *</label>
-                                <input type="text" id="fba_productName" class="portal-input"
-                                    placeholder="e.g., Blue Widget Set" required>
-                            </div>
-                            <div>
-                                <label class="portal-label">Number of Units *</label>
-                                <input type="number" id="fba_quantity" class="portal-input" placeholder="e.g., 500"
-                                    required>
-                            </div>
-                            <div>
-                                <label class="portal-label">Bundles (if applicable)</label>
-                                <input type="text" id="fba_bundles" class="portal-input" placeholder="e.g., 2-pack">
-                            </div>
-                            <div class="form-full">
-                                <label class="portal-label">Attachments (Images/Files)</label>
-                                <div class="upload-zone" id="fba_uploadZone">
-                                    <svg class="upload-icon" fill="none" stroke="currentColor" stroke-width="2"
-                                        viewBox="0 0 24 24">
-                                        <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
-                                    </svg>
-                                    <p class="upload-text">Click to upload or drag and drop<br>JPEG, PNG, PDF up to 5MB
-                                    </p>
-                                </div>
-                                <input type="file" id="fba_attachments" hidden multiple accept=".jpg,.jpeg,.png,.pdf">
-                                <p class="field-note field-note-sm"><strong>Note:</strong> Max
-                                    file size 5MB. Only JPEG, PNG, and PDF files are allowed.</p>
-                                <div id="fba_fileList" class="file-list"></div>
-                            </div>
-                            <div class="form-full">
-                                <label class="portal-label">FNSKU/Shipping Labels Link</label>
-                                <input type="url" id="fba_filesLink" class="portal-input"
-                                    placeholder="Paste Google Drive or Dropbox link here">
-                                <p class="field-note">Share a link to your label
-                                    files (Google Drive, Dropbox, etc.)</p>
-                            </div>
-                            <div class="form-full">
-                                <label class="portal-label">Additional Notes</label>
-                                <textarea id="fba_notes" class="portal-textarea" rows="4"
-                                    placeholder="Any special instructions or requirements..."></textarea>
-                            </div>
-                        </div>
-                        <button type="submit" class="submit-full-btn">Submit FBA Order</button>
-                    </form>
-                </div>
-        </div>
-
-            <!-- Submit FBM Order Tab -->
-            <div id="submit-fbm" class="admin-tab-content">
-                <div class="portal-card portal-card-centered">
-                    <div class="form-card-header">
-                        <div class="section-header">
-                            <div class="section-icon-header">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2">
-                                    <path
-                                        d="M5 18H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h3.19M15 6h2a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-3.19" />
-                                    <circle cx="12" cy="18" r="2" />
-                                    <path d="M12 18V6l-3 4" />
-                                    <path d="m15 10-3-4" />
-                                </svg>
-                                FBM Order Submission
-                            </div>
-                            <p>Submit your FBM fulfilment requirements</p>
-                        </div>
-                    </div>
-                    <form class="portal-form" id="fbmForm" novalidate>
-                        <div class="form-grid">
-                            <div class="form-full">
-                                <label class="portal-label">Product Name *</label>
-                                <input type="text" id="fbm_productName" class="portal-input"
-                                    placeholder="e.g., Red Gadget" required>
-                            </div>
-                            <div>
-                                <label class="portal-label">Number of Units *</label>
-                                <input type="number" id="fbm_quantity" class="portal-input" placeholder="e.g., 100"
-                                    required>
-                            </div>
-                            <div>
-                                <label class="portal-label">Bundles (if applicable)</label>
-                                <input type="text" id="fbm_bundles" class="portal-input" placeholder="e.g., 3-pack">
-                            </div>
-                            <div class="form-full">
-                                <label class="portal-label">Attachments (Images/Files)</label>
-                                <div class="upload-zone" id="fbm_uploadZone">
-                                    <svg class="upload-icon" fill="none" stroke="currentColor" stroke-width="2"
-                                        viewBox="0 0 24 24">
-                                        <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
-                                    </svg>
-                                    <p class="upload-text">Click to upload or drag and drop<br>JPEG, PNG, PDF up to 5MB
-                                    </p>
-                                </div>
-                                <input type="file" id="fbm_attachments" hidden multiple accept=".jpg,.jpeg,.png,.pdf">
-                                <p class="field-note field-note-sm"><strong>Note:</strong> Max
-                                    file size 5MB. Only JPEG, PNG, and PDF files are allowed.</p>
-                                <div id="fbm_fileList" class="file-list"></div>
-                            </div>
-                            <div class="form-full">
-                                <label class="portal-label">Order Files/Labels Link</label>
-                                <input type="url" id="fbm_filesLink" class="portal-input"
-                                    placeholder="Paste Google Drive or Dropbox link here">
-                                <p class="field-note">Share a link to your order
-                                    files (Google Drive, Dropbox, etc.)</p>
-                            </div>
-                            <div class="form-full">
-                                <label class="portal-label">Additional Notes</label>
-                                <textarea id="fbm_notes" class="portal-textarea" rows="4"
-                                    placeholder="Any special instructions or requirements..."></textarea>
-                            </div>
-                        </div>
-                        <button type="submit" class="submit-full-btn">Submit FBM Order</button>
-                    </form>
-                </div>
-        </div>
-
-            <!-- Invoices Tab -->
-            <div id="invoices" class="admin-tab-content">
-                <div class="portal-card portal-card-centered">
-                    <div class="form-card-header">
-                        <div class="section-header">
-                            <div class="section-icon-header">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2">
-                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                                    <path d="M14 2v6h6" />
-                                    <path d="M16 13H8" />
-                                    <path d="M16 17H8" />
-                                    <path d="M10 9H8" />
-                                </svg>
-                                Your Invoices
-                            </div>
-                            <p>View and manage your invoices and payment history</p>
-                        </div>
-                    </div>
-                    <div class="empty-state">
-                        <svg class="empty-icon" fill="none" stroke="currentColor" stroke-width="1.5"
-                            viewBox="0 0 24 24">
+                <div class="admin-stat-card">
+                    <div class="stat-icon green">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
                             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                             <path d="M14 2v6h6" />
-                            <path d="M9 13h6" />
-                            <path d="M9 17h3" />
                         </svg>
-                        <h4>No Invoices Yet</h4>
-                        <p>Your invoices will appear here once you submit your first order.</p>
+                    </div>
+                    <div class="stat-info">
+                        <div class="label">Total Shipments</div>
+                        <div class="value stat-value" id="stat-total-orders">0</div>
+                        <div class="label stat-subtext">Lifetime history</div>
                     </div>
                 </div>
+                <div class="admin-stat-card">
+                    <div class="stat-icon purple">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                        </svg>
+                    </div>
+                    <div class="stat-info">
+                        <div class="label">Pending Invoices</div>
+                        <div class="value stat-value">$0.00</div>
+                        <div class="label stat-subtext">All clear</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="portal-card quick-actions-card">
+                <div class="section-header">
+                    <h3>Recent Shipments</h3>
+                    <p>Track your latest inbound and outbound activity</p>
+                </div>
+                <div class="portal-table-container" style="margin-top: 20px;">
+                    <table class="portal-table" id="recentOrdersTable">
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Shipment</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Loaded dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
 
-            <!-- Account Tab -->
-            <div id="account" class="admin-tab-content">
-                <div class="portal-card portal-card-centered">
-                    <div class="form-card-header">
-                        <div class="section-header">
-                            <div class="section-icon-header">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2">
-                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                                    <circle cx="12" cy="7" r="4" />
-                                </svg>
-                                Account Settings
-                            </div>
-                            <p>Manage your profile and security</p>
+        <!-- Inventory Tab -->
+        <div id="inventory" class="admin-tab-content">
+            <div class="portal-header">
+                <h2 class="portal-title">My Inventory</h2>
+                <p class="portal-subtitle">View your currently stored stock in our warehouse (View Only).</p>
+            </div>
+            <div class="portal-card">
+                <div class="portal-table-container">
+                    <table class="portal-table" id="inventoryTable">
+                        <thead>
+                            <tr>
+                                <th>Product Name</th>
+                                <th>SKU</th>
+                                <th>Quantity</th>
+                                <th>Last Updated</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Loaded dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Inbound Shipments Tab -->
+        <div id="inbound-shipments" class="admin-tab-content">
+            <div class="portal-header">
+                <h2 class="portal-title">Inbound Shipments</h2>
+                <p class="portal-subtitle">Track your shipments coming into our warehouse.</p>
+            </div>
+
+            <div class="filter-bar">
+                <div class="search-box">
+                    <input type="text" id="inboundSearch" class="portal-input"
+                        placeholder="Search by Shipment ID or Shipment..." oninput="handleShipmentSearch('inbound')">
+                </div>
+                <select id="inboundStatusFilter" class="portal-input" onchange="loadInboundShipments(1)">
+                    <option value="Pending Arrival,Received,In Inspection,Stored">All Inbound</option>
+                    <option value="Pending Arrival">Pending Arrival</option>
+                    <option value="Received">Received</option>
+                    <option value="In Inspection">In Inspection</option>
+                    <option value="Stored">Stored</option>
+                </select>
+            </div>
+
+            <div class="portal-table-container">
+                <table class="portal-table" id="inboundTable">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Order ID</th>
+                            <th>Shipment</th>
+                            <th>Carrier</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+                <div class="portal-pagination" id="inboundPagination"></div>
+            </div>
+        </div>
+
+        <!-- Outbound Shipments Tab -->
+        <div id="outbound-shipments" class="admin-tab-content">
+            <div class="portal-header">
+                <h2 class="portal-title">Outbound Shipments</h2>
+                <p class="portal-subtitle">Track your shipments leaving our warehouse.</p>
+            </div>
+
+            <div class="filter-bar">
+                <div class="search-box">
+                    <input type="text" id="outboundSearch" class="portal-input"
+                        placeholder="Search by Order ID or Shipment..." oninput="handleShipmentSearch('outbound')">
+                </div>
+                <select id="outboundStatusFilter" class="portal-input" onchange="loadOutboundShipments(1)">
+                    <option value="Processing,Shipped,Completed">All Outbound</option>
+                    <option value="Processing">Processing</option>
+                    <option value="Shipped">Shipped</option>
+                    <option value="Completed">Completed</option>
+                </select>
+            </div>
+
+            <div class="portal-table-container">
+                <table class="portal-table" id="outboundTable">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Order ID</th>
+                            <th>Shipment</th>
+                            <th>Carrier</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+                <div class="portal-pagination" id="outboundPagination"></div>
+            </div>
+        </div>
+
+        <!-- Submit Shipment Tab -->
+        <div id="submit-order" class="admin-tab-content">
+            <div class="portal-card portal-card-centered">
+                <div class="form-card-header">
+                    <div class="section-header">
+                        <div class="section-icon-header">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path
+                                    d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
+                            </svg>
+                            New Shipment Submission
                         </div>
-                    </div>
-                    <div class="account-details" id="accountDetails">
-                        <form id="accountForm" novalidate onsubmit="window.saveAccountDetails(event)" class="portal-form">
-                            <div class="form-grid">
-                                <div class="form-full">
-                                    <label class="portal-label">Business Name</label>
-                                    <input type="text" id="acc_businessName" class="portal-input"
-                                        placeholder="e.g., Mingle Fulfilment Ltd">
-                                </div>
-                                <div>
-                                    <label class="portal-label">Contact Name</label>
-                                    <input type="text" id="acc_contactName" class="portal-input"
-                                        placeholder="Your full name">
-                                </div>
-                                <div>
-                                    <label class="portal-label">Business Email</label>
-                                    <input type="email" id="acc_businessEmail" class="portal-input"
-                                        placeholder="business@example.com">
-                                </div>
-                                <div>
-                                    <label class="portal-label">Phone Number</label>
-                                    <input type="tel" id="acc_phoneNumber" class="portal-input"
-                                        placeholder="+1 (555) 000-0000">
-                                </div>
-                                <div>
-                                    <label class="portal-label">Business Website</label>
-                                    <input type="url" id="acc_businessWebsite" class="portal-input"
-                                        placeholder="https://www.example.com">
-                                </div>
-                            </div>
-                            <button type="submit" class="submit-full-btn submit-full-btn--auto">Save Changes</button>
-                        </form>
+                        <p>Submit your shipment and fulfilment requirements</p>
                     </div>
                 </div>
+                <form class="portal-form" id="orderForm" novalidate>
+                    <div class="form-grid">
+                        <!-- Shipment Type -->
+                        <div class="form-full" style="margin-bottom: 20px; padding: 15px; background: #f1f5f9; border-radius: 12px; border: 1px solid #e2e8f0;">
+                            <label class="portal-label" style="margin-bottom: 12px; display: block; font-weight: 700;">Select Shipment Type *</label>
+                            <div style="display: flex; gap: 20px;">
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="radio" name="shipmentType" value="inbound" checked onchange="toggleShipmentFields(this.value)"> 
+                                    <span>Inbound (To Warehouse)</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="radio" name="shipmentType" value="outbound" onchange="toggleShipmentFields(this.value)"> 
+                                    <span>Outbound (To Customer)</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Shipment & Vendor Info -->
+                        <div>
+                            <label class="portal-label">Shipment Name *</label>
+                            <select id="shipmentName" class="portal-input" required onchange="handleShipmentChange()">
+                                <option value="" disabled selected>Select Shipment Name</option>
+                                <option value="Amazon">Amazon</option>
+                                <option value="Walmart">Walmart</option>
+                                <option value="eBay">eBay</option>
+                                <option value="Etsy">Etsy</option>
+                                <option value="Shopify">Shopify</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="portal-label">Supplier/Vendor Name *</label>
+                            <select id="supplierName" class="portal-input" required>
+                                <option value="" disabled selected>Select Supplier/Vendor</option>
+                            </select>
+                        </div>
+
+                        <!-- Tracking & Logistics -->
+                        <div>
+                            <label class="portal-label">Tracking Number *</label>
+                            <input type="text" id="trackingNumber" class="portal-input"
+                                placeholder="e.g., 1Z999AA10123456784" required>
+                        </div>
+                        <div>
+                            <label class="portal-label">Carrier *</label>
+                            <input type="text" id="carrier" class="portal-input" placeholder="e.g., UPS, FedEx, DHL"
+                                required>
+                        </div>
+                        <div>
+                            <label class="portal-label">Estimated Arrival Date *</label>
+                            <input type="date" id="estimatedArrival" class="portal-input" required>
+                        </div>
+
+                        <!-- Product Selection for Outbound -->
+                        <div class="form-full" id="outboundProductPicker" style="display: none;">
+                            <label class="portal-label">Pick Product from Inventory *</label>
+                            <div id="productSelectionList" class="product-selection-grid">
+                                <!-- Loaded dynamically from inventory -->
+                            </div>
+                            <p class="field-note">Select the products and quantities you want to ship out.</p>
+                        </div>
+
+                        <!-- Product Details for Inbound -->
+                        <div class="form-full" id="inboundProductDetails">
+                            <div class="form-grid">
+                                <div class="form-full">
+                                    <label class="portal-label">SKU List *</label>
+                                    <textarea id="skuList" class="portal-textarea" rows="2" placeholder="List your SKUs here..."></textarea>
+                                </div>
+                                <div class="form-full">
+                                    <label class="portal-label">Product Quantities *</label>
+                                    <textarea id="productQuantities" class="portal-textarea" rows="2" placeholder="e.g., SKU1: 100, SKU2: 200..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Required Images -->
+                        <div class="form-full">
+                            <label class="portal-label">Product Images * (Required)</label>
+                            <div class="upload-zone" id="productImagesZone">
+                                <svg class="upload-icon" fill="none" stroke="currentColor" stroke-width="2"
+                                    viewBox="0 0 24 24">
+                                    <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                                </svg>
+                                <p class="upload-text">Click to upload or drag and drop<br>JPEG, PNG, PDF up to 5MB</p>
+                            </div>
+                            <input type="file" id="productImages" hidden multiple accept="image/*,.pdf">
+                            <p class="field-note field-note-sm"><strong>Note:</strong> Max file size 5MB. Only JPEG,
+                                PNG, and PDF files are allowed.</p>
+                            <div id="productImagesList" class="file-list"></div>
+                        </div>
+
+                        <div class="form-full">
+                            <label class="portal-label">Packing Details *</label>
+                            <textarea id="packingDetails" class="portal-textarea" rows="2"
+                                placeholder="e.g., Number of boxes, pallet info..." required></textarea>
+                        </div>
+
+                        <div class="form-full">
+                            <label class="portal-label">Notes *</label>
+                            <textarea id="notes" class="portal-textarea" rows="3"
+                                placeholder="Any special instructions..." required></textarea>
+                        </div>
+
+                        <!-- Optional Documents -->
+                        <div class="form-full">
+                            <label class="portal-label">Google Drive docs (Optional)</label>
+                            <input type="url" id="googleDriveDocs" class="portal-input" placeholder="Paste link here">
+                        </div>
+
+                        <div class="form-full">
+                            <label class="portal-label">Commercial Invoices (Optional)</label>
+                            <div class="upload-zone" id="commercialInvoicesZone">
+                                <svg class="upload-icon" fill="none" stroke="currentColor" stroke-width="2"
+                                    viewBox="0 0 24 24">
+                                    <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                                </svg>
+                                <p class="upload-text">Click to upload or drag and drop<br>Images, PDF, Excel up to 5MB
+                                </p>
+                            </div>
+                            <input type="file" id="commercialInvoices" hidden multiple accept="image/*,.pdf,.xls,.xlsx">
+                            <div id="commercialInvoicesList" class="file-list"></div>
+                        </div>
+
+                        <div class="form-full">
+                            <label class="portal-label">Packing List PDFs (Optional)</label>
+                            <div class="upload-zone" id="packingListPDFsZone">
+                                <svg class="upload-icon" fill="none" stroke="currentColor" stroke-width="2"
+                                    viewBox="0 0 24 24">
+                                    <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                                </svg>
+                                <p class="upload-text">Click to upload or drag and drop<br>PDF only up to 5MB</p>
+                            </div>
+                            <input type="file" id="packingListPDFs" hidden multiple accept=".pdf">
+                            <div id="packingListPDFsList" class="file-list"></div>
+                        </div>
+                    </div>
+                    <button type="submit" class="submit-full-btn">Submit Order</button>
+                </form>
+            </div>
+        </div>
+
+
+        <!-- Invoices Tab -->
+        <div id="invoices" class="admin-tab-content">
+            <div class="portal-card portal-card-centered">
+                <div class="form-card-header">
+                    <div class="section-header">
+                        <div class="section-icon-header">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                <path d="M14 2v6h6" />
+                                <path d="M16 13H8" />
+                                <path d="M16 17H8" />
+                                <path d="M10 9H8" />
+                            </svg>
+                            Your Invoices
+                        </div>
+                        <p>View and manage your invoices and payment history</p>
+                    </div>
+                </div>
+                <div class="empty-state">
+                    <svg class="empty-icon" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                        <path d="M14 2v6h6" />
+                        <path d="M9 13h6" />
+                        <path d="M9 17h3" />
+                    </svg>
+                    <h4>No Invoices Yet</h4>
+                    <p>Your invoices will appear here once you submit your first order.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Account Tab -->
+        <div id="account" class="admin-tab-content">
+            <div class="portal-card portal-card-centered">
+                <div class="form-card-header">
+                    <div class="section-header">
+                        <div class="section-icon-header">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                                <circle cx="12" cy="7" r="4" />
+                            </svg>
+                            Account Settings
+                        </div>
+                        <p>Manage your profile and security</p>
+                    </div>
+                </div>
+                <div class="account-details" id="accountDetails">
+                    <form id="accountForm" novalidate onsubmit="window.saveAccountDetails(event)" class="portal-form">
+                        <div class="form-grid">
+                            <div class="form-full">
+                                <label class="portal-label">Business Name</label>
+                                <input type="text" id="acc_businessName" class="portal-input"
+                                    placeholder="e.g., Mingle Fulfilment Ltd">
+                            </div>
+                            <div>
+                                <label class="portal-label">Contact Name</label>
+                                <input type="text" id="acc_contactName" class="portal-input"
+                                    placeholder="Your full name">
+                            </div>
+                            <div>
+                                <label class="portal-label">Business Email</label>
+                                <input type="email" id="acc_businessEmail" class="portal-input"
+                                    placeholder="business@example.com">
+                            </div>
+                            <div>
+                                <label class="portal-label">Phone Number</label>
+                                <input type="tel" id="acc_phoneNumber" class="portal-input"
+                                    placeholder="+1 (555) 000-0000">
+                            </div>
+                            <div>
+                                <label class="portal-label">Business Website</label>
+                                <input type="url" id="acc_businessWebsite" class="portal-input"
+                                    placeholder="https://www.example.com">
+                            </div>
+                        </div>
+                        <button type="submit" class="submit-full-btn submit-full-btn--auto">Save Changes</button>
+                    </form>
+                </div>
+            </div>
         </div>
     </main>
 
+    <!-- Shipment Detail Modal -->
+    <div id="orderDetailModal" class="modal-overlay" style="display: none;">
+        <div class="modal-popup modal-popup--wide">
+            <div class="modal-popup-header">
+                <h3>Shipment Details</h3>
+                <button onclick="closeOrderDetailModal()" class="modal-close-btn">&times;</button>
+            </div>
+            <div class="modal-popup-body" id="orderDetailContent">
+                <!-- Loaded dynamically -->
+            </div>
+            <div class="modal-popup-footer">
+                <button class="modal-btn confirm" onclick="closeOrderDetailModal()">Close</button>
+            </div>
+        </div>
+    </div>
 
+    <!-- File Viewer Modal -->
+    <div id="fileViewerModal" class="modal-overlay" style="display: none;">
+        <div class="modal-popup modal-popup--wide">
+            <div class="modal-popup-header">
+                <h3 id="modalFileName">File Preview</h3>
+                <button onclick="closeFileViewer()" class="modal-close-btn">&times;</button>
+            </div>
+            <div class="modal-popup-body" id="fileViewerContent"
+                style="min-height: 400px; display: flex; align-items: center; justify-content: center;">
+                <!-- Preview loaded here -->
+            </div>
+            <div class="modal-popup-footer">
+                <button class="modal-btn confirm" onclick="closeFileViewer()">Close</button>
+            </div>
+        </div>
+    </div>
 
     <script src="./js/components.js"></script>
     <script src="./js/api.js"></script>
