@@ -3681,3 +3681,130 @@ body.admin-body {
     grid-template-columns: 1fr;
   }
 }
+
+/* ================= Portal Button Styling ================= */
+.portal-btn, .portal-btn-sm {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-family: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  background: white;
+  color: #334155;
+  text-decoration: none;
+  outline: none;
+}
+
+.portal-btn {
+  padding: 10px 18px;
+  font-size: 14px;
+}
+
+.portal-btn-sm {
+  padding: 6px 12px;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.portal-btn:hover, .portal-btn-sm:hover {
+  background: #f8fafc;
+  color: #0f172a;
+  border-color: #94a3b8;
+  transform: translateY(-1px);
+}
+
+.portal-btn:active, .portal-btn-sm:active {
+  transform: scale(0.98) translateY(0);
+}
+
+.portal-btn:disabled, .portal-btn-sm:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* Primary portal button modifier */
+.portal-btn.primary, .portal-btn-sm.primary {
+  background: #0094FF;
+  color: white;
+  border-color: #0094FF;
+}
+
+.portal-btn.primary:hover, .portal-btn-sm.primary:hover {
+  background: #007acc;
+  border-color: #007acc;
+  box-shadow: 0 4px 12px rgba(0, 148, 255, 0.25);
+}
+
+/* Danger portal button modifier */
+.portal-btn.danger, .portal-btn-sm.danger {
+  background: #fee2e2;
+  color: #ef4444;
+  border-color: #fecaca;
+}
+
+.portal-btn.danger:hover, .portal-btn-sm.danger:hover {
+  background: #ef4444;
+  color: white;
+  border-color: #ef4444;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+}
+
+/* Success portal button modifier */
+.portal-btn.success, .portal-btn-sm.success {
+  background: #dcfce7;
+  color: #10b981;
+  border-color: #bbf7d0;
+}
+
+.portal-btn.success:hover, .portal-btn-sm.success:hover {
+  background: #10b981;
+  color: white;
+  border-color: #10b981;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+}
+
+/* Outbound Shipment Highlight row styles */
+.awaiting-labels-row {
+  background-color: hsla(0, 100%, 97%, 0.6) !important;
+  border-left: 4px solid #ef4444 !important;
+}
+.awaiting-labels-row:hover {
+  background-color: hsla(0, 100%, 95%, 0.8) !important;
+}
+.row-alert-msg {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: #b91c1c;
+  font-weight: 600;
+  margin-top: 4px;
+}
+.alert-pulse {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background-color: #ef4444;
+  border-radius: 50%;
+  animation: pulse 1.5s infinite;
+}
+@keyframes pulse {
+  0% {
+    transform: scale(0.9);
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 6px rgba(239, 68, 68, 0);
+  }
+  100% {
+    transform: scale(0.9);
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+  }
+}

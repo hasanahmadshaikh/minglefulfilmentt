@@ -223,6 +223,11 @@ window.validateForm = function (formId) {
   const inputs = form.querySelectorAll('[required]');
 
   inputs.forEach(input => {
+    // Skip validation for elements that are hidden
+    if (input.offsetParent === null) {
+      return;
+    }
+
     // Helper to clear error state
     const clearError = () => {
       input.classList.remove('error');

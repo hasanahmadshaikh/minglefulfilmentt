@@ -48,6 +48,34 @@ async function loadDashboardData(page = 1) {
       subtexts[2].innerText = totalOrders === 1 ? '1 lifetime order' : `${totalOrders} lifetime orders`;
     }
 
+    // Load alerts for Awaiting Shipping Labels
+    const alertsData = await window.apiFetch('/api/orders?status=Awaiting+Shipping+Labels&type=outbound');
+    const alertDiv = document.getElementById('dashboardAlerts');
+    if (alertDiv) {
+      if (alertsData.success && alertsData.orders && alertsData.orders.length > 0) {
+        alertDiv.style.display = 'block';
+        alertDiv.innerHTML = `
+          <div style="background: #fef2f2; border: 1px solid #fee2e2; border-left: 4px solid #ef4444; border-radius: 8px; padding: 16px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; gap: 16px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" style="flex-shrink:0;">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+              </svg>
+              <div>
+                <strong style="color: #991b1b; font-size: 14px;">Action Required</strong>
+                <p style="color: #7f1d1d; font-size: 13px; margin: 4px 0 0 0;">You have shipments that require shipping labels to proceed. Please click the button below to view them.</p>
+              </div>
+            </div>
+            <button class="portal-btn-sm" style="background:#3b82f6; color:white; border-color:#2563eb; flex-shrink: 0;" onclick="switchTab('outbound-shipments')">View Outbound Shipments</button>
+          </div>
+        `;
+      } else {
+        alertDiv.style.display = 'none';
+        alertDiv.innerHTML = '';
+      }
+    }
+
     loadRecentShipments();
   } catch (err) {
     console.error('Failed to load dashboard data:', err);
@@ -85,14 +113,7 @@ function switchTab(tabId) {
   // Reset order form if leaving submit-order
   const currentlyOnSubmitOrder = document.getElementById('submit-order').classList.contains('active');
   if (currentlyOnSubmitOrder && tabId !== 'submit-order') {
-    const form = document.getElementById('orderForm');
-    if (form) {
-      form.reset();
-      // Reset dynamic selects and file lists
-      const supplierSelect = document.getElementById('supplierName');
-      if (supplierSelect) supplierSelect.innerHTML = '<option value="" disabled selected>Select Supplier/Vendor</option>';
-      Object.values(fileManagers).forEach(fm => fm.reset());
-    }
+    cancelShipmentForm();
   }
 
   window.showLoader();
@@ -130,7 +151,7 @@ async function loadInventory() {
     if (!tbody || !data.success) return;
 
     if (data.inventory.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:40px;">No inventory found</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:40px;">No inventory found</td></tr>';
       return;
     }
 
@@ -139,6 +160,7 @@ async function loadInventory() {
         <td><strong>${item.productName}</strong></td>
         <td>${item.sku || '-'}</td>
         <td style="font-weight: 600; color: #0f172a;">${item.quantity}</td>
+        <td>${item.packDetails || '-'}</td>
         <td>${new Date(item.updatedAt).toLocaleDateString()}</td>
       </tr>
     `).join('');
@@ -226,16 +248,28 @@ async function loadOutboundShipments(page = 1) {
     return;
   }
 
-  tbody.innerHTML = data.orders.map(o => `
-    <tr>
+  tbody.innerHTML = data.orders.map(o => {
+    let actionBtn = `<button class="portal-btn-sm" onclick="viewOrderDetails('${o._id}')">View</button>`;
+    const isAlertRow = o.status === 'Awaiting Shipping Labels';
+    if (isAlertRow) {
+      actionBtn += ` <button class="portal-btn-sm" style="background:#3b82f6; color:white; border-color:#2563eb;" onclick="openShippingLabelsModal('${o._id}')">Upload Labels</button>`;
+    }
+    const rowClass = isAlertRow ? 'class="awaiting-labels-row"' : '';
+    const alertMessage = isAlertRow ? '<div class="row-alert-msg"><span class="alert-pulse"></span> Action Required: Please upload shipping labels.</div>' : '';
+
+    return `
+    <tr ${rowClass}>
       <td>${new Date(o.createdAt).toLocaleDateString()}</td>
       <td><strong>${o.orderId}</strong></td>
-      <td>${o.shipmentName}</td>
+      <td>
+        ${o.shipmentName}
+        ${alertMessage}
+      </td>
       <td>${o.carrier}</td>
       <td><span class="status-badge status-${o.status.toLowerCase().replace(/\s/g, '-')}">${o.status}</span></td>
-      <td><button class="portal-btn-sm" onclick="viewOrderDetails('${o._id}')">View</button></td>
+      <td>${actionBtn}</td>
     </tr>
-  `).join('');
+  `}).join('');
 
   renderPagination(pagin, data.pagination, loadOutboundShipments);
 }
@@ -253,77 +287,213 @@ function renderPagination(container, meta, loadFunc) {
   }
 }
 
-/* ─── Shipment Change Logic ──────────────────────────────── */
+/* ─── Form Type Toggling ─────────────────────────────────── */
 
-function handleShipmentChange() {
-  const shipment = document.getElementById('shipmentName').value;
-  const supplierSelect = document.getElementById('supplierName');
+function selectShipmentTypeBox(type) {
+  document.getElementById('shipmentType').value = type;
 
-  // Clear existing options except the first one
-  supplierSelect.innerHTML = '<option value="" disabled selected>Select Supplier/Vendor</option>';
-
-  let options = [];
-  if (shipment === 'Amazon') {
-    options = ['FBA', 'FBM'];
-  } else if (shipment === 'Walmart') {
-    options = ['WFS', 'WSF'];
-  } else {
-    options = ['SF']; // For eBay, Etsy, Shopify, Other
-  }
-
-  options.forEach(opt => {
-    const el = document.createElement('option');
-    el.value = opt;
-    el.textContent = opt;
-    supplierSelect.appendChild(el);
+  document.querySelectorAll('.shipment-type-box').forEach(box => {
+    box.classList.remove('active');
+    box.style.borderColor = 'transparent';
   });
+
+  const activeBox = type === 'inbound' ? document.getElementById('boxInbound') : document.getElementById('boxOutbound');
+  activeBox.classList.add('active');
+  activeBox.style.borderColor = '#3b82f6';
+
+  document.getElementById('shipmentTypeSelection').style.display = 'none';
+  document.getElementById('orderFormBody').style.display = 'block';
+
+  toggleShipmentFields(type);
 }
 
-/* ─── Form Type Toggling ─────────────────────────────────── */
+function cancelShipmentForm() {
+  document.getElementById('orderFormBody').style.display = 'none';
+  document.getElementById('shipmentTypeSelection').style.display = 'block';
+  document.getElementById('orderForm').reset();
+  document.getElementById('inboundSkuBody').innerHTML = '';
+  document.getElementById('outboundSkuBody').innerHTML = '';
+  document.getElementById('documentsList').innerHTML = '';
+  if (fileManagers['documents']) fileManagers['documents'].reset();
+}
 
 function toggleShipmentFields(type) {
   const inboundFields = document.getElementById('inboundProductDetails');
-  const outboundFields = document.getElementById('outboundProductPicker');
+  const outboundChannel = document.getElementById('outboundChannelContainer');
+  const outboundFulfilment = document.getElementById('outboundFulfilmentTypeContainer');
+  const outboundProducts = document.getElementById('outboundProductDetails');
+  const prepInstructions = document.getElementById('prepInstructionsContainer');
+
+  const commonFields = [
+    { container: 'shipmentNameContainer', input: 'shipmentName' },
+    { container: 'vendorNameContainer', input: 'supplierName' },
+    { container: 'trackingNumberContainer', input: 'trackingNumber' },
+    { container: 'carrierContainer', input: 'carrier' },
+    { container: 'estimatedArrivalContainer', input: 'estimatedArrival' },
+    { container: 'notesContainer', input: 'notes' }
+  ];
 
   if (type === 'outbound') {
     inboundFields.style.display = 'none';
-    outboundFields.style.display = 'block';
-    loadProductPicker();
+    outboundChannel.style.display = 'block';
+    outboundFulfilment.style.display = 'block';
+    outboundProducts.style.display = 'block';
+    prepInstructions.style.display = 'block';
+
+    commonFields.forEach(f => {
+      const containerEl = document.getElementById(f.container);
+      const inputEl = document.getElementById(f.input);
+      if (containerEl) containerEl.style.display = 'none';
+      if (inputEl) {
+        inputEl.required = false;
+        inputEl.value = '';
+      }
+    });
+
+    loadInventoryForOutbound();
   } else {
     inboundFields.style.display = 'block';
-    outboundFields.style.display = 'none';
+    outboundChannel.style.display = 'none';
+    outboundFulfilment.style.display = 'none';
+    outboundProducts.style.display = 'none';
+    prepInstructions.style.display = 'none';
+
+    commonFields.forEach(f => {
+      const containerEl = document.getElementById(f.container);
+      const inputEl = document.getElementById(f.input);
+      if (containerEl) containerEl.style.display = 'block';
+      if (inputEl && f.input !== 'notes') inputEl.required = true;
+    });
   }
 }
 
-async function loadProductPicker() {
+function handleChannelChange() {
+  const channel = document.getElementById('channel').value;
+  const ft = document.getElementById('fulfilmentType');
+  ft.innerHTML = '<option value="">Select Fulfilment Type</option>';
+
+  if (channel === 'Amazon') {
+    ft.innerHTML += '<option value="FBA">FBA</option><option value="FBM">FBM</option>';
+  } else if (channel === 'Walmart') {
+    ft.innerHTML += '<option value="WFS">WFS</option><option value="SF">SF</option>';
+  } else if (channel) {
+    ft.innerHTML += '<option value="SF">SF</option>';
+  }
+  evaluateNoShippingLabelsRequired();
+}
+
+function evaluateNoShippingLabelsRequired() {
+  const fulfilmentType = document.getElementById('fulfilmentType').value;
+  const cb = document.getElementById('noShippingLabelsRequired');
+
+  let shouldDisable = false;
+
+  if (fulfilmentType === 'FBA' || fulfilmentType === 'SF') {
+    shouldDisable = true;
+  }
+
+  const skuSelects = document.querySelectorAll('#outboundSkuBody .sku-name-input');
+  skuSelects.forEach(select => {
+    if (select.selectedIndex >= 0) {
+      const opt = select.options[select.selectedIndex];
+      if (opt && opt.value) {
+        const carton = opt.getAttribute('data-carton');
+        if (!carton || carton.trim() === '') {
+          shouldDisable = true;
+        }
+      }
+    }
+  });
+
+  if (shouldDisable) {
+    cb.disabled = true;
+    cb.checked = false;
+  } else {
+    cb.disabled = false;
+  }
+}
+
+function addInboundSkuRow() {
+  const tbody = document.getElementById('inboundSkuBody');
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td><input type="text" class="portal-input sku-name-input" placeholder="e.g. Laptop" style="margin:0; padding:6px 10px;" required></td>
+    <td><input type="number" class="portal-input sku-qty-input" placeholder="0" min="1" style="margin:0; padding:6px 10px;" required></td>
+    <td>
+      <select class="portal-input sku-pack-input" style="margin:0; padding:6px 10px;" required>
+        <option value="" disabled selected>Select</option>
+        <option value="Cases">Cases</option>
+        <option value="Units">Units</option>
+      </select>
+    </td>
+    <td>
+      <button type="button" class="portal-btn-sm" style="background:#fee2e2; color:#b91c1c; border-color:#fecaca;" onclick="this.closest('tr').remove()">Remove</button>
+    </td>
+  `;
+  tbody.appendChild(tr);
+}
+
+let inventoryDataForOutbound = [];
+async function loadInventoryForOutbound() {
   try {
     const data = await window.apiFetch('/api/inventory');
-    const container = document.getElementById('productSelectionList');
-    if (!container || !data.success) return;
-
-    if (data.inventory.length === 0) {
-      container.innerHTML = '<p style="padding: 20px; color: #94a3b8; font-style: italic;">No products in inventory. Please contact admin to add inventory.</p>';
-      return;
+    if (data.success) {
+      inventoryDataForOutbound = data.inventory;
     }
-
-    container.innerHTML = data.inventory.map(item => `
-      <div class="product-picker-item" style="display: flex; align-items: center; justify-content: space-between; padding: 12px; background: white; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 8px;">
-        <div>
-          <div style="font-weight: 600; color: #1e293b;">${item.productName}</div>
-          <div style="font-size: 12px; color: #64748b;">SKU: ${item.sku || '-'} | Available: ${item.quantity}</div>
-        </div>
-        <div style="display: flex; align-items: center; gap: 10px;">
-          <input type="number" class="portal-input product-qty-input" 
-            data-product="${item.productName}" 
-            data-sku="${item.sku || ''}" 
-            data-available="${item.quantity}"
-            min="0" max="${item.quantity}" placeholder="Qty" style="width: 80px; padding: 6px 10px; margin:0;">
-        </div>
-      </div>
-    `).join('');
   } catch (err) {
-    console.error('Failed to load product picker:', err);
+    console.error('Failed to load inventory for outbound:', err);
   }
+}
+
+function addOutboundSkuRow() {
+  const tbody = document.getElementById('outboundSkuBody');
+  const tr = document.createElement('tr');
+
+  const options = inventoryDataForOutbound.map(item =>
+    `<option value="${item.sku}" data-qty="${item.quantity}" data-carton="${item.cartonDetails || ''}">${item.productName} (SKU: ${item.sku || '-'})</option>`
+  ).join('');
+
+  tr.innerHTML = `
+    <td>
+      <select class="portal-input sku-name-input" style="margin:0; padding:6px 10px;" onchange="handleOutboundSkuChange(this)" required>
+        <option value="" disabled selected>Select SKU</option>
+        ${options}
+      </select>
+    </td>
+    <td>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <input type="number" class="portal-input sku-qty-input" placeholder="0" min="1" style="margin:0; padding:6px 10px; width:80px;" required>
+        <span class="qty-available" style="font-size:12px; color:#64748b;"></span>
+      </div>
+    </td>
+    <td>
+      <select class="portal-input sku-pack-input" style="margin:0; padding:6px 10px;" required>
+        <option value="" disabled selected>Select</option>
+        <option value="Cases">Cases</option>
+        <option value="Units">Units</option>
+      </select>
+    </td>
+    <td>
+      <button type="button" class="portal-btn-sm" style="background:#fee2e2; color:#b91c1c; border-color:#fecaca;" onclick="this.closest('tr').remove(); evaluateNoShippingLabelsRequired();">Remove</button>
+    </td>
+  `;
+  tbody.appendChild(tr);
+  evaluateNoShippingLabelsRequired();
+}
+
+function handleOutboundSkuChange(selectElement) {
+  if (selectElement.selectedIndex < 0) return;
+  const selectedOption = selectElement.options[selectElement.selectedIndex];
+  if (!selectedOption.value) return;
+
+  const qty = selectedOption.getAttribute('data-qty');
+  const row = selectElement.closest('tr');
+
+  const qtyInput = row.querySelector('.sku-qty-input');
+  qtyInput.max = qty;
+  row.querySelector('.qty-available').innerText = `Available: ${qty}`;
+
+  evaluateNoShippingLabelsRequired();
 }
 
 /* ─── Orders: load & render table ───────────────────────── */
@@ -428,13 +598,13 @@ async function handleOrderSubmit(event) {
   const formData = new FormData();
 
   // Inbound vs Outbound logic
-  const type = form.querySelector('input[name="shipmentType"]:checked').value;
+  const type = document.getElementById('shipmentType').value;
   formData.append('type', type);
 
   // Common Fields
   const commonFields = [
     'shipmentName', 'supplierName', 'trackingNumber', 'carrier',
-    'estimatedArrival', 'packingDetails', 'notes', 'googleDriveDocs'
+    'estimatedArrival', 'notes'
   ];
   commonFields.forEach(f => {
     const el = document.getElementById(f);
@@ -442,49 +612,83 @@ async function handleOrderSubmit(event) {
   });
 
   if (type === 'outbound') {
-    const productInputs = document.querySelectorAll('.product-qty-input');
-    const selectedProducts = [];
-    productInputs.forEach(input => {
-      const qty = parseInt(input.value);
-      if (qty > 0) {
-        selectedProducts.push({
-          productName: input.dataset.product,
-          sku: input.dataset.sku,
-          quantity: qty
+    const channel = document.getElementById('channel').value;
+    const fulfilmentType = document.getElementById('fulfilmentType').value;
+    const prepInstructions = document.getElementById('prepInstructions').value;
+    const shippingLabelsRequired = document.getElementById('noShippingLabelsRequired').checked ? 'false' : 'true';
+
+    if (!channel || !fulfilmentType) {
+      window.showToast('Please select channel and fulfilment type', 'error');
+      restore();
+      return;
+    }
+
+    formData.append('channel', channel);
+    formData.append('fulfilmentType', fulfilmentType);
+    formData.append('prepInstructions', prepInstructions);
+    formData.append('shippingLabelsRequired', shippingLabelsRequired);
+
+    const skuRows = document.querySelectorAll('#outboundSkuBody tr');
+    const outboundProducts = [];
+    skuRows.forEach(row => {
+      const select = row.querySelector('.sku-name-input');
+      const opt = select.options[select.selectedIndex];
+      const sku = opt ? opt.value : '';
+      const name = opt ? opt.text.split(' (SKU')[0] : '';
+      const qty = parseInt(row.querySelector('.sku-qty-input').value) || 0;
+      const pack = row.querySelector('.sku-pack-input').value;
+      if (sku && qty > 0 && pack) {
+        outboundProducts.push({
+          productName: name,
+          sku: sku,
+          quantity: qty,
+          packDetails: pack
         });
       }
     });
 
-    if (selectedProducts.length === 0) {
-      window.showToast('Please select at least one product to ship out', 'error');
+    if (outboundProducts.length === 0) {
+      window.showToast('Please select at least one SKU with valid details to ship out', 'error');
       restore();
       return;
     }
-    formData.append('products', JSON.stringify(selectedProducts));
-    
-    // For outbound, SKU list and Quantities are derived from selected products
-    formData.append('skuList', selectedProducts.map(p => p.sku).join(', '));
-    formData.append('productQuantities', selectedProducts.map(p => `${p.productName}: ${p.quantity}`).join(', '));
+    formData.append('products', JSON.stringify(outboundProducts));
   } else {
-    // Regular Inbound fields
-    ['skuList', 'productQuantities'].forEach(f => {
-      const el = document.getElementById(f);
-      if (el) formData.append(f, el.value);
+    // Inbound Logic
+    const skuRows = document.querySelectorAll('#inboundSkuBody tr');
+    const inboundProducts = [];
+    skuRows.forEach(row => {
+      const name = row.querySelector('.sku-name-input').value;
+      const qty = parseInt(row.querySelector('.sku-qty-input').value) || 0;
+      const pack = row.querySelector('.sku-pack-input').value;
+      if (name && qty > 0 && pack) {
+        inboundProducts.push({
+          productName: name,
+          sku: name,
+          quantity: qty,
+          packDetails: pack
+        });
+      }
     });
+
+    if (inboundProducts.length === 0) {
+      window.showToast('Please add at least one SKU with valid details', 'error');
+      restore();
+      return;
+    }
+    formData.append('products', JSON.stringify(inboundProducts));
   }
 
-  // Required Images
-  const imgFiles = fileManagers['productImages'].getFiles();
-  if (imgFiles.length === 0) {
-    window.showToast('Product images are required', 'error');
-    restore();
-    return;
+  // Unified Documents Uploader
+  if (fileManagers['documents']) {
+    const docFiles = fileManagers['documents'].getFiles();
+    if (docFiles.length > 4) {
+      window.showToast('Maximum 4 files allowed for Document Uploader', 'error');
+      restore();
+      return;
+    }
+    docFiles.forEach(f => formData.append('documents', f));
   }
-  imgFiles.forEach(f => formData.append('productImages', f));
-
-  // Optional Files
-  fileManagers['commercialInvoices'].getFiles().forEach(f => formData.append('commercialInvoices', f));
-  fileManagers['packingListPDFs'].getFiles().forEach(f => formData.append('packingListPDFs', f));
 
   try {
     const res = await fetch('/api/orders', { method: 'POST', body: formData });
@@ -493,10 +697,10 @@ async function handleOrderSubmit(event) {
     if (data.success) {
       window.showToast(data.message, 'success');
       form.reset();
-      // Clear dynamic dropdown
-      document.getElementById('supplierName').innerHTML = '<option value="" disabled selected>Select Supplier/Vendor</option>';
       // Clear all file managers
       Object.values(fileManagers).forEach(fm => fm.reset());
+      const skuBody = document.getElementById('inboundSkuBody');
+      if (skuBody) skuBody.innerHTML = '';
 
       loadInboundShipments(); // Refresh Inbound list
       loadOutboundShipments(); // Refresh Outbound list
@@ -513,6 +717,10 @@ async function handleOrderSubmit(event) {
 }
 
 function showSubmissionSuccessModal(order) {
+  const isOutbound = order.type === 'outbound';
+  const buttonText = isOutbound ? 'View Outbound' : 'View Inbound';
+  const redirectTab = isOutbound ? 'outbound-shipments' : 'inbound-shipments';
+
   const overlay = document.createElement('div');
   overlay.className = 'modal-overlay';
   overlay.innerHTML = `
@@ -527,7 +735,7 @@ function showSubmissionSuccessModal(order) {
       <p style="text-align:center; color: #64748b; margin-bottom: 24px;">Your shipment <strong>${order.orderId}</strong> has been submitted successfully.</p>
       <div class="modal-actions" style="display: flex; gap: 12px; justify-content: center;">
         <button class="modal-btn cancel" id="successCreateNew" style="flex:1;">Create Another</button>
-        <button class="modal-btn confirm" id="successViewShipment" style="flex:1;">View Inbound</button>
+        <button class="modal-btn confirm" id="successViewShipment" style="flex:1;">${buttonText}</button>
       </div>
     </div>
   `;
@@ -539,7 +747,7 @@ function showSubmissionSuccessModal(order) {
   };
   overlay.querySelector('#successViewShipment').onclick = () => {
     overlay.remove();
-    switchTab('inbound-shipments');
+    switchTab(redirectTab);
   };
 }
 
@@ -562,109 +770,115 @@ async function viewOrderDetails(id) {
     const modal = document.getElementById('orderDetailModal');
     const content = document.getElementById('orderDetailContent');
 
-    content.innerHTML = `
-      <div class="detail-card-grid">
-        <div class="detail-card-item">
-          <span class="detail-card-label">Shipment Name</span>
-          <span class="detail-card-value">${order.shipmentName || '-'}</span>
-        </div>
-        <div class="detail-card-item">
-          <span class="detail-card-label">Vendor Name</span>
-          <span class="detail-card-value">${order.supplierName || '-'}</span>
-        </div>
-        <div class="detail-card-item">
-          <span class="detail-card-label">Tracking Number</span>
-          <span class="detail-card-value">${order.trackingNumber || '-'}</span>
-        </div>
-        <div class="detail-card-item">
-          <span class="detail-card-label">Carrier</span>
-          <span class="detail-card-value">${order.carrier || '-'}</span>
-        </div>
-        <div class="detail-card-item">
-          <span class="detail-card-label">Estimated Arrival Date</span>
-          <span class="detail-card-value">${order.estimatedArrival ? new Date(order.estimatedArrival).toLocaleDateString() : '-'}</span>
-        </div>
-        <div class="detail-card-item">
-          <span class="detail-card-label">Status</span>
-          <div><span class="status-badge status-${(order.status || 'Pending').toLowerCase().replace(/\s/g, '-')}">${order.status || 'Pending'}</span></div>
-        </div>
+    const isOutbound = order.type === 'outbound';
+    let detailsHtml = '';
 
-        ${order.type === 'outbound' && order.products && order.products.length > 0 ? `
-        <div class="detail-card-full">
-          <span class="detail-card-label">Selected Products</span>
-          <div style="margin-top:12px;">
-            <table class="portal-table" style="background: white; border-radius: 8px;">
-              <thead>
-                <tr>
-                  <th style="padding: 10px; font-size: 12px; text-align: left;">Product</th>
-                  <th style="padding: 10px; font-size: 12px; text-align: left;">SKU</th>
-                  <th style="padding: 10px; font-size: 12px; text-align: right;">Qty</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${order.products.map(p => `
+    if (isOutbound) {
+      detailsHtml = `
+        <div class="detail-card-grid">
+          <div class="detail-card-item">
+            <span class="detail-card-label">Shipment Name</span>
+            <span class="detail-card-value">${order.shipmentName || '-'}</span>
+          </div>
+          <div class="detail-card-item">
+            <span class="detail-card-label">Status</span>
+            <div><span class="status-badge status-${(order.status || 'Pending').toLowerCase().replace(/\s/g, '-')}">${order.status || 'Pending'}</span></div>
+          </div>
+          <div class="detail-card-item">
+            <span class="detail-card-label">Channel</span>
+            <span class="detail-card-value">${order.channel || '-'}</span>
+          </div>
+          <div class="detail-card-item">
+            <span class="detail-card-label">Fulfilment Type</span>
+            <span class="detail-card-value">${order.fulfilmentType || '-'}</span>
+          </div>
+          <div class="detail-card-item">
+            <span class="detail-card-label">Shipping Labels Required</span>
+            <span class="detail-card-value">${order.shippingLabelsRequired ? 'Yes' : 'No'}</span>
+          </div>
+
+          ${order.products && order.products.length > 0 ? `
+          <div class="detail-card-full">
+            <span class="detail-card-label">Selected Products</span>
+            <div style="margin-top:12px;">
+              <table class="portal-table" style="background: white; border-radius: 8px;">
+                <thead>
                   <tr>
-                    <td style="padding: 10px; font-size: 13px; border-top: 1px solid #f1f5f9;">${p.productName}</td>
-                    <td style="padding: 10px; font-size: 13px; border-top: 1px solid #f1f5f9;">${p.sku || '-'}</td>
-                    <td style="padding: 10px; font-size: 13px; border-top: 1px solid #f1f5f9; text-align: right; font-weight: 600;">${p.quantity}</td>
+                    <th style="padding: 10px; font-size: 12px; text-align: left;">Product</th>
+                    <th style="padding: 10px; font-size: 12px; text-align: left;">SKU</th>
+                    <th style="padding: 10px; font-size: 12px; text-align: right;">Qty</th>
                   </tr>
-                `).join('')}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  ${order.products.map(p => `
+                    <tr>
+                      <td style="padding: 10px; font-size: 13px; border-top: 1px solid #f1f5f9;">${p.productName}</td>
+                      <td style="padding: 10px; font-size: 13px; border-top: 1px solid #f1f5f9;">${p.sku || '-'}</td>
+                      <td style="padding: 10px; font-size: 13px; border-top: 1px solid #f1f5f9; text-align: right; font-weight: 600;">${p.quantity}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>` : ''}
+
+          <div class="detail-card-full">
+            <span class="detail-card-label">Prep Instructions</span>
+            <p style="margin-top:8px; color:#475569; font-size: 14px; line-height: 1.5;">${order.prepInstructions || '-'}</p>
           </div>
-        </div>` : ''}
 
-        <div class="detail-card-full">
-          <span class="detail-card-label">SKU List</span>
-          <p style="margin-top:8px; color:#475569; font-size: 14px; line-height: 1.5;">${order.skuList || '-'}</p>
-        </div>
-        
-        <div class="detail-card-full">
-          <span class="detail-card-label">Product Quantities</span>
-          <p style="margin-top:8px; color:#475569; font-size: 14px; line-height: 1.5;">${order.productQuantities || '-'}</p>
-        </div>
-
-        <div class="detail-card-full">
-          <span class="detail-card-label">Packing Details</span>
-          <p style="margin-top:8px; color:#475569; font-size: 14px; line-height: 1.5;">${order.packingDetails || '-'}</p>
-        </div>
-
-        <div class="detail-card-full">
-          <span class="detail-card-label">Notes</span>
-          <p style="margin-top:8px; color:#475569; font-size: 14px; line-height: 1.5;">${order.notes || '-'}</p>
-        </div>
-
-        ${order.googleDriveDocs ? `
-        <div class="detail-card-full">
-          <span class="detail-card-label">Google Drive Link</span>
-          <div style="margin-top:8px;">
-            <a href="${order.googleDriveDocs}" target="_blank" class="portal-file-link" style="word-break: break-all;">${order.googleDriveDocs}</a>
-          </div>
-        </div>` : ''}
-
-        <div class="detail-card-full">
-          <span class="detail-card-label">Product Attachments</span>
-          <div class="detail-card-files">
-            ${renderFilePills(order.productImages)}
+          <div class="detail-card-full">
+            <span class="detail-card-label">Shipping Labels</span>
+            <div class="detail-card-files">
+              ${renderFilePills([...(order.documents || []), ...(order.shippingLabels || [])])}
+            </div>
           </div>
         </div>
+      `;
+    } else {
+      detailsHtml = `
+        <div class="detail-card-grid">
+          <div class="detail-card-item">
+            <span class="detail-card-label">Shipment Name</span>
+            <span class="detail-card-value">${order.shipmentName || '-'}</span>
+          </div>
+          <div class="detail-card-item">
+            <span class="detail-card-label">Supplier/Vendor Name</span>
+            <span class="detail-card-value">${order.supplierName || '-'}</span>
+          </div>
+          <div class="detail-card-item">
+            <span class="detail-card-label">Tracking Number</span>
+            <span class="detail-card-value">${order.trackingNumber || '-'}</span>
+          </div>
+          <div class="detail-card-item">
+            <span class="detail-card-label">Carrier</span>
+            <span class="detail-card-value">${order.carrier || '-'}</span>
+          </div>
+          <div class="detail-card-item">
+            <span class="detail-card-label">Estimated Arrival Date</span>
+            <span class="detail-card-value">${order.estimatedArrival ? new Date(order.estimatedArrival).toLocaleDateString() : '-'}</span>
+          </div>
+          <div class="detail-card-item">
+            <span class="detail-card-label">Status</span>
+            <div><span class="status-badge status-${(order.status || 'Pending').toLowerCase().replace(/\s/g, '-')}">${order.status || 'Pending'}</span></div>
+          </div>
 
-        <div class="detail-card-full">
-          <span class="detail-card-label">Commercial Invoices</span>
-          <div class="detail-card-files">
-            ${renderFilePills(order.commercialInvoices)}
+          <div class="detail-card-full">
+            <span class="detail-card-label">Notes</span>
+            <p style="margin-top:8px; color:#475569; font-size: 14px; line-height: 1.5;">${order.notes || '-'}</p>
+          </div>
+
+          <div class="detail-card-full">
+            <span class="detail-card-label">Product Attachments</span>
+            <div class="detail-card-files">
+              ${renderFilePills(order.productImages)}
+            </div>
           </div>
         </div>
+      `;
+    }
 
-        <div class="detail-card-full">
-          <span class="detail-card-label">Packing List PDFs</span>
-          <div class="detail-card-files">
-            ${renderFilePills(order.packingListPDFs)}
-          </div>
-        </div>
-      </div>
-    `;
-
+    content.innerHTML = detailsHtml;
     modal.style.display = 'flex';
   } catch (err) {
     console.error('View Details Error:', err);
@@ -678,12 +892,12 @@ function renderFilePills(files) {
   if (!files || files.length === 0) return '<span style="color: #94a3b8; font-size: 13px; font-style: italic;">No files attached</span>';
   return `<div class="file-pill-list">
     ${files.map(file => {
-      const fileName = file.split('/').pop();
-      return `<a href="/uploads/${file}" target="_blank" class="file-pill">
+    const fileName = file.split('/').pop();
+    return `<a href="/uploads/${file}" target="_blank" class="file-pill">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>
         <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${fileName}</span>
       </a>`;
-    }).join('')}
+  }).join('')}
   </div>`;
 }
 
@@ -888,9 +1102,8 @@ window.addEventListener('DOMContentLoaded', () => {
   if (orderForm) orderForm.onsubmit = handleOrderSubmit;
 
   // File Managers
-  initFileManager('productImages', 'productImagesList', 'productImagesZone', ['image/*', 'application/pdf']);
-  initFileManager('commercialInvoices', 'commercialInvoicesList', 'commercialInvoicesZone', ['image/*', 'application/pdf', '.xls', '.xlsx']);
-  initFileManager('packingListPDFs', 'packingListPDFsList', 'packingListPDFsZone', ['application/pdf']);
+  initFileManager('documents', 'documentsList', 'documentsZone', ['image/*', 'application/pdf', '.xls', '.xlsx']);
+  initFileManager('shippingLabels', 'shippingLabelsList', 'shippingLabelsZone', ['image/*', 'application/pdf', '.xls', '.xlsx']);
 
   // Set min date for estimatedArrival to today
   const dateInput = document.getElementById('estimatedArrival');
@@ -900,11 +1113,61 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 
   // Shipment change globally
-  window.handleShipmentChange = handleShipmentChange;
+  window.selectShipmentTypeBox = selectShipmentTypeBox;
   window.toggleShipmentFields = toggleShipmentFields;
+  window.addInboundSkuRow = addInboundSkuRow;
+
+  // Also add initial empty row for Inbound SKUs if table is present
+  if (document.getElementById('inboundSkuBody')) {
+    addInboundSkuRow();
+  }
 
   // Account form
   window.saveAccountDetails = saveAccountDetails;
+
+  // Shipping Labels
+  window.openShippingLabelsModal = function (orderId) {
+    document.getElementById('sl_orderId').value = orderId;
+    document.getElementById('uploadShippingLabelsModal').style.display = 'flex';
+  };
+
+  window.closeShippingLabelsModal = function () {
+    document.getElementById('uploadShippingLabelsModal').style.display = 'none';
+    document.getElementById('shippingLabelsForm').reset();
+    if (fileManagers['shippingLabels']) fileManagers['shippingLabels'].reset();
+  };
+
+  window.handleShippingLabelsSubmit = async function (event) {
+    event.preventDefault();
+    const orderId = document.getElementById('sl_orderId').value;
+    const btn = event.target.querySelector('button[type="submit"]');
+    const restore = window.setBtnLoading(btn, 'Uploading...');
+
+    const formData = new FormData();
+    if (fileManagers['shippingLabels']) {
+      fileManagers['shippingLabels'].getFiles().forEach(f => formData.append('shippingLabels', f));
+    }
+
+    try {
+      const res = await fetch(`/api/orders/${orderId}/shipping-labels`, {
+        method: 'POST',
+        body: formData
+      });
+      const data = await res.json();
+      if (data.success) {
+        window.showToast('Shipping labels uploaded successfully');
+        window.closeShippingLabelsModal();
+        loadOutboundShipments(1);
+      } else {
+        window.showToast(data.message || 'Upload failed', 'error');
+      }
+    } catch (err) {
+      console.error('Upload error:', err);
+      window.showToast('Server error', 'error');
+    } finally {
+      restore();
+    }
+  };
 
   // Auth check
   checkAuth();

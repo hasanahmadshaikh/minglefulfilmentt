@@ -11,44 +11,34 @@ const OrderSchema = new mongoose.Schema({
     unique: true
   },
   shipmentName: {
-    type: String,
-    required: true
+    type: String
   },
   supplierName: {
-    type: String,
-    required: true
+    type: String
   },
   trackingNumber: {
-    type: String,
-    required: true
+    type: String
   },
   carrier: {
-    type: String,
-    required: true
+    type: String
   },
   estimatedArrival: {
-    type: Date,
-    required: true
+    type: Date
   },
   skuList: {
-    type: String,
-    required: true
+    type: String
   },
   productQuantities: {
-    type: String,
-    required: true
+    type: String
   },
   productImages: {
-    type: [String], // Array of file names/paths
-    required: true
+    type: [String] // Array of file names/paths
   },
   packingDetails: {
-    type: String,
-    required: true
+    type: String
   },
   notes: {
-    type: String,
-    required: true
+    type: String
   },
   googleDriveDocs: {
     type: String
@@ -59,11 +49,31 @@ const OrderSchema = new mongoose.Schema({
   packingListPDFs: {
     type: [String]
   },
+  documents: {
+    type: [String],
+    default: []
+  },
+  channel: {
+    type: String
+  },
+  fulfilmentType: {
+    type: String
+  },
+  prepInstructions: {
+    type: String
+  },
+  shippingLabelsRequired: {
+    type: Boolean
+  },
+  shippingLabels: {
+    type: [String],
+    default: []
+  },
   status: {
     type: String,
     enum: [
       'Pending Arrival', 'Received', 'In Inspection', 'Stored',
-      'Processing', 'Shipped', 'Completed', 'Cancelled'
+      'Processing', 'Awaiting Shipping Labels', 'Shipment labels uploaded', 'Shipped', 'Completed', 'Cancelled'
     ],
     default: 'Pending Arrival'
   },
@@ -79,7 +89,11 @@ const OrderSchema = new mongoose.Schema({
   products: [{
     productName: String,
     quantity: Number,
-    sku: String
+    sku: String,
+    packDetails: {
+      type: String,
+      enum: ['Cases', 'Units']
+    }
   }]
 });
 

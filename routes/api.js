@@ -109,7 +109,13 @@ router.get('/shipment-details', ensureAuth, async (req, res) => {
       return res.status(400).json({ success: false, message: 'Invalid format' });
     }
 
-    const order = await Order.findOne({ _id: id, user: req.session.userId });
+    let order;
+    const user = await User.findById(req.session.userId);
+    if (user && user.role === 'admin') {
+      order = await Order.findById(id).populate('user', 'name email businessName');
+    } else {
+      order = await Order.findOne({ _id: id, user: req.session.userId });
+    }
     if (!order) return res.status(404).json({ success: false, message: 'Shipment not found' });
     res.json({ success: true, order });
   } catch (error) {
@@ -124,13 +130,15 @@ router.get('/shipment-details', ensureAuth, async (req, res) => {
 router.post('/orders', ensureAuth, upload.fields([
   { name: 'productImages', maxCount: 10 },
   { name: 'commercialInvoices', maxCount: 5 },
-  { name: 'packingListPDFs', maxCount: 5 }
+  { name: 'packingListPDFs', maxCount: 5 },
+  { name: 'documents' }
 ]), async (req, res) => {
   try {
     const {
       shipmentName, supplierName, trackingNumber, carrier,
       estimatedArrival, skuList, productQuantities, packingDetails,
-      notes, googleDriveDocs, type, products
+      notes, googleDriveDocs, type, products,
+      channel, fulfilmentType, prepInstructions, shippingLabelsRequired
     } = req.body;
 
     // Auto-generate orderId
@@ -140,21 +148,25 @@ router.post('/orders', ensureAuth, upload.fields([
     }
     counter.seq += 1;
     await counter.save();
-    const generatedId = `INB-${counter.seq}`;
+    const isOutbound = type === 'outbound';
+    const generatedId = isOutbound ? `OUT-${counter.seq}` : `INB-${counter.seq}`;
 
     // Handle files
     const productImages = req.files['productImages'] ? req.files['productImages'].map(f => f.originalname) : [];
     const commercialInvoices = req.files['commercialInvoices'] ? req.files['commercialInvoices'].map(f => f.originalname) : [];
     const packingListPDFs = req.files['packingListPDFs'] ? req.files['packingListPDFs'].map(f => f.originalname) : [];
+    const documents = req.files['documents'] ? req.files['documents'].map(f => f.originalname) : [];
+
+    const finalShipmentName = isOutbound ? `Outbound Order ${generatedId}` : shipmentName;
 
     const newOrder = await Order.create({
       user: req.session.userId,
       orderId: generatedId,
-      shipmentName,
-      supplierName,
-      trackingNumber,
-      carrier,
-      estimatedArrival,
+      shipmentName: finalShipmentName,
+      supplierName: isOutbound ? 'N/A' : supplierName,
+      trackingNumber: isOutbound ? 'N/A' : trackingNumber,
+      carrier: isOutbound ? 'N/A' : carrier,
+      estimatedArrival: isOutbound ? new Date() : estimatedArrival,
       skuList,
       productQuantities,
       productImages,
@@ -163,9 +175,14 @@ router.post('/orders', ensureAuth, upload.fields([
       googleDriveDocs,
       commercialInvoices,
       packingListPDFs,
+      documents,
+      channel,
+      fulfilmentType,
+      prepInstructions,
+      shippingLabelsRequired: shippingLabelsRequired === 'true',
       type: type || 'inbound',
-      products: type === 'outbound' ? JSON.parse(products || '[]') : [],
-      status: type === 'outbound' ? 'Processing' : 'Pending Arrival'
+      products: products ? JSON.parse(products) : [],
+      status: isOutbound ? 'Processing' : 'Pending Arrival'
     });
 
     res.status(201).json({
@@ -179,6 +196,34 @@ router.post('/orders', ensureAuth, upload.fields([
   }
 });
 
+// POST /api/orders/:id/shipping-labels
+router.post('/orders/:id/shipping-labels', ensureAuth, upload.fields([
+  { name: 'shippingLabels' }
+]), async (req, res) => {
+  try {
+    const orderId = req.params.id;
+    const order = await Order.findOne({ _id: orderId, user: req.session.userId });
+    if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
+    
+    if (order.status !== 'Awaiting Shipping Labels') {
+      return res.status(400).json({ success: false, message: 'Cannot upload labels at this stage' });
+    }
+
+    const shippingLabels = req.files['shippingLabels'] ? req.files['shippingLabels'].map(f => f.originalname) : [];
+    
+    if (shippingLabels.length === 0) {
+      return res.status(400).json({ success: false, message: 'No labels uploaded' });
+    }
+
+    order.shippingLabels = [...(order.shippingLabels || []), ...shippingLabels];
+    order.status = 'Shipment labels uploaded';
+    await order.save();
+
+    res.json({ success: true, message: 'Shipping labels uploaded successfully', order });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
 
 // GET /api/orders
 router.get('/orders', ensureAuth, async (req, res) => {
@@ -640,6 +685,10 @@ router.get('/admin/orders', ensureAdmin, async (req, res) => {
         filter.status = status;
       }
     }
+    
+    if (type) {
+      filter.type = type;
+    }
 
     if (search) {
       filter.$or = [
@@ -684,7 +733,69 @@ router.put('/admin/orders/:id/status', ensureAdmin, async (req, res) => {
 
     if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
 
+    if (status === 'Stored' && order.type === 'inbound') {
+      for (const product of order.products) {
+        if (product.productName && product.quantity) {
+          await Inventory.findOneAndUpdate(
+            { user: order.user, productName: product.productName },
+            { 
+              sku: product.sku || '', 
+              packDetails: product.packDetails,
+              $inc: { quantity: product.quantity }, 
+              updatedAt: Date.now() 
+            },
+            { upsert: true, new: true }
+          );
+        }
+      }
+    }
+
+    if (status === 'Shipped' && order.type === 'outbound') {
+      for (const product of order.products) {
+        if (product.sku && product.quantity) {
+          await Inventory.findOneAndUpdate(
+            { user: order.user, sku: product.sku },
+            { $inc: { quantity: -product.quantity }, updatedAt: Date.now() }
+          );
+        }
+      }
+    }
+
     res.json({ success: true, message: `Shipment status updated to ${status}`, order });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// PUT /api/admin/orders/:id/carton-details
+router.put('/admin/orders/:id/carton-details', ensureAdmin, async (req, res) => {
+  try {
+    const { cartonDetailsList } = req.body; // Array of { sku, cartonDetails }
+    const order = await Order.findById(req.params.id);
+    if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
+
+    if (order.type !== 'outbound') {
+      return res.status(400).json({ success: false, message: 'Only outbound orders can have carton details added this way' });
+    }
+
+    if (order.status !== 'Processing') {
+      return res.status(400).json({ success: false, message: 'Order must be Processing to add carton details' });
+    }
+
+    // Update inventory
+    if (Array.isArray(cartonDetailsList)) {
+      for (const item of cartonDetailsList) {
+        await Inventory.findOneAndUpdate(
+          { user: order.user, sku: item.sku },
+          { cartonDetails: item.cartonDetails }
+        );
+      }
+    }
+
+    order.status = 'Awaiting Shipping Labels';
+    await order.save();
+
+    res.json({ success: true, message: 'Carton details added and status updated', order });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

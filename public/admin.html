@@ -35,7 +35,7 @@
                     <path d="m3.3 7 8.7 5 8.7-5"></path>
                     <path d="M12 22V12"></path>
                 </svg>
-                Orders Management
+                Shipments Management
             </button>
             <button class="menu-item" onclick="switchAdminTab('users')">
                 <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -146,28 +146,32 @@
             </div>
         </section>
 
-        <!-- Orders Management Content -->
+        <!-- Shipments Management Content -->
         <section id="orders" class="admin-tab-content">
-            <div class="admin-card">
+            <div style="margin-bottom: 20px;">
+                <div class="filter-bar" style="display: flex; gap: 10px; margin-bottom: 15px;">
+                    <button class="portal-btn-sm" id="btnAdminInbound" onclick="switchAdminShipmentTab('inbound')" style="background: #3b82f6; color: white;">Inbound Shipments</button>
+                    <button class="portal-btn-sm" id="btnAdminOutbound" onclick="switchAdminShipmentTab('outbound')" style="background: white; color: #475569;">Outbound Shipments</button>
+                </div>
+            </div>
+
+            <div class="admin-card" id="adminInboundSection">
                 <div class="card-header">
-                    <h3>All Platform Shipments</h3>
+                    <h3>Inbound Shipments</h3>
                     <div class="filter-group" style="display: flex; align-items: center; gap: 12px;">
-                        <select class="admin-select" id="orderStatusFilter" onchange="loadAdminOrders(1)">
+                        <select class="admin-select" id="inboundOrderStatusFilter" onchange="loadAdminOrders('inbound', 1)">
                              <option value="All">All Statuses</option>
                              <option value="Pending Arrival">Pending Arrival</option>
                              <option value="Received">Received</option>
                              <option value="In Inspection">In Inspection</option>
                              <option value="Stored">Stored</option>
-                             <option value="Processing">Processing</option>
-                             <option value="Shipped">Shipped</option>
-                             <option value="Completed">Completed</option>
                              <option value="Cancelled">Cancelled</option>
                          </select>
-                         <input type="text" id="orderSearchInput" class="admin-select filter-search-wide" placeholder="Search Shipment ID or Shipment..." oninput="handleSearch('orders')">
+                         <input type="text" id="inboundOrderSearchInput" class="admin-select filter-search-wide" placeholder="Search Shipment ID or Shipment..." oninput="handleAdminOrderSearch('inbound')">
                     </div>
                 </div>
                 <div class="admin-table-container">
-                    <table class="admin-table" id="allOrdersTable">
+                    <table class="admin-table" id="adminInboundTable">
                         <thead>
                             <tr>
                                 <th>Date</th>
@@ -184,7 +188,44 @@
                         </tbody>
                     </table>
                 </div>
-                <div id="ordersPagination" class="admin-pagination"></div>
+                <div id="adminInboundPagination" class="admin-pagination"></div>
+            </div>
+
+            <div class="admin-card" id="adminOutboundSection" style="display: none;">
+                <div class="card-header">
+                    <h3>Outbound Shipments</h3>
+                    <div class="filter-group" style="display: flex; align-items: center; gap: 12px;">
+                        <select class="admin-select" id="outboundOrderStatusFilter" onchange="loadAdminOrders('outbound', 1)">
+                             <option value="All">All Statuses</option>
+                             <option value="Processing">Processing</option>
+                             <option value="Awaiting Shipping Labels">Awaiting Shipping Labels</option>
+                             <option value="Shipment labels uploaded">Shipment labels uploaded</option>
+                             <option value="Shipped">Shipped</option>
+                             <option value="Completed">Completed</option>
+                             <option value="Cancelled">Cancelled</option>
+                         </select>
+                         <input type="text" id="outboundOrderSearchInput" class="admin-select filter-search-wide" placeholder="Search Shipment ID or Shipment..." oninput="handleAdminOrderSearch('outbound')">
+                    </div>
+                </div>
+                <div class="admin-table-container">
+                    <table class="admin-table" id="adminOutboundTable">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Client</th>
+                                <th>Shipment ID</th>
+                                <th>Shipment</th>
+                                <th>Tracking</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Loaded via JS -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="adminOutboundPagination" class="admin-pagination"></div>
             </div>
         </section>
 
@@ -336,6 +377,58 @@
                 </div>
             </div>
         </section>
+        <!-- Add Carton Details Modal -->
+        <div id="cartonDetailsModal" class="modal-overlay modal-overlay--top" style="display: none;">
+            <div class="modal-popup modal-popup--wide">
+                <div class="modal-popup-header">
+                    <h3>Add Carton Details</h3>
+                    <button onclick="closeCartonDetailsModal()" class="modal-close-btn">&times;</button>
+                </div>
+                <form id="cartonDetailsForm" onsubmit="submitCartonDetails(event)">
+                    <input type="hidden" id="cd_orderId">
+                    <div id="cartonDetailsContent" class="modal-popup-body">
+                        <!-- Loaded dynamically -->
+                    </div>
+                    <div class="modal-popup-footer" style="margin-top: 15px;">
+                        <button type="button" class="modal-btn cancel" onclick="closeCartonDetailsModal()">Cancel</button>
+                        <button type="submit" class="modal-btn confirm" style="background: #3b82f6; color: white; border: none;">Save Carton Details</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Shipment Detail Modal -->
+        <div id="orderDetailModal" class="modal-overlay" style="display: none;">
+            <div class="modal-popup modal-popup--wide">
+                <div class="modal-popup-header">
+                    <h3>Shipment Details</h3>
+                    <button onclick="closeOrderDetailModal()" class="modal-close-btn">&times;</button>
+                </div>
+                <div class="modal-popup-body" id="orderDetailContent">
+                    <!-- Loaded dynamically -->
+                </div>
+                <div class="modal-popup-footer">
+                    <button class="modal-btn confirm" onclick="closeOrderDetailModal()">Close</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- File Viewer Modal -->
+        <div id="fileViewerModal" class="modal-overlay" style="display: none;">
+            <div class="modal-popup modal-popup--wide">
+                <div class="modal-popup-header">
+                    <h3 id="modalFileName">File Preview</h3>
+                    <button onclick="closeFileViewer()" class="modal-close-btn">&times;</button>
+                </div>
+                <div class="modal-popup-body" id="fileViewerContent"
+                    style="min-height: 400px; display: flex; align-items: center; justify-content: center;">
+                    <!-- Preview loaded here -->
+                </div>
+                <div class="modal-popup-footer">
+                    <button class="modal-btn confirm" onclick="closeFileViewer()">Close</button>
+                </div>
+            </div>
+        </div>
 
     </main>
 

@@ -41,7 +41,7 @@ async function loadAdminData() {
     }
 
     // Orders (main tab + recent dashboard cards)
-    loadAdminOrders(1);
+    loadAdminOrders('inbound', 1);
     loadRecentOrders();
 
     // Users & messages
@@ -106,7 +106,9 @@ function switchAdminTab(tabId) {
     if (tabId !== 'orders') highlightedOrderId = null;
 
     if (tabId === 'dashboard') loadAdminData();
-    if (tabId === 'orders')    loadAdminOrders(1);
+    if (tabId === 'orders')    {
+      switchAdminShipmentTab('inbound');
+    }
     if (tabId === 'users')     loadAdminUsers(1);
     if (tabId === 'messages')  loadAdminMessages(1);
     if (tabId === 'inventory') initAdminInventory();
@@ -131,18 +133,41 @@ function handleSearch(tab) {
 function goToOrder(orderId) {
   highlightedOrderId = orderId;
   switchAdminTab('orders');
-  loadAdminOrders(1);
 }
 
-async function loadAdminOrders(page = 1) {
-  const status = document.getElementById('orderStatusFilter').value;
-  const search = document.getElementById('orderSearchInput').value;
+function handleAdminOrderSearch(type) {
+  clearTimeout(searchTimers[`orders_${type}`]);
+  searchTimers[`orders_${type}`] = setTimeout(() => {
+    loadAdminOrders(type, 1);
+  }, 300);
+}
+
+function switchAdminShipmentTab(type) {
+  document.getElementById('btnAdminInbound').style.background = type === 'inbound' ? '#3b82f6' : 'white';
+  document.getElementById('btnAdminInbound').style.color = type === 'inbound' ? 'white' : '#475569';
+  document.getElementById('btnAdminOutbound').style.background = type === 'outbound' ? '#3b82f6' : 'white';
+  document.getElementById('btnAdminOutbound').style.color = type === 'outbound' ? 'white' : '#475569';
+
+  document.getElementById('adminInboundSection').style.display = type === 'inbound' ? 'block' : 'none';
+  document.getElementById('adminOutboundSection').style.display = type === 'outbound' ? 'block' : 'none';
+
+  loadAdminOrders(type, 1);
+}
+
+window.switchAdminShipmentTab = switchAdminShipmentTab;
+window.handleAdminOrderSearch = handleAdminOrderSearch;
+
+async function loadAdminOrders(type = 'inbound', page = 1) {
+  const status = document.getElementById(`${type}OrderStatusFilter`).value;
+  const search = document.getElementById(`${type}OrderSearchInput`).value;
 
   const data = await window.apiFetch(
-    `/api/admin/orders?page=${page}&limit=10&status=${status}&search=${encodeURIComponent(search)}`
+    `/api/admin/orders?page=${page}&limit=10&status=${status}&search=${encodeURIComponent(search)}&type=${type}`
   );
 
-  const tbody = document.querySelector('#allOrdersTable tbody');
+  const tbodyId = `#admin${type === 'inbound' ? 'Inbound' : 'Outbound'}Table tbody`;
+  const tbody = document.querySelector(tbodyId);
+  if (!tbody) return;
   tbody.innerHTML = '';
 
   (data.orders || []).forEach(order => {
@@ -151,6 +176,17 @@ async function loadAdminOrders(page = 1) {
       row.className = 'row-highlight';
       setTimeout(() => row.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
     }
+
+    const statusOptions = type === 'inbound' 
+      ? ['Pending Arrival', 'Received', 'In Inspection', 'Stored', 'Cancelled']
+      : ['Processing', 'Awaiting Shipping Labels', 'Shipment labels uploaded', 'Shipped', 'Completed', 'Cancelled'];
+
+    let extraBtn = `<button class="portal-btn-sm" onclick="viewOrderDetails('${order._id}')">View</button>`;
+    if (type === 'outbound' && order.status === 'Processing') {
+      const prodsBase64 = btoa(JSON.stringify(order.products));
+      extraBtn += ` <button class="portal-btn-sm" style="background:#3b82f6; color:white; border-color:#2563eb;" onclick="openCartonDetailsModal('${order._id}', '${prodsBase64}')">Add Carton Details</button>`;
+    }
+
     row.innerHTML = `
       <td>${new Date(order.createdAt).toLocaleDateString()}</td>
       <td>
@@ -165,11 +201,12 @@ async function loadAdminOrders(page = 1) {
       <td><span class="status-badge status-${order.status.toLowerCase().replace(/\s/g, '-')}">${order.status}</span></td>
       <td>
         <div style="display: flex; align-items: center; gap: 8px;">
+          ${extraBtn}
           <select class="admin-status-dropdown" onchange="updateOrderStatus('${order._id}', this.value)">
-            ${['Pending Arrival','Received','In Inspection','Stored','Processing','Shipped','Completed','Cancelled'].map(s => `
+            ${statusOptions.map(s => `
               <option value="${s}" ${order.status === s ? 'selected' : ''}>${s}</option>`).join('')}
           </select>
-          <button class="portal-btn-sm" style="background: #fee2e2; color: #b91c1c; border-color: #fecaca;" onclick="deleteShipment('${order._id}', '${order.status}')">
+          <button class="portal-btn-sm" style="background: #fee2e2; color: #b91c1c; border-color: #fecaca;" title="Delete" onclick="deleteShipment('${order._id}', '${order.status}')">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M3 6h18m-2 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
             </svg>
@@ -179,7 +216,8 @@ async function loadAdminOrders(page = 1) {
     tbody.appendChild(row);
   });
 
-  window.renderPagination('ordersPagination', data.pagination, 'loadAdminOrders');
+  const paginationId = `admin${type === 'inbound' ? 'Inbound' : 'Outbound'}Pagination`;
+  window.renderPagination(paginationId, data.pagination, (p) => loadAdminOrders(type, p));
 }
 
 /* ─── Inventory (admin) ──────────────────────────────────── */
@@ -358,6 +396,235 @@ function closeUserDetailsModal() {
   document.getElementById('userDetailsModal').style.display = 'none';
 }
 
+/* ─── View Shipment Details (Admin) ───────────────────────── */
+
+window.viewOrderDetails = async function(id) {
+  const cleanId = typeof id === 'string' ? id.trim() : id;
+  if (!cleanId || cleanId === 'undefined') {
+    window.showToast('Invalid shipment ID', 'error');
+    return;
+  }
+
+  window.showLoader();
+  try {
+    const res = await fetch(`/api/shipment-details?id=${cleanId}`);
+    const data = await res.json();
+    if (!data.success) throw new Error(data.message || 'Shipment not found');
+
+    const order = data.order;
+    if (!order) throw new Error('Shipment data is empty');
+
+    const modal = document.getElementById('orderDetailModal');
+    const content = document.getElementById('orderDetailContent');
+
+    const isOutbound = order.type === 'outbound';
+    let detailsHtml = '';
+
+    if (isOutbound) {
+      detailsHtml = `
+        <div class="detail-card-grid">
+          <div class="detail-card-item">
+            <span class="detail-card-label">Client</span>
+            <span class="detail-card-value">${order.user ? order.user.name + ' (' + (order.user.businessName || order.user.email) + ')' : '-'}</span>
+          </div>
+          <div class="detail-card-item">
+            <span class="detail-card-label">Shipment Name</span>
+            <span class="detail-card-value">${order.shipmentName || '-'}</span>
+          </div>
+          <div class="detail-card-item">
+            <span class="detail-card-label">Status</span>
+            <div><span class="status-badge status-${(order.status || 'Pending').toLowerCase().replace(/\s/g, '-')}">${order.status || 'Pending'}</span></div>
+          </div>
+          <div class="detail-card-item">
+            <span class="detail-card-label">Channel</span>
+            <span class="detail-card-value">${order.channel || '-'}</span>
+          </div>
+          <div class="detail-card-item">
+            <span class="detail-card-label">Fulfilment Type</span>
+            <span class="detail-card-value">${order.fulfilmentType || '-'}</span>
+          </div>
+          <div class="detail-card-item">
+            <span class="detail-card-label">Shipping Labels Required</span>
+            <span class="detail-card-value">${order.shippingLabelsRequired ? 'Yes' : 'No'}</span>
+          </div>
+
+          ${order.products && order.products.length > 0 ? `
+          <div class="detail-card-full">
+            <span class="detail-card-label">Selected Products</span>
+            <div style="margin-top:12px;">
+              <table class="portal-table" style="background: white; border-radius: 8px;">
+                <thead>
+                  <tr>
+                    <th style="padding: 10px; font-size: 12px; text-align: left;">Product</th>
+                    <th style="padding: 10px; font-size: 12px; text-align: left;">SKU</th>
+                    <th style="padding: 10px; font-size: 12px; text-align: right;">Qty</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${order.products.map(p => `
+                    <tr>
+                      <td style="padding: 10px; font-size: 13px; border-top: 1px solid #f1f5f9;">${p.productName}</td>
+                      <td style="padding: 10px; font-size: 13px; border-top: 1px solid #f1f5f9;">${p.sku || '-'}</td>
+                      <td style="padding: 10px; font-size: 13px; border-top: 1px solid #f1f5f9; text-align: right; font-weight: 600;">${p.quantity}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>` : ''}
+
+          <div class="detail-card-full">
+            <span class="detail-card-label">Prep Instructions</span>
+            <p style="margin-top:8px; color:#475569; font-size: 14px; line-height: 1.5;">${order.prepInstructions || '-'}</p>
+          </div>
+
+          <div class="detail-card-full">
+            <span class="detail-card-label">Shipping Labels</span>
+            <div class="detail-card-files">
+              ${renderFilePills([...(order.documents || []), ...(order.shippingLabels || [])])}
+            </div>
+          </div>
+        </div>
+      `;
+    } else {
+      detailsHtml = `
+        <div class="detail-card-grid">
+          <div class="detail-card-item">
+            <span class="detail-card-label">Client</span>
+            <span class="detail-card-value">${order.user ? order.user.name + ' (' + (order.user.businessName || order.user.email) + ')' : '-'}</span>
+          </div>
+          <div class="detail-card-item">
+            <span class="detail-card-label">Shipment Name</span>
+            <span class="detail-card-value">${order.shipmentName || '-'}</span>
+          </div>
+          <div class="detail-card-item">
+            <span class="detail-card-label">Vendor Name</span>
+            <span class="detail-card-value">${order.supplierName || '-'}</span>
+          </div>
+          <div class="detail-card-item">
+            <span class="detail-card-label">Tracking Number</span>
+            <span class="detail-card-value">${order.trackingNumber || '-'}</span>
+          </div>
+          <div class="detail-card-item">
+            <span class="detail-card-label">Carrier</span>
+            <span class="detail-card-value">${order.carrier || '-'}</span>
+          </div>
+          <div class="detail-card-item">
+            <span class="detail-card-label">Estimated Arrival Date</span>
+            <span class="detail-card-value">${order.estimatedArrival ? new Date(order.estimatedArrival).toLocaleDateString() : '-'}</span>
+          </div>
+          <div class="detail-card-item">
+            <span class="detail-card-label">Status</span>
+            <div><span class="status-badge status-${(order.status || 'Pending').toLowerCase().replace(/\s/g, '-')}">${order.status || 'Pending'}</span></div>
+          </div>
+
+          <div class="detail-card-full">
+            <span class="detail-card-label">SKU List</span>
+            <p style="margin-top:8px; color:#475569; font-size: 14px; line-height: 1.5;">${order.skuList || '-'}</p>
+          </div>
+          
+          <div class="detail-card-full">
+            <span class="detail-card-label">Product Quantities</span>
+            <p style="margin-top:8px; color:#475569; font-size: 14px; line-height: 1.5;">${order.productQuantities || '-'}</p>
+          </div>
+
+          <div class="detail-card-full">
+            <span class="detail-card-label">Packing Details</span>
+            <p style="margin-top:8px; color:#475569; font-size: 14px; line-height: 1.5;">${order.packingDetails || '-'}</p>
+          </div>
+
+          <div class="detail-card-full">
+            <span class="detail-card-label">Notes</span>
+            <p style="margin-top:8px; color:#475569; font-size: 14px; line-height: 1.5;">${order.notes || '-'}</p>
+          </div>
+
+          ${order.googleDriveDocs ? `
+          <div class="detail-card-full">
+            <span class="detail-card-label">Google Drive Link</span>
+            <div style="margin-top:8px;">
+              <a href="${order.googleDriveDocs}" target="_blank" class="portal-file-link" style="word-break: break-all;">${order.googleDriveDocs}</a>
+            </div>
+          </div>` : ''}
+
+          <div class="detail-card-full">
+            <span class="detail-card-label">Product Attachments</span>
+            <div class="detail-card-files">
+              ${renderFilePills(order.productImages)}
+            </div>
+          </div>
+
+          <div class="detail-card-full">
+            <span class="detail-card-label">Commercial Invoices</span>
+            <div class="detail-card-files">
+              ${renderFilePills(order.commercialInvoices)}
+            </div>
+          </div>
+
+          <div class="detail-card-full">
+            <span class="detail-card-label">Packing List PDFs</span>
+            <div class="detail-card-files">
+              ${renderFilePills(order.packingListPDFs)}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    content.innerHTML = detailsHtml;
+
+    modal.style.display = 'flex';
+  } catch (err) {
+    console.error('View Details Error:', err);
+    window.showToast(`Details Error: ${err.message}`, 'error');
+  } finally {
+    window.hideLoader();
+  }
+};
+
+function renderFilePills(files) {
+  if (!files || files.length === 0) return '<span style="color: #94a3b8; font-size: 13px; font-style: italic;">No files attached</span>';
+  return `<div class="file-pill-list">
+    ${files.map(file => {
+      const fileName = file.split('/').pop();
+      return `<a href="/uploads/${file}" target="_blank" class="file-pill">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>
+        <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${fileName}</span>
+      </a>`;
+    }).join('')}
+  </div>`;
+}
+
+window.closeOrderDetailModal = function() {
+  const modal = document.getElementById('orderDetailModal');
+  if (modal) modal.style.display = 'none';
+};
+
+window.openFileViewer = function(name, url, type) {
+  const modal = document.getElementById('fileViewerModal');
+  const title = document.getElementById('modalFileName');
+  const content = document.getElementById('fileViewerContent');
+
+  title.innerText = name;
+  content.innerHTML = '';
+
+  if (type.includes('image')) {
+    content.innerHTML = `<img src="${url}" style="max-width: 100%; max-height: 70vh; border-radius: 8px;">`;
+  } else if (type.includes('pdf')) {
+    content.innerHTML = `<iframe src="${url}" style="width: 100%; height: 70vh; border: none;"></iframe>`;
+  } else {
+    content.innerHTML = `<div class="empty-state">
+      <p>Preview not available for this file type.</p>
+      <a href="${url}" download="${name}" class="portal-file-link">Download File</a>
+    </div>`;
+  }
+
+  modal.style.display = 'flex';
+};
+
+window.closeFileViewer = function() {
+  document.getElementById('fileViewerModal').style.display = 'none';
+};
+
 /* ─── Messages (admin) ───────────────────────────────────── */
 
 async function loadAdminMessages(page = 1) {
@@ -418,6 +685,67 @@ async function handleCreateAdmin(event) {
 
   restore();
 }
+
+/* ─── Carton Details Modal ───────────────────────────────── */
+
+window.openCartonDetailsModal = function(orderId, prodsBase64) {
+  document.getElementById('cd_orderId').value = orderId;
+  const products = JSON.parse(atob(prodsBase64));
+  
+  let html = `<p style="margin-bottom: 10px; font-size: 14px; color: #64748b;">Enter carton dimensions/details for each SKU to update inventory and proceed.</p>`;
+  
+  products.forEach((p, i) => {
+    html += `
+      <div style="margin-bottom: 15px; padding: 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;">
+        <div style="font-weight: 600; margin-bottom: 8px; color: #0f172a;">${p.productName} (SKU: ${p.sku || '-'}) - Qty: ${p.quantity}</div>
+        <input type="hidden" name="cd_sku_${i}" value="${p.sku || ''}">
+        <label class="portal-label">Carton Details</label>
+        <input type="text" name="cd_val_${i}" class="portal-input" placeholder="e.g. 12x12x12, 5lbs" required>
+      </div>
+    `;
+  });
+  html += `<input type="hidden" id="cd_count" value="${products.length}">`;
+  
+  document.getElementById('cartonDetailsContent').innerHTML = html;
+  document.getElementById('cartonDetailsModal').style.display = 'flex';
+};
+
+window.closeCartonDetailsModal = function() {
+  document.getElementById('cartonDetailsModal').style.display = 'none';
+  document.getElementById('cartonDetailsForm').reset();
+};
+
+window.submitCartonDetails = async function(event) {
+  event.preventDefault();
+  const orderId = document.getElementById('cd_orderId').value;
+  const count = parseInt(document.getElementById('cd_count').value);
+  
+  const cartonDetailsList = [];
+  for (let i = 0; i < count; i++) {
+    const sku = document.querySelector(`input[name="cd_sku_${i}"]`).value;
+    const cartonDetails = document.querySelector(`input[name="cd_val_${i}"]`).value;
+    cartonDetailsList.push({ sku, cartonDetails });
+  }
+
+  const btn = event.target.querySelector('button[type="submit"]');
+  const restore = window.setBtnLoading(btn, 'Saving...');
+
+  try {
+    const data = await window.apiPut(`/api/admin/orders/${orderId}/carton-details`, { cartonDetailsList });
+    if (data.success) {
+      window.showToast('Carton details saved successfully');
+      window.closeCartonDetailsModal();
+      loadAdminOrders('outbound', 1);
+    } else {
+      window.showToast(data.message || 'Error saving carton details', 'error');
+    }
+  } catch (error) {
+    console.error(error);
+    window.showToast('Server error', 'error');
+  } finally {
+    restore();
+  }
+};
 
 /* ─── Logout ─────────────────────────────────────────────── */
 

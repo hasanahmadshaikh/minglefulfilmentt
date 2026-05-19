@@ -17,6 +17,13 @@ const InventorySchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+  packDetails: {
+    type: String,
+    enum: ['Cases', 'Units']
+  },
+  cartonDetails: {
+    type: String
+  },
   updatedAt: {
     type: Date,
     default: Date.now

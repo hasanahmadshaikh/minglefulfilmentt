@@ -93,6 +93,7 @@
         </header>
 
         <div class="admin-tab-content active" id="overview">
+            <div id="dashboardAlerts" style="margin-bottom: 20px; display: none;"></div>
             <div class="stats-grid">
                 <div class="admin-stat-card">
                     <div class="stat-icon blue">
@@ -163,7 +164,7 @@
         <div id="inventory" class="admin-tab-content">
             <div class="portal-header">
                 <h2 class="portal-title">My Inventory</h2>
-                <p class="portal-subtitle">View your currently stored stock in our warehouse (View Only).</p>
+                <p class="portal-subtitle">View your currently stored stock in our warehouse.</p>
             </div>
             <div class="portal-card">
                 <div class="portal-table-container">
@@ -173,6 +174,7 @@
                                 <th>Product Name</th>
                                 <th>SKU</th>
                                 <th>Quantity</th>
+                                <th>Pack Details</th>
                                 <th>Last Updated</th>
                             </tr>
                         </thead>
@@ -197,11 +199,12 @@
                         placeholder="Search by Shipment ID or Shipment..." oninput="handleShipmentSearch('inbound')">
                 </div>
                 <select id="inboundStatusFilter" class="portal-input" onchange="loadInboundShipments(1)">
-                    <option value="Pending Arrival,Received,In Inspection,Stored">All Inbound</option>
+                    <option value="Pending Arrival,Received,In Inspection,Stored,Cancelled">All Inbound</option>
                     <option value="Pending Arrival">Pending Arrival</option>
                     <option value="Received">Received</option>
                     <option value="In Inspection">In Inspection</option>
                     <option value="Stored">Stored</option>
+                    <option value="Cancelled">Cancelled</option>
                 </select>
             </div>
 
@@ -236,10 +239,15 @@
                         placeholder="Search by Order ID or Shipment..." oninput="handleShipmentSearch('outbound')">
                 </div>
                 <select id="outboundStatusFilter" class="portal-input" onchange="loadOutboundShipments(1)">
-                    <option value="Processing,Shipped,Completed">All Outbound</option>
+                    <option
+                        value="Processing,Awaiting Shipping Labels,Shipment labels uploaded,Shipped,Completed,Cancelled">
+                        All Outbound</option>
                     <option value="Processing">Processing</option>
+                    <option value="Awaiting Shipping Labels">Awaiting Shipping Labels</option>
+                    <option value="Shipment labels uploaded">Shipment labels uploaded</option>
                     <option value="Shipped">Shipped</option>
                     <option value="Completed">Completed</option>
+                    <option value="Cancelled">Cancelled</option>
                 </select>
             </div>
 
@@ -280,141 +288,180 @@
                 <form class="portal-form" id="orderForm" novalidate>
                     <div class="form-grid">
                         <!-- Shipment Type -->
-                        <div class="form-full" style="margin-bottom: 20px; padding: 15px; background: #f1f5f9; border-radius: 12px; border: 1px solid #e2e8f0;">
-                            <label class="portal-label" style="margin-bottom: 12px; display: block; font-weight: 700;">Select Shipment Type *</label>
-                            <div style="display: flex; gap: 20px;">
-                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                                    <input type="radio" name="shipmentType" value="inbound" checked onchange="toggleShipmentFields(this.value)"> 
-                                    <span>Inbound (To Warehouse)</span>
-                                </label>
-                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                                    <input type="radio" name="shipmentType" value="outbound" onchange="toggleShipmentFields(this.value)"> 
-                                    <span>Outbound (To Customer)</span>
-                                </label>
+                        <div class="form-full" id="shipmentTypeSelection"
+                            style="margin-bottom: 20px; padding: 15px; background: #f1f5f9; border-radius: 12px; border: 1px solid #e2e8f0; text-align: center;">
+                            <label class="portal-label"
+                                style="margin-bottom: 16px; display: block; font-weight: 700; font-size: 16px;">Select
+                                Shipment Type *</label>
+                            <div style="display: flex; gap: 20px; justify-content: center;">
+                                <div class="shipment-type-box active" id="boxInbound"
+                                    onclick="selectShipmentTypeBox('inbound')"
+                                    style="flex: 1; padding: 24px; border: 2px solid #3b82f6; border-radius: 10px; cursor: pointer; background: white; transition: 0.3s;">
+                                    <h4 style="margin:0 0 8px 0; color: #1e293b; font-size: 16px;">Create Inbound
+                                        Shipment</h4>
+                                    <p style="margin:0; font-size: 13px; color: #64748b;">Send products to our warehouse
+                                    </p>
+                                </div>
+                                <div class="shipment-type-box" id="boxOutbound"
+                                    onclick="selectShipmentTypeBox('outbound')"
+                                    style="flex: 1; padding: 24px; border: 2px solid transparent; border-radius: 10px; cursor: pointer; background: white; transition: 0.3s;">
+                                    <h4 style="margin:0 0 8px 0; color: #1e293b; font-size: 16px;">Create Outbound
+                                        Shipment</h4>
+                                    <p style="margin:0; font-size: 13px; color: #64748b;">Send products to your
+                                        customers</p>
+                                </div>
                             </div>
+                            <input type="hidden" name="shipmentType" id="shipmentType" value="inbound">
                         </div>
 
-                        <!-- Shipment & Vendor Info -->
-                        <div>
-                            <label class="portal-label">Shipment Name *</label>
-                            <select id="shipmentName" class="portal-input" required onchange="handleShipmentChange()">
-                                <option value="" disabled selected>Select Shipment Name</option>
-                                <option value="Amazon">Amazon</option>
-                                <option value="Walmart">Walmart</option>
-                                <option value="eBay">eBay</option>
-                                <option value="Etsy">Etsy</option>
-                                <option value="Shopify">Shopify</option>
-                                <option value="Other">Other</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="portal-label">Supplier/Vendor Name *</label>
-                            <select id="supplierName" class="portal-input" required>
-                                <option value="" disabled selected>Select Supplier/Vendor</option>
-                            </select>
-                        </div>
-
-                        <!-- Tracking & Logistics -->
-                        <div>
-                            <label class="portal-label">Tracking Number *</label>
-                            <input type="text" id="trackingNumber" class="portal-input"
-                                placeholder="e.g., 1Z999AA10123456784" required>
-                        </div>
-                        <div>
-                            <label class="portal-label">Carrier *</label>
-                            <input type="text" id="carrier" class="portal-input" placeholder="e.g., UPS, FedEx, DHL"
-                                required>
-                        </div>
-                        <div>
-                            <label class="portal-label">Estimated Arrival Date *</label>
-                            <input type="date" id="estimatedArrival" class="portal-input" required>
-                        </div>
-
-                        <!-- Product Selection for Outbound -->
-                        <div class="form-full" id="outboundProductPicker" style="display: none;">
-                            <label class="portal-label">Pick Product from Inventory *</label>
-                            <div id="productSelectionList" class="product-selection-grid">
-                                <!-- Loaded dynamically from inventory -->
-                            </div>
-                            <p class="field-note">Select the products and quantities you want to ship out.</p>
-                        </div>
-
-                        <!-- Product Details for Inbound -->
-                        <div class="form-full" id="inboundProductDetails">
+                        <!-- Form Body (Hidden by default) -->
+                        <div id="orderFormBody" style="display: none; width: 100%; grid-column: 1 / -1;">
                             <div class="form-grid">
-                                <div class="form-full">
-                                    <label class="portal-label">SKU List *</label>
-                                    <textarea id="skuList" class="portal-textarea" rows="2" placeholder="List your SKUs here..."></textarea>
+                                <!-- Common Fields: Shipment & Vendor Info -->
+                                <div id="shipmentNameContainer">
+                                    <label class="portal-label">Shipment Name *</label>
+                                    <input type="text" id="shipmentName" class="portal-input"
+                                        placeholder="e.g., FBA Shipment 1" required>
                                 </div>
+                                <div id="vendorNameContainer">
+                                    <label class="portal-label">Supplier/Vendor Name *</label>
+                                    <input type="text" id="supplierName" class="portal-input"
+                                        placeholder="e.g., Acme Corp" required>
+                                </div>
+
+                                <!-- Tracking & Logistics -->
+                                <div id="trackingNumberContainer">
+                                    <label class="portal-label">Tracking Number *</label>
+                                    <input type="text" id="trackingNumber" class="portal-input"
+                                        placeholder="9-digit alphanumeric (e.g., A1B2C3D4E)" pattern="^[A-Za-z0-9]{9}$"
+                                        title="Must be exactly 9 alphanumeric characters" required>
+                                </div>
+                                <div id="carrierContainer">
+                                    <label class="portal-label">Carrier *</label>
+                                    <input type="text" id="carrier" class="portal-input"
+                                        placeholder="e.g., UPS, FedEx, DHL" required>
+                                </div>
+                                <div id="estimatedArrivalContainer">
+                                    <label class="portal-label">Estimated Arrival Date *</label>
+                                    <input type="date" id="estimatedArrival" class="portal-input" required>
+                                </div>
+
+                                <!-- Outbound specific fields -->
+                                <div id="outboundChannelContainer" style="display: none;">
+                                    <label class="portal-label">Channel *</label>
+                                    <select id="channel" class="portal-input" onchange="handleChannelChange()">
+                                        <option value="">Select Channel</option>
+                                        <option value="Amazon">Amazon</option>
+                                        <option value="Walmart">Walmart</option>
+                                        <option value="eBay">eBay</option>
+                                        <option value="Etsy">Etsy</option>
+                                        <option value="Shopify">Shopify</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                                <div id="outboundFulfilmentTypeContainer" style="display: none;">
+                                    <label class="portal-label">Fulfilment Type *</label>
+                                    <select id="fulfilmentType" class="portal-input"
+                                        onchange="evaluateNoShippingLabelsRequired()">
+                                        <option value="">Select Fulfilment Type</option>
+                                    </select>
+                                </div>
+
+                                <!-- Product Selection for Outbound -->
+                                <div class="form-full" id="outboundProductDetails" style="display: none;">
+                                    <div
+                                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                        <label class="portal-label" style="margin:0;">SKU Details *</label>
+                                        <button type="button" class="portal-btn-sm" onclick="addOutboundSkuRow()">+ Add
+                                            SKU</button>
+                                    </div>
+                                    <div class="portal-table-container">
+                                        <table class="portal-table" id="outboundSkuTable" style="margin-bottom:0;">
+                                            <thead>
+                                                <tr>
+                                                    <th>SKU List</th>
+                                                    <th>Quantity</th>
+                                                    <th>Pack Details</th>
+                                                    <th>Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="outboundSkuBody">
+                                                <!-- Dynamic rows will be added here via JS -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    <div style="margin-top: 15px; display: flex; align-items: center; gap: 8px;">
+                                        <input type="checkbox" id="noShippingLabelsRequired" style="width: auto;">
+                                        <label for="noShippingLabelsRequired"
+                                            style="font-size: 14px; color: #475569; font-weight: 500;">No Shipping
+                                            labels required</label>
+                                    </div>
+                                </div>
+
+                                <!-- Product Details for Inbound -->
+                                <div class="form-full" id="inboundProductDetails">
+                                    <div
+                                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                        <label class="portal-label" style="margin:0;">SKU Details *</label>
+                                        <button type="button" class="portal-btn-sm" onclick="addInboundSkuRow()">+ Add
+                                            SKU</button>
+                                    </div>
+                                    <div class="portal-table-container">
+                                        <table class="portal-table" id="inboundSkuTable" style="margin-bottom:0;">
+                                            <thead>
+                                                <tr>
+                                                    <th>SKU Name</th>
+                                                    <th>Quantity</th>
+                                                    <th>Pack Details</th>
+                                                    <th>Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="inboundSkuBody">
+                                                <!-- Dynamic rows will be added here via JS -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <div class="form-full" id="prepInstructionsContainer" style="display: none;">
+                                    <label class="portal-label">Prep Instructions</label>
+                                    <input type="text" id="prepInstructions" class="portal-input"
+                                        placeholder="e.g., Bubble wrap, polybag">
+                                </div>
+
+                                <!-- Document Uploader -->
                                 <div class="form-full">
-                                    <label class="portal-label">Product Quantities *</label>
-                                    <textarea id="productQuantities" class="portal-textarea" rows="2" placeholder="e.g., SKU1: 100, SKU2: 200..."></textarea>
+                                    <label class="portal-label">Document Uploader (Optional, max 5MB each)</label>
+                                    <div class="upload-zone" id="documentsZone">
+                                        <svg class="upload-icon" fill="none" stroke="currentColor" stroke-width="2"
+                                            viewBox="0 0 24 24">
+                                            <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12">
+                                            </path>
+                                        </svg>
+                                        <p class="upload-text">Click to upload or drag and drop<br>JPEG, PNG, PDF or
+                                            EXCEL up to 5MB</p>
+                                    </div>
+                                    <input type="file" id="documents" hidden multiple
+                                        accept=".jpg,.jpeg,.png,.pdf,.xls,.xlsx">
+                                    <div id="documentsList" class="file-list"></div>
+                                </div>
+
+                                <div class="form-full" id="notesContainer">
+                                    <label class="portal-label">Notes</label>
+                                    <textarea id="notes" class="portal-textarea" rows="3"
+                                        placeholder="Any special instructions..."></textarea>
+                                </div>
+
+                                <div class="form-full" style="display: flex; gap: 15px; margin-top: 20px;">
+                                    <button type="button" class="portal-btn" style="flex: 1;"
+                                        onclick="cancelShipmentForm()">Cancel</button>
+                                    <button type="submit" class="portal-btn primary" style="flex: 2;">Submit
+                                        Order</button>
                                 </div>
                             </div>
-                        </div>
-
-                        <!-- Required Images -->
-                        <div class="form-full">
-                            <label class="portal-label">Product Images * (Required)</label>
-                            <div class="upload-zone" id="productImagesZone">
-                                <svg class="upload-icon" fill="none" stroke="currentColor" stroke-width="2"
-                                    viewBox="0 0 24 24">
-                                    <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
-                                </svg>
-                                <p class="upload-text">Click to upload or drag and drop<br>JPEG, PNG, PDF up to 5MB</p>
-                            </div>
-                            <input type="file" id="productImages" hidden multiple accept="image/*,.pdf">
-                            <p class="field-note field-note-sm"><strong>Note:</strong> Max file size 5MB. Only JPEG,
-                                PNG, and PDF files are allowed.</p>
-                            <div id="productImagesList" class="file-list"></div>
-                        </div>
-
-                        <div class="form-full">
-                            <label class="portal-label">Packing Details *</label>
-                            <textarea id="packingDetails" class="portal-textarea" rows="2"
-                                placeholder="e.g., Number of boxes, pallet info..." required></textarea>
-                        </div>
-
-                        <div class="form-full">
-                            <label class="portal-label">Notes *</label>
-                            <textarea id="notes" class="portal-textarea" rows="3"
-                                placeholder="Any special instructions..." required></textarea>
-                        </div>
-
-                        <!-- Optional Documents -->
-                        <div class="form-full">
-                            <label class="portal-label">Google Drive docs (Optional)</label>
-                            <input type="url" id="googleDriveDocs" class="portal-input" placeholder="Paste link here">
-                        </div>
-
-                        <div class="form-full">
-                            <label class="portal-label">Commercial Invoices (Optional)</label>
-                            <div class="upload-zone" id="commercialInvoicesZone">
-                                <svg class="upload-icon" fill="none" stroke="currentColor" stroke-width="2"
-                                    viewBox="0 0 24 24">
-                                    <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
-                                </svg>
-                                <p class="upload-text">Click to upload or drag and drop<br>Images, PDF, Excel up to 5MB
-                                </p>
-                            </div>
-                            <input type="file" id="commercialInvoices" hidden multiple accept="image/*,.pdf,.xls,.xlsx">
-                            <div id="commercialInvoicesList" class="file-list"></div>
-                        </div>
-
-                        <div class="form-full">
-                            <label class="portal-label">Packing List PDFs (Optional)</label>
-                            <div class="upload-zone" id="packingListPDFsZone">
-                                <svg class="upload-icon" fill="none" stroke="currentColor" stroke-width="2"
-                                    viewBox="0 0 24 24">
-                                    <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
-                                </svg>
-                                <p class="upload-text">Click to upload or drag and drop<br>PDF only up to 5MB</p>
-                            </div>
-                            <input type="file" id="packingListPDFs" hidden multiple accept=".pdf">
-                            <div id="packingListPDFsList" class="file-list"></div>
                         </div>
                     </div>
-                    <button type="submit" class="submit-full-btn">Submit Order</button>
                 </form>
             </div>
         </div>
@@ -533,6 +580,40 @@
             </div>
             <div class="modal-popup-footer">
                 <button class="modal-btn confirm" onclick="closeFileViewer()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload Shipping Labels Modal -->
+    <div id="uploadShippingLabelsModal" class="modal-overlay" style="display: none;">
+        <div class="modal-popup">
+            <div class="modal-popup-header">
+                <h3>Upload Shipping Labels</h3>
+                <button onclick="closeShippingLabelsModal()" class="modal-close-btn">&times;</button>
+            </div>
+            <div class="modal-popup-body">
+                <form id="shippingLabelsForm" onsubmit="handleShippingLabelsSubmit(event)">
+                    <input type="hidden" id="sl_orderId">
+                    <div class="form-full">
+                        <label class="portal-label">Shipping Labels (No max files, up to 5MB each)</label>
+                        <div class="upload-zone" id="shippingLabelsZone">
+                            <svg class="upload-icon" fill="none" stroke="currentColor" stroke-width="2"
+                                viewBox="0 0 24 24">
+                                <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                            </svg>
+                            <p class="upload-text">Click to upload or drag and drop<br>JPEG, PNG, PDF or EXCEL up to 5MB
+                            </p>
+                        </div>
+                        <input type="file" id="shippingLabels" hidden multiple accept=".jpg,.jpeg,.png,.pdf,.xls,.xlsx">
+                        <div id="shippingLabelsList" class="file-list"></div>
+                    </div>
+                    <div class="modal-popup-footer" style="margin-top: 20px;">
+                        <button type="button" class="modal-btn cancel"
+                            onclick="closeShippingLabelsModal()">Cancel</button>
+                        <button type="submit" class="modal-btn confirm"
+                            style="background:#3b82f6; color:white;">Upload</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
