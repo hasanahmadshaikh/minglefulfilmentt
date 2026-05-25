@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const path = require('path');
+const fs = require('fs');
 const cors = require('cors');
 const session = require('express-session');
 const MongoStore = require('connect-mongo');
@@ -39,12 +40,66 @@ app.use(session({
   }
 }));
 
+// Middleware to dynamically inject environment configuration and rewrite sitename in HTML files
+app.use((req, res, next) => {
+  if (req.method !== 'GET' || req.path.startsWith('/api') || req.path.startsWith('/uploads')) {
+    return next();
+  }
+
+  const ext = path.extname(req.path);
+  if (ext === '' || ext === '.html') {
+    const filename = ext === '.html' ? req.path : '/index.html';
+    const filePath = path.join(__dirname, 'public', filename);
+
+    // Safeguard against directory traversal
+    const publicDir = path.join(__dirname, 'public');
+    if (!filePath.startsWith(publicDir)) {
+      return next();
+    }
+
+    if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+      fs.readFile(filePath, 'utf8', (err, html) => {
+        if (err) {
+          return next();
+        }
+
+        const sitename = (process.env.SITENAME || 'Mingle Fulfilment').replace(/^["']|["']$/g, '');
+        const toastDuration = parseInt(process.env.TOAST_DURATION) || 10000;
+
+        const envScript = `
+  <script>
+    window.ENV = {
+      SITENAME: ${JSON.stringify(sitename)},
+      TOAST_DURATION: ${toastDuration}
+    };
+  </script>`;
+
+        let modifiedHtml = html;
+        if (modifiedHtml.includes('<head>')) {
+          modifiedHtml = modifiedHtml.replace('<head>', `<head>${envScript}`);
+        } else if (modifiedHtml.includes('<HEAD>')) {
+          modifiedHtml = modifiedHtml.replace('<HEAD>', `<HEAD>${envScript}`);
+        }
+
+        // Replace all case-insensitive occurrences of "Mingle Fulfilment" with/without space
+        modifiedHtml = modifiedHtml.replace(/Mingle\s*Fulfilment/gi, sitename);
+
+        res.setHeader('Content-Type', 'text/html');
+        return res.send(modifiedHtml);
+      });
+    } else {
+      next();
+    }
+  } else {
+    next();
+  }
+});
+
 
 // Serve static files from the 'public' folder
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Serve uploads folder
-const fs = require('fs');
 const uploadDir = path.join(__dirname, 'uploads');
 try {
   if (!fs.existsSync(uploadDir)) {

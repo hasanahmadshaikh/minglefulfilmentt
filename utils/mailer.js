@@ -1,5 +1,7 @@
 const nodemailer = require('nodemailer');
 
+const sitename = (process.env.SITENAME || 'Mingle Fulfilment').replace(/^["']|["']$/g, '');
+
 const createTransporter = () => {
   return nodemailer.createTransport({
     host: process.env.SMTP_HOST || 'smtp.ethereal.email',
@@ -16,19 +18,19 @@ const sendOTP = async (email, otp) => {
   try {
     const transporter = createTransporter();
     const mailOptions = {
-      from: `"Mingle Fulfilment" <${process.env.SMTP_USER}>`,
+      from: `"${sitename}" <${process.env.SMTP_USER}>`,
       to: email,
       subject: 'Verify Your Email - OTP Code',
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 10px;">
-          <h2 style="color: #0094FF;">Welcome to Mingle Fulfilment</h2>
+          <h2 style="color: #0094FF;">Welcome to ${sitename}</h2>
           <p>Thank you for signing up. Please use the following 6-digit verification code to complete your registration:</p>
           <div style="font-size: 32px; font-weight: bold; color: #0094FF; border: 1px dashed #0094FF; padding: 10px; text-align: center; margin: 20px 0; letter-spacing: 5px;">
             ${otp}
           </div>
           <p>This code is valid for <strong>2 minutes</strong>. If you did not request this, please ignore this email.</p>
           <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
-          <p style="font-size: 12px; color: #64748b;">Mingle Fulfilment Support Team</p>
+          <p style="font-size: 12px; color: #64748b;">${sitename} Support Team</p>
         </div>
       `,
     };
@@ -46,9 +48,9 @@ const sendResetLink = async (email, resetUrl) => {
   try {
     const transporter = createTransporter();
     const mailOptions = {
-      from: `"Mingle Fulfilment" <${process.env.SMTP_USER}>`,
+      from: `"${sitename}" <${process.env.SMTP_USER}>`,
       to: email,
-      subject: 'Reset Your Password - Mingle Fulfilment',
+      subject: `Reset Your Password - ${sitename}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 10px;">
           <h2 style="color: #0094FF;">Password Reset Request</h2>
@@ -59,7 +61,7 @@ const sendResetLink = async (email, resetUrl) => {
           <p>If you did not request a password reset, you can safely ignore this email. This link will expire in <strong>1 hour</strong>.</p>
           <p style="font-size: 12px; color: #64748b; word-break: break-all;">Alternatively, copy and paste this link into your browser:<br>${resetUrl}</p>
           <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
-          <p style="font-size: 12px; color: #64748b;">Mingle Fulfilment Support Team</p>
+          <p style="font-size: 12px; color: #64748b;">${sitename} Support Team</p>
         </div>
       `,
     };

@@ -1,11 +1,12 @@
 class AppHeader extends HTMLElement {
   connectedCallback() {
+    const sitename = window.ENV?.SITENAME || 'Mingle Fulfilment';
     this.innerHTML = `
       <header class="header">
         <div class="container nav">
           <div class="logo">
-            <img src="./svg/orderBox.svg" alt="Mingle Fulfilment Logo" />
-            <span>Mingle Fulfilment</span>
+            <img src="./svg/orderBox.svg" alt="${sitename} Logo" />
+            <span>${sitename}</span>
           </div>
           <nav>
             <ul class="nav-links">
@@ -35,11 +36,13 @@ class AppHeader extends HTMLElement {
 
 class AppFooter extends HTMLElement {
   connectedCallback() {
+    const sitename = window.ENV?.SITENAME || 'Mingle Fulfilment';
+    const emailDomain = sitename.toLowerCase().replace(/\s+/g, '');
     this.innerHTML = `
       <footer class="footer">
         <div class="container footer-content">
           <div class="footer-section">
-            <h3>Mingle Fulfilment</h3>
+            <h3>${sitename}</h3>
             <p>Reliable FBA & FBM Prep and Fulfilment Services based in Alexandria, VA</p>
           </div>
           <div class="footer-section">
@@ -55,14 +58,14 @@ class AppFooter extends HTMLElement {
           </div>
           <div class="footer-section">
             <h4>Contact</h4>
-            <p>info@minglefulfilment.com</p>
+            <p>info@${emailDomain}.com</p>
             <p>Alexandria, VA</p>
             <p>+15712374794</p>
           </div>
         </div>
         <br/>
         <div class="footer-bottom">
-          <p>© 2026 Mingle Fulfilment LLC. All rights reserved.</p>
+          <p>© 2026 ${sitename} LLC. All rights reserved.</p>
         </div>
       </footer>
     `;
@@ -90,10 +93,11 @@ window.showToast = function (message, type = 'success') {
   toast.innerHTML = `${icon}<span>${message}</span>`;
   toastContainer.appendChild(toast);
 
-  // Remove toast after 3 seconds
+  // Remove toast after configured duration
+  const duration = window.ENV?.TOAST_DURATION || 10000;
   setTimeout(() => {
     toast.remove();
-  }, 10000);
+  }, duration);
 };
 
 window.showConfirm = function (title, message) {
