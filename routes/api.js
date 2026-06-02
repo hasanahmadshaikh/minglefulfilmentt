@@ -10,18 +10,50 @@ const UserVerification = require('../models/UserVerification');
 const multer = require('multer');
 const path = require('path');
 const crypto = require('crypto');
+const fs = require('fs');
 const { sendOTP, sendResetLink } = require('../utils/mailer');
 const Counter = require('../models/Counter');
 const mongoose = require('mongoose');
 
-// Configure Multer - use memoryStorage for Vercel compatibility
-// Vercel has a read-only filesystem so diskStorage is not supported
-const storage = multer.memoryStorage();
+// Ensure uploads directory exists
+const uploadsDir = path.join(__dirname, '../uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+// Configure Multer - use diskStorage to save files to filesystem
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadsDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    const ext = path.extname(file.originalname);
+    const name = path.basename(file.originalname, ext);
+    cb(null, uniqueSuffix + ext);
+  }
+});
 
 const upload = multer({
   storage: storage,
   limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit
 });
+
+function resolveUploadPath(filename) {
+  if (!filename || filename.includes('..') || filename.includes('/')) {
+    return null;
+  }
+
+  const candidate = path.join(uploadsDir, filename);
+  if (fs.existsSync(candidate)) {
+    return candidate;
+  }
+
+  const normalizedSuffix = `-${filename}`;
+  const matches = fs.readdirSync(uploadsDir).filter(file => file.endsWith(normalizedSuffix));
+
+  return matches.length > 0 ? path.join(uploadsDir, matches[0]) : null;
+}
 
 // Helper to check auth
 const ensureAuth = (req, res, next) => {
@@ -45,11 +77,37 @@ const ensureAdmin = async (req, res, next) => {
 
 // --- Inventory Routes ---
 
-// GET /api/inventory - View own inventory
+// GET /api/inventory - View own inventory (supports optional pagination)
 router.get('/inventory', ensureAuth, async (req, res) => {
   try {
-    const inventory = await Inventory.find({ user: req.session.userId });
-    res.json({ success: true, inventory });
+    const { page, limit = 10 } = req.query;
+    const filter = { user: req.session.userId };
+
+    if (page) {
+      const parsedPage = parseInt(page) || 1;
+      const parsedLimit = parseInt(limit) || 10;
+      const skip = (parsedPage - 1) * parsedLimit;
+
+      const totalInventory = await Inventory.countDocuments(filter);
+      const inventory = await Inventory.find(filter)
+        .sort({ updatedAt: -1 })
+        .skip(skip)
+        .limit(parsedLimit);
+
+      res.json({
+        success: true,
+        inventory,
+        pagination: {
+          totalInventory,
+          totalPages: Math.ceil(totalInventory / parsedLimit),
+          currentPage: parsedPage,
+          limit: parsedLimit
+        }
+      });
+    } else {
+      const inventory = await Inventory.find(filter).sort({ updatedAt: -1 });
+      res.json({ success: true, inventory });
+    }
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -141,6 +199,28 @@ router.post('/orders', ensureAuth, upload.fields([
       channel, fulfilmentType, prepInstructions, shippingLabelsRequired
     } = req.body;
 
+    const isOutbound = type === 'outbound';
+    const parsedProducts = products ? JSON.parse(products) : [];
+
+    // Backend validation: enforce quantity limit for outbound shipments
+    if (isOutbound) {
+      for (const prod of parsedProducts) {
+        if (!prod.sku) {
+          return res.status(400).json({ success: false, message: 'SKU is required for all outbound products' });
+        }
+        const invItem = await Inventory.findOne({ user: req.session.userId, sku: prod.sku });
+        if (!invItem) {
+          return res.status(400).json({ success: false, message: `SKU ${prod.sku} not found in inventory` });
+        }
+        if (prod.quantity > invItem.quantity) {
+          return res.status(400).json({
+            success: false,
+            message: `Requested quantity for SKU ${prod.sku} (${prod.quantity}) exceeds available quantity (${invItem.quantity})`
+          });
+        }
+      }
+    }
+
     // Auto-generate orderId
     let counter = await Counter.findOne({ id: 'orderId' });
     if (!counter) {
@@ -148,14 +228,13 @@ router.post('/orders', ensureAuth, upload.fields([
     }
     counter.seq += 1;
     await counter.save();
-    const isOutbound = type === 'outbound';
     const generatedId = isOutbound ? `OUT-${counter.seq}` : `INB-${counter.seq}`;
 
-    // Handle files
-    const productImages = req.files['productImages'] ? req.files['productImages'].map(f => f.originalname) : [];
-    const commercialInvoices = req.files['commercialInvoices'] ? req.files['commercialInvoices'].map(f => f.originalname) : [];
-    const packingListPDFs = req.files['packingListPDFs'] ? req.files['packingListPDFs'].map(f => f.originalname) : [];
-    const documents = req.files['documents'] ? req.files['documents'].map(f => f.originalname) : [];
+    // Handle files - get the saved filenames from multer
+    const productImages = req.files['productImages'] ? req.files['productImages'].map(f => f.filename) : [];
+    const commercialInvoices = req.files['commercialInvoices'] ? req.files['commercialInvoices'].map(f => f.filename) : [];
+    const packingListPDFs = req.files['packingListPDFs'] ? req.files['packingListPDFs'].map(f => f.filename) : [];
+    const documents = req.files['documents'] ? req.files['documents'].map(f => f.filename) : [];
 
     const finalShipmentName = isOutbound ? `Outbound Order ${generatedId}` : shipmentName;
 
@@ -181,7 +260,7 @@ router.post('/orders', ensureAuth, upload.fields([
       prepInstructions,
       shippingLabelsRequired: shippingLabelsRequired === 'true',
       type: type || 'inbound',
-      products: products ? JSON.parse(products) : [],
+      products: parsedProducts,
       status: isOutbound ? 'Processing' : 'Pending Arrival'
     });
 
@@ -209,7 +288,7 @@ router.post('/orders/:id/shipping-labels', ensureAuth, upload.fields([
       return res.status(400).json({ success: false, message: 'Cannot upload labels at this stage' });
     }
 
-    const shippingLabels = req.files['shippingLabels'] ? req.files['shippingLabels'].map(f => f.originalname) : [];
+    const shippingLabels = req.files['shippingLabels'] ? req.files['shippingLabels'].map(f => f.filename) : [];
     
     if (shippingLabels.length === 0) {
       return res.status(400).json({ success: false, message: 'No labels uploaded' });
@@ -273,20 +352,48 @@ router.get('/orders', ensureAuth, async (req, res) => {
 router.get('/stats', ensureAuth, async (req, res) => {
   try {
     const userId = req.session.userId;
-    const totalOrders = await Order.countDocuments({ user: userId });
-    const activeOrders = await Order.countDocuments({
+    
+    // Active Inbound: excluding Stored, Cancelled
+    const activeInbound = await Order.countDocuments({
       user: userId,
-      status: { $in: ['Pending Arrival', 'Received', 'In Inspection', 'Stored', 'Processing', 'Shipped'] }
+      type: 'inbound',
+      status: { $nin: ['Stored', 'Cancelled'] }
     });
 
-    // For now, pending invoices is static $0.00 as per design, 
-    // but we can return it here if we had an Invoice model.
+    // Active Inbound breakdowns
+    const pendingArrival = await Order.countDocuments({
+      user: userId,
+      type: 'inbound',
+      status: 'Pending Arrival'
+    });
+
+    const received = await Order.countDocuments({
+      user: userId,
+      type: 'inbound',
+      status: 'Received'
+    });
+
+    const inspection = await Order.countDocuments({
+      user: userId,
+      type: 'inbound',
+      status: 'In Inspection'
+    });
+
+    // Active Outbound: excluding Completed, Cancelled
+    const activeOutbound = await Order.countDocuments({
+      user: userId,
+      type: 'outbound',
+      status: { $nin: ['Completed', 'Cancelled'] }
+    });
+
     res.json({
       success: true,
       stats: {
-        totalOrders,
-        activeOrders,
-        pendingInvoices: "$0.00"
+        activeInbound,
+        pendingArrival,
+        received,
+        inspection,
+        activeOutbound
       }
     });
   } catch (error) {
@@ -963,5 +1070,90 @@ router.post('/logout', (req, res) => {
   });
 });
 
+// GET /api/file/:filename - Serve file for preview or download
+router.get('/file/:filename', (req, res) => {
+  try {
+    const filename = req.params.filename;
+    const filePath = resolveUploadPath(filename);
+
+    if (!filePath) {
+      return res.status(404).json({ success: false, message: 'File not found' });
+    }
+
+    const ext = path.extname(filePath).toLowerCase();
+    const mimeTypes = {
+      '.pdf': 'application/pdf',
+      '.jpg': 'image/jpeg',
+      '.jpeg': 'image/jpeg',
+      '.png': 'image/png',
+      '.gif': 'image/gif',
+      '.bmp': 'image/bmp',
+      '.svg': 'image/svg+xml',
+      '.webp': 'image/webp',
+      '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      '.xls': 'application/vnd.ms-excel',
+      '.csv': 'text/csv',
+      '.txt': 'text/plain',
+      '.doc': 'application/msword',
+      '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      '.zip': 'application/zip'
+    };
+
+    const mimeType = mimeTypes[ext] || 'application/octet-stream';
+    const dispositionType = req.query.inline === '1' ? 'inline' : 'attachment';
+
+    res.setHeader('Content-Type', mimeType);
+    res.setHeader('Content-Disposition', `${dispositionType}; filename="${filename}"`);
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Cache-Control', 'public, max-age=31536000');
+
+    return res.sendFile(filePath);
+  } catch (error) {
+    console.error('File serve error:', error);
+    res.status(500).json({ success: false, message: 'File serve failed' });
+  }
+});
+
+// GET /api/download/:filename - Download file with proper headers
+router.get('/download/:filename', (req, res) => {
+  try {
+    const filename = req.params.filename;
+    const filePath = resolveUploadPath(filename);
+
+    if (!filePath) {
+      return res.status(404).json({ success: false, message: 'File not found' });
+    }
+
+    const ext = path.extname(filePath).toLowerCase();
+    const mimeTypes = {
+      '.pdf': 'application/pdf',
+      '.jpg': 'image/jpeg',
+      '.jpeg': 'image/jpeg',
+      '.png': 'image/png',
+      '.gif': 'image/gif',
+      '.bmp': 'image/bmp',
+      '.svg': 'image/svg+xml',
+      '.webp': 'image/webp',
+      '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      '.xls': 'application/vnd.ms-excel',
+      '.csv': 'text/csv',
+      '.txt': 'text/plain',
+      '.doc': 'application/msword',
+      '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      '.zip': 'application/zip'
+    };
+
+    const mimeType = mimeTypes[ext] || 'application/octet-stream';
+    res.setHeader('Content-Type', mimeType);
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Cache-Control', 'public, max-age=31536000');
+
+    return res.sendFile(filePath);
+  } catch (error) {
+    console.error('Download error:', error);
+    res.status(500).json({ success: false, message: 'Download failed' });
+  }
+});
 
 module.exports = router;

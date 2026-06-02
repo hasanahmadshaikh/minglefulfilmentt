@@ -80,36 +80,47 @@
                 <h1>Customer Portal</h1>
                 <p id="welcomeGreeting">Welcome back,</p>
             </div>
-            <div class="admin-profile">
-                <span
-                    style="font-weight: 500; font-size: 14px; color: #64748b; background: white; padding: 8px 16px; border-radius: 20px; border: 1px solid #e2e8f0; display: inline-flex; align-items: center; gap: 8px;">
-                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <circle cx="12" cy="7" r="4"></circle>
-                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                    </svg>
-                    My Session
-                </span>
-            </div>
         </header>
 
         <div class="admin-tab-content active" id="overview">
             <div id="dashboardAlerts" style="margin-bottom: 20px; display: none;"></div>
-            <div class="stats-grid">
-                <div class="admin-stat-card">
-                    <div class="stat-icon blue">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
-                        </svg>
+            <style>
+                .quick-submit-box {
+                    transition: all 0.2s ease-in-out;
+                }
+
+                .quick-submit-box:hover {
+                    border-color: #0094ff !important;
+                    transform: translateY(-2px);
+                    box-shadow: 0 10px 15px -3px rgba(0, 148, 255, 0.1);
+                }
+            </style>
+            <div class="stats-grid" style="grid-template-columns: repeat(2, 1fr);">
+                <div class="admin-stat-card"
+                    style="display: flex; justify-content: space-between; align-items: center; min-height: 110px;">
+                    <div style="display: flex; align-items: center; gap: 16px;">
+                        <div class="stat-icon blue" style="margin-bottom: 0;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+                            </svg>
+                        </div>
+                        <div class="stat-info">
+                            <div class="label" style="font-weight: 600; color: #64748b;">Active Inbound Shipments</div>
+                            <div class="value stat-value" id="stat-active-inbound"
+                                style="font-size: 28px; font-weight: 700; color: #0f172a;">0</div>
+                        </div>
                     </div>
-                    <div class="stat-info">
-                        <div class="label">Active Shipments</div>
-                        <div class="value stat-value" id="stat-active-orders">0</div>
-                        <div class="label stat-subtext">Current logistics</div>
+                    <div class="stat-breakdown"
+                        style="border-left: 1px solid #e2e8f0; padding-left: 20px; font-size: 13px; color: #64748b; line-height: 1.6; text-align: left;">
+                        <div><strong id="count-pending-arrival" style="color: #0f172a;">0</strong> in pending arrival
+                        </div>
+                        <div><strong id="count-received" style="color: #0f172a;">0</strong> in recieved</div>
+                        <div><strong id="count-inspection" style="color: #0f172a;">0</strong> in inspection</div>
                     </div>
                 </div>
-                <div class="admin-stat-card">
-                    <div class="stat-icon green">
+                <div class="admin-stat-card" style="display: flex; align-items: center; gap: 16px; min-height: 110px;">
+                    <div class="stat-icon green" style="margin-bottom: 0;">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2">
                             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
@@ -117,45 +128,49 @@
                         </svg>
                     </div>
                     <div class="stat-info">
-                        <div class="label">Total Shipments</div>
-                        <div class="value stat-value" id="stat-total-orders">0</div>
-                        <div class="label stat-subtext">Lifetime history</div>
-                    </div>
-                </div>
-                <div class="admin-stat-card">
-                    <div class="stat-icon purple">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-                        </svg>
-                    </div>
-                    <div class="stat-info">
-                        <div class="label">Pending Invoices</div>
-                        <div class="value stat-value">$0.00</div>
-                        <div class="label stat-subtext">All clear</div>
+                        <div class="label" style="font-weight: 600; color: #64748b;">Active Outbound Shipments</div>
+                        <div class="value stat-value" id="stat-active-outbound"
+                            style="font-size: 28px; font-weight: 700; color: #0f172a;">0</div>
                     </div>
                 </div>
             </div>
 
-            <div class="portal-card quick-actions-card">
-                <div class="section-header">
-                    <h3>Recent Shipments</h3>
-                    <p>Track your latest inbound and outbound activity</p>
+            <div class="portal-card"
+                style="padding: 32px; background: white; border-radius: 16px; box-shadow: var(--card-shadow); border: 1px solid #f1f5f9;">
+                <div class="section-header" style="margin-bottom: 24px; text-align: center;">
+                    <h3 style="font-size: 20px; font-weight: 700; color: #0f172a; margin: 0;">Submit Your Shipment</h3>
+                    <p style="color: #64748b; margin-top: 4px; font-size: 14px;">Select the type of shipment you want to
+                        create</p>
                 </div>
-                <div class="portal-table-container" style="margin-top: 20px;">
-                    <table class="portal-table" id="recentOrdersTable">
-                        <thead>
-                            <tr>
-                                <th>Order ID</th>
-                                <th>Shipment</th>
-                                <th>Status</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <!-- Loaded dynamically -->
-                        </tbody>
-                    </table>
+                <div style="display: flex; gap: 24px; justify-content: center; max-width: 700px; margin: 0 auto;">
+                    <div class="quick-submit-box" onclick="goToSubmitShipment('inbound')"
+                        style="flex: 1; padding: 32px 24px; border: 2px solid #e2e8f0; border-radius: 12px; cursor: pointer; background: white; text-align: center;">
+                        <div class="submit-box-icon"
+                            style="width: 48px; height: 48px; background: #e0f2fe; color: #0094ff; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;">
+                            <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5"
+                                viewBox="0 0 24 24">
+                                <path d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"></path>
+                            </svg>
+                        </div>
+                        <h4 style="margin: 0 0 8px 0; color: #0f172a; font-size: 16px; font-weight: 600;">Create Inbound
+                            Shipment</h4>
+                        <p style="margin: 0; font-size: 13px; color: #64748b; line-height: 1.5;">Send inventory to our
+                            warehouse for storage and fulfilment.</p>
+                    </div>
+                    <div class="quick-submit-box" onclick="goToSubmitShipment('outbound')"
+                        style="flex: 1; padding: 32px 24px; border: 2px solid #e2e8f0; border-radius: 12px; cursor: pointer; background: white; text-align: center;">
+                        <div class="submit-box-icon"
+                            style="width: 48px; height: 48px; background: #dcfce7; color: #10b981; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;">
+                            <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5"
+                                viewBox="0 0 24 24">
+                                <path d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                            </svg>
+                        </div>
+                        <h4 style="margin: 0 0 8px 0; color: #0f172a; font-size: 16px; font-weight: 600;">Create
+                            Outbound Shipment</h4>
+                        <p style="margin: 0; font-size: 13px; color: #64748b; line-height: 1.5;">Ship stored products
+                            from our warehouse to your customers.</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -171,10 +186,8 @@
                     <table class="portal-table" id="inventoryTable">
                         <thead>
                             <tr>
-                                <th>Product Name</th>
-                                <th>SKU</th>
+                                <th>SKU Name</th>
                                 <th>Quantity</th>
-                                <th>Pack Details</th>
                                 <th>Last Updated</th>
                             </tr>
                         </thead>
@@ -182,6 +195,7 @@
                             <!-- Loaded dynamically -->
                         </tbody>
                     </table>
+                    <div class="portal-pagination" id="inventoryPagination"></div>
                 </div>
             </div>
         </div>
@@ -190,7 +204,6 @@
         <div id="inbound-shipments" class="admin-tab-content">
             <div class="portal-header">
                 <h2 class="portal-title">Inbound Shipments</h2>
-                <p class="portal-subtitle">Track your shipments coming into our warehouse.</p>
             </div>
 
             <div class="filter-bar">
@@ -212,9 +225,10 @@
                 <table class="portal-table" id="inboundTable">
                     <thead>
                         <tr>
-                            <th>Date</th>
                             <th>Order ID</th>
-                            <th>Shipment</th>
+                            <th>Date</th>
+                            <th>Shipment Name</th>
+                            <th>Tracking Number</th>
                             <th>Carrier</th>
                             <th>Status</th>
                             <th>Action</th>
@@ -230,7 +244,6 @@
         <div id="outbound-shipments" class="admin-tab-content">
             <div class="portal-header">
                 <h2 class="portal-title">Outbound Shipments</h2>
-                <p class="portal-subtitle">Track your shipments leaving our warehouse.</p>
             </div>
 
             <div class="filter-bar">
@@ -255,10 +268,10 @@
                 <table class="portal-table" id="outboundTable">
                     <thead>
                         <tr>
-                            <th>Date</th>
                             <th>Order ID</th>
-                            <th>Shipment</th>
-                            <th>Carrier</th>
+                            <th>Date</th>
+                            <th>Channel</th>
+                            <th>Fulfilment Type</th>
                             <th>Status</th>
                             <th>Action</th>
                         </tr>

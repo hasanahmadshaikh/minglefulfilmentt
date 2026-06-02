@@ -586,10 +586,20 @@ function renderFilePills(files) {
   return `<div class="file-pill-list">
     ${files.map(file => {
       const fileName = file.split('/').pop();
-      return `<a href="/uploads/${file}" target="_blank" class="file-pill">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>
-        <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${fileName}</span>
-      </a>`;
+      const fileType = getFileTypeFromName(fileName);
+      const isPreviewable = fileType === 'image' || fileType === 'pdf';
+      
+      if (isPreviewable) {
+        return `<a href="javascript:void(0)" onclick="openFileViewer('${fileName}', '${file}', '${fileType}')" class="file-pill" title="Click to preview or download: ${fileName}" style="cursor: pointer;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>
+          <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${fileName}</span>
+        </a>`;
+      } else {
+        return `<a href="/api/file/${encodeURIComponent(fileName)}" download="${fileName}" class="file-pill" title="Download: ${fileName}">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>
+          <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${fileName}</span>
+        </a>`;
+      }
     }).join('')}
   </div>`;
 }
@@ -599,6 +609,19 @@ window.closeOrderDetailModal = function() {
   if (modal) modal.style.display = 'none';
 };
 
+// Helper to detect file type from extension
+function getFileTypeFromName(filename) {
+  if (!filename) return 'unknown';
+  const ext = filename.toLowerCase().split('.').pop();
+  
+  const imageExts = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg', 'webp'];
+  const pdfExts = ['pdf'];
+  
+  if (imageExts.includes(ext)) return 'image';
+  if (pdfExts.includes(ext)) return 'pdf';
+  return 'file';
+}
+
 window.openFileViewer = function(name, url, type) {
   const modal = document.getElementById('fileViewerModal');
   const title = document.getElementById('modalFileName');
@@ -607,14 +630,29 @@ window.openFileViewer = function(name, url, type) {
   title.innerText = name;
   content.innerHTML = '';
 
+  // Detect type from filename if not provided or is generic 'file'
+  if (!type || type === 'file') {
+    type = getFileTypeFromName(name);
+  }
+
   if (type.includes('image')) {
-    content.innerHTML = `<img src="${url}" style="max-width: 100%; max-height: 70vh; border-radius: 8px;">`;
+    const imageUrl = url.startsWith('/uploads') ? url : `/uploads/${url}`;
+    content.innerHTML = `<img src="${imageUrl}" style="max-width: 100%; max-height: 70vh; border-radius: 8px; object-fit: contain;" alt="${name}" onerror="this.parentElement.innerHTML='<div class=empty-state><p>Failed to load image.</p><a href=\\'${imageUrl}\\' download=\\'${name}\\' class=\\'portal-file-link\\'>Download File</a></div>'">`;
   } else if (type.includes('pdf')) {
-    content.innerHTML = `<iframe src="${url}" style="width: 100%; height: 70vh; border: none;"></iframe>`;
+    // Extract filename from URL
+    const filename = url.split('/').pop();
+    const pdfUrl = url.startsWith('/api/download') ? url : `/api/download/${filename}`;
+    content.innerHTML = `<div style="width: 100%; height: 70vh; display: flex; flex-direction: column;">
+      <iframe src="${pdfUrl}#toolbar=0&navpanes=0" style="flex: 1; border: none; border-radius: 4px;" onerror="alert('Failed to open PDF. Try downloading it instead.')"></iframe>
+      <div style="margin-top: 10px; text-align: center;">
+        <a href="${pdfUrl}" download="${filename}" class="portal-btn-sm" style="display: inline-block; margin: 5px;">Download PDF</a>
+      </div>
+    </div>`;
   } else {
+    const downloadUrl = url.startsWith('/api/download') ? url : `/api/download/${url.split('/').pop()}`;
     content.innerHTML = `<div class="empty-state">
       <p>Preview not available for this file type.</p>
-      <a href="${url}" download="${name}" class="portal-file-link">Download File</a>
+      <a href="${downloadUrl}" download="${name}" class="portal-btn-sm" style="display: inline-block; margin-top: 10px;">Download File</a>
     </div>`;
   }
 
@@ -624,6 +662,8 @@ window.openFileViewer = function(name, url, type) {
 window.closeFileViewer = function() {
   document.getElementById('fileViewerModal').style.display = 'none';
 };
+
+window.getFileTypeFromName = getFileTypeFromName;
 
 /* ─── Messages (admin) ───────────────────────────────────── */
 

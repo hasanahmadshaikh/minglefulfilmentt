@@ -37,15 +37,22 @@ async function loadDashboardData(page = 1) {
   try {
     const statsData = await window.apiFetch('/api/stats');
     if (statsData.success) {
-      const { totalOrders, activeOrders, pendingInvoices } = statsData.stats;
-      const values = document.querySelectorAll('.stat-value');
-      const subtexts = document.querySelectorAll('.stat-subtext');
+      const { activeInbound, pendingArrival, received, inspection, activeOutbound } = statsData.stats;
 
-      values[0].innerText = activeOrders;
-      subtexts[0].innerText = activeOrders === 0 ? 'No active orders' : `${activeOrders} orders in progress`;
-      values[1].innerText = pendingInvoices;
-      values[2].innerText = totalOrders;
-      subtexts[2].innerText = totalOrders === 1 ? '1 lifetime order' : `${totalOrders} lifetime orders`;
+      const statActiveInbound = document.getElementById('stat-active-inbound');
+      if (statActiveInbound) statActiveInbound.innerText = activeInbound;
+
+      const statPendingArrival = document.getElementById('count-pending-arrival');
+      if (statPendingArrival) statPendingArrival.innerText = pendingArrival;
+
+      const statReceived = document.getElementById('count-received');
+      if (statReceived) statReceived.innerText = received;
+
+      const statInspection = document.getElementById('count-inspection');
+      if (statInspection) statInspection.innerText = inspection;
+
+      const statActiveOutbound = document.getElementById('stat-active-outbound');
+      if (statActiveOutbound) statActiveOutbound.innerText = activeOutbound;
     }
 
     // Load alerts for Awaiting Shipping Labels
@@ -75,35 +82,9 @@ async function loadDashboardData(page = 1) {
         alertDiv.innerHTML = '';
       }
     }
-
-    loadRecentShipments();
   } catch (err) {
     console.error('Failed to load dashboard data:', err);
     window.hideLoader();
-  }
-}
-
-async function loadRecentShipments() {
-  try {
-    const data = await window.apiFetch('/api/orders?page=1&limit=5');
-    const tbody = document.querySelector('#recentOrdersTable tbody');
-    if (!tbody || !data.success) return;
-
-    if (data.orders.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px;">No recent shipments</td></tr>';
-      return;
-    }
-
-    tbody.innerHTML = data.orders.map(o => `
-      <tr>
-        <td><strong>${o.orderId}</strong></td>
-        <td>${o.shipmentName}</td>
-        <td><span class="status-badge status-${o.status.toLowerCase().replace(/\s/g, '-')}">${o.status}</span></td>
-        <td><button class="portal-btn-sm" onclick="viewOrderDetails('${o._id}')">View</button></td>
-      </tr>
-    `).join('');
-  } catch (err) {
-    console.error('Failed to load recent shipments:', err);
   }
 }
 
@@ -136,7 +117,7 @@ function switchTab(tabId) {
 
     if (tabId === 'inbound-shipments') loadInboundShipments(1);
     if (tabId === 'outbound-shipments') loadOutboundShipments(1);
-    if (tabId === 'inventory') loadInventory();
+    if (tabId === 'inventory') loadInventory(1);
 
     window.hideLoader();
   }, 300);
@@ -144,26 +125,28 @@ function switchTab(tabId) {
 
 /* ─── Inventory Logic ────────────────────────────────────── */
 
-async function loadInventory() {
+async function loadInventory(page = 1) {
   try {
-    const data = await window.apiFetch('/api/inventory');
+    const data = await window.apiFetch(`/api/inventory?page=${page}&limit=10`);
     const tbody = document.querySelector('#inventoryTable tbody');
+    const pagin = document.getElementById('inventoryPagination');
     if (!tbody || !data.success) return;
 
     if (data.inventory.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:40px;">No inventory found</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding:40px;">No inventory found</td></tr>';
+      if (pagin) pagin.innerHTML = '';
       return;
     }
 
     tbody.innerHTML = data.inventory.map(item => `
       <tr>
         <td><strong>${item.productName}</strong></td>
-        <td>${item.sku || '-'}</td>
         <td style="font-weight: 600; color: #0f172a;">${item.quantity}</td>
-        <td>${item.packDetails || '-'}</td>
         <td>${new Date(item.updatedAt).toLocaleDateString()}</td>
       </tr>
     `).join('');
+
+    renderPagination(pagin, data.pagination, loadInventory);
   } catch (err) {
     console.error('Failed to load inventory:', err);
   }
@@ -193,7 +176,7 @@ async function loadInboundShipments(page = 1) {
   if (data.orders.length === 0) {
     tbody.innerHTML = `
       <tr>
-        <td colspan="6">
+        <td colspan="7">
           <div class="empty-state-container">
             <svg class="empty-state-icon" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
               <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
@@ -209,10 +192,11 @@ async function loadInboundShipments(page = 1) {
 
   tbody.innerHTML = data.orders.map(o => `
     <tr>
-      <td>${new Date(o.createdAt).toLocaleDateString()}</td>
       <td><strong>${o.orderId}</strong></td>
-      <td>${o.shipmentName}</td>
-      <td>${o.carrier}</td>
+      <td>${new Date(o.createdAt).toLocaleDateString()}</td>
+      <td>${o.shipmentName || '-'}</td>
+      <td>${o.trackingNumber || '-'}</td>
+      <td>${o.carrier || '-'}</td>
       <td><span class="status-badge status-${o.status.toLowerCase().replace(/\s/g, '-')}">${o.status}</span></td>
       <td><button class="portal-btn-sm" onclick="viewOrderDetails('${o._id}')">View</button></td>
     </tr>
@@ -259,13 +243,13 @@ async function loadOutboundShipments(page = 1) {
 
     return `
     <tr ${rowClass}>
-      <td>${new Date(o.createdAt).toLocaleDateString()}</td>
       <td><strong>${o.orderId}</strong></td>
+      <td>${new Date(o.createdAt).toLocaleDateString()}</td>
       <td>
-        ${o.shipmentName}
+        ${o.channel || '-'}
         ${alertMessage}
       </td>
-      <td>${o.carrier}</td>
+      <td>${o.fulfilmentType || '-'}</td>
       <td><span class="status-badge status-${o.status.toLowerCase().replace(/\s/g, '-')}">${o.status}</span></td>
       <td>${actionBtn}</td>
     </tr>
@@ -462,7 +446,7 @@ function addOutboundSkuRow() {
     </td>
     <td>
       <div style="display:flex; align-items:center; gap:8px;">
-        <input type="number" class="portal-input sku-qty-input" placeholder="0" min="1" style="margin:0; padding:6px 10px; width:80px;" required>
+        <input type="number" class="portal-input sku-qty-input" placeholder="0" min="1" style="margin:0; padding:6px 10px; width:80px;" oninput="validateQtyInput(this)" required>
         <span class="qty-available" style="font-size:12px; color:#64748b;"></span>
       </div>
     </td>
@@ -574,7 +558,14 @@ function buildFileLinks(attachments, filesLink) {
       const fullName = file.split('/').pop();
       const dashIdx = fullName.indexOf('-');
       const displayName = dashIdx > -1 ? fullName.slice(dashIdx + 1) : fullName;
-      links.push(`<a href="${file}" target="_blank" class="portal-file-link">${displayName}</a>`);
+      const fileType = getFileTypeFromName(displayName);
+      const isPreviewable = fileType === 'image' || fileType === 'pdf';
+      
+      if (isPreviewable) {
+        links.push(`<a href="javascript:void(0)" onclick="openFileViewer('${displayName}', '${file}', '${fileType}')" class="portal-file-link" style="cursor: pointer;">${displayName}</a>`);
+      } else {
+        links.push(`<a href="/api/file/${encodeURIComponent(fullName)}" class="portal-file-link" download="${displayName}">${displayName}</a>`);
+      }
     });
   }
 
@@ -630,13 +621,29 @@ async function handleOrderSubmit(event) {
 
     const skuRows = document.querySelectorAll('#outboundSkuBody tr');
     const outboundProducts = [];
+    let qtyExceeded = false;
     skuRows.forEach(row => {
       const select = row.querySelector('.sku-name-input');
       const opt = select.options[select.selectedIndex];
       const sku = opt ? opt.value : '';
       const name = opt ? opt.text.split(' (SKU')[0] : '';
-      const qty = parseInt(row.querySelector('.sku-qty-input').value) || 0;
+      const qtyInput = row.querySelector('.sku-qty-input');
+      const qty = parseInt(qtyInput.value) || 0;
       const pack = row.querySelector('.sku-pack-input').value;
+
+      const availableQty = parseInt(opt ? opt.getAttribute('data-qty') : 0) || 0;
+      if (qty > availableQty) {
+        qtyExceeded = true;
+        qtyInput.classList.add('error');
+        let errEl = qtyInput.parentNode.querySelector('.error-msg');
+        if (!errEl) {
+          errEl = document.createElement('span');
+          errEl.className = 'error-msg';
+          qtyInput.parentNode.appendChild(errEl);
+        }
+        //errEl.innerText = `Max available: ${availableQty}`;
+      }
+
       if (sku && qty > 0 && pack) {
         outboundProducts.push({
           productName: name,
@@ -646,6 +653,12 @@ async function handleOrderSubmit(event) {
         });
       }
     });
+
+    if (qtyExceeded) {
+      window.showToast('Quantity cannot be greater than available quantity', 'error');
+      restore();
+      return;
+    }
 
     if (outboundProducts.length === 0) {
       window.showToast('Please select at least one SKU with valid details to ship out', 'error');
@@ -774,16 +787,11 @@ async function viewOrderDetails(id) {
     let detailsHtml = '';
 
     if (isOutbound) {
+      const outboundAttachments = [...(order.documents || []), ...(order.shippingLabels || []), ...(order.commercialInvoices || []), ...(order.packingListPDFs || []), ...(order.productImages || [])];
+      window.currentOrderAttachments = outboundAttachments;
+
       detailsHtml = `
         <div class="detail-card-grid">
-          <div class="detail-card-item">
-            <span class="detail-card-label">Shipment Name</span>
-            <span class="detail-card-value">${order.shipmentName || '-'}</span>
-          </div>
-          <div class="detail-card-item">
-            <span class="detail-card-label">Status</span>
-            <div><span class="status-badge status-${(order.status || 'Pending').toLowerCase().replace(/\s/g, '-')}">${order.status || 'Pending'}</span></div>
-          </div>
           <div class="detail-card-item">
             <span class="detail-card-label">Channel</span>
             <span class="detail-card-value">${order.channel || '-'}</span>
@@ -793,27 +801,36 @@ async function viewOrderDetails(id) {
             <span class="detail-card-value">${order.fulfilmentType || '-'}</span>
           </div>
           <div class="detail-card-item">
+            <span class="detail-card-label">Status</span>
+            <div><span class="status-badge status-${(order.status || 'Pending').toLowerCase().replace(/\s/g, '-')}">${order.status || 'Pending'}</span></div>
+          </div>
+          <div class="detail-card-item">
             <span class="detail-card-label">Shipping Labels Required</span>
             <span class="detail-card-value">${order.shippingLabelsRequired ? 'Yes' : 'No'}</span>
           </div>
 
+          <div class="detail-card-full">
+            <span class="detail-card-label">Prep Instructions</span>
+            <p style="margin-top:8px; color:#475569; font-size: 14px; line-height: 1.5;">${order.prepInstructions || '-'}</p>
+          </div>
+
           ${order.products && order.products.length > 0 ? `
           <div class="detail-card-full">
-            <span class="detail-card-label">Selected Products</span>
+            <span class="detail-card-label">Selected SKU Detail</span>
             <div style="margin-top:12px;">
               <table class="portal-table" style="background: white; border-radius: 8px;">
                 <thead>
                   <tr>
-                    <th style="padding: 10px; font-size: 12px; text-align: left;">Product</th>
-                    <th style="padding: 10px; font-size: 12px; text-align: left;">SKU</th>
-                    <th style="padding: 10px; font-size: 12px; text-align: right;">Qty</th>
+                    <th style="padding: 10px; font-size: 12px; text-align: left;">SKU Name</th>
+                    <th style="padding: 10px; font-size: 12px; text-align: left;">Pack Details</th>
+                    <th style="padding: 10px; font-size: 12px; text-align: right;">Quantity</th>
                   </tr>
                 </thead>
                 <tbody>
                   ${order.products.map(p => `
                     <tr>
                       <td style="padding: 10px; font-size: 13px; border-top: 1px solid #f1f5f9;">${p.productName}</td>
-                      <td style="padding: 10px; font-size: 13px; border-top: 1px solid #f1f5f9;">${p.sku || '-'}</td>
+                      <td style="padding: 10px; font-size: 13px; border-top: 1px solid #f1f5f9;">${p.packDetails || '-'}</td>
                       <td style="padding: 10px; font-size: 13px; border-top: 1px solid #f1f5f9; text-align: right; font-weight: 600;">${p.quantity}</td>
                     </tr>
                   `).join('')}
@@ -823,19 +840,22 @@ async function viewOrderDetails(id) {
           </div>` : ''}
 
           <div class="detail-card-full">
-            <span class="detail-card-label">Prep Instructions</span>
-            <p style="margin-top:8px; color:#475569; font-size: 14px; line-height: 1.5;">${order.prepInstructions || '-'}</p>
-          </div>
-
-          <div class="detail-card-full">
-            <span class="detail-card-label">Shipping Labels</span>
+            <span class="detail-card-label">Attachments</span>
+            ${outboundAttachments.length > 0 ? `
+              <div style="margin-bottom: 12px;">
+                <button class="portal-btn-sm" onclick="downloadAllFiles(window.currentOrderAttachments)">Download All</button>
+              </div>
+            ` : ''}
             <div class="detail-card-files">
-              ${renderFilePills([...(order.documents || []), ...(order.shippingLabels || [])])}
+              ${renderFilePills(outboundAttachments)}
             </div>
           </div>
         </div>
       `;
     } else {
+      const allAttachments = [...(order.documents || []), ...(order.commercialInvoices || []), ...(order.packingListPDFs || []), ...(order.productImages || [])];
+      window.currentOrderAttachments = allAttachments;
+
       detailsHtml = `
         <div class="detail-card-grid">
           <div class="detail-card-item">
@@ -863,16 +883,46 @@ async function viewOrderDetails(id) {
             <div><span class="status-badge status-${(order.status || 'Pending').toLowerCase().replace(/\s/g, '-')}">${order.status || 'Pending'}</span></div>
           </div>
 
+          ${order.products && order.products.length > 0 ? `
           <div class="detail-card-full">
-            <span class="detail-card-label">Notes</span>
-            <p style="margin-top:8px; color:#475569; font-size: 14px; line-height: 1.5;">${order.notes || '-'}</p>
+            <span class="detail-card-label">SKU Detail</span>
+            <div style="margin-top:12px;">
+              <table class="portal-table" style="background: white; border-radius: 8px;">
+                <thead>
+                  <tr>
+                    <th style="padding: 10px; font-size: 12px; text-align: left;">SKU Name</th>
+                    <th style="padding: 10px; font-size: 12px; text-align: left;">Pack Details</th>
+                    <th style="padding: 10px; font-size: 12px; text-align: right;">Quantity</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${order.products.map(p => `
+                    <tr>
+                      <td style="padding: 10px; font-size: 13px; border-top: 1px solid #f1f5f9;">${p.productName}</td>
+                      <td style="padding: 10px; font-size: 13px; border-top: 1px solid #f1f5f9;">${p.packDetails || '-'}</td>
+                      <td style="padding: 10px; font-size: 13px; border-top: 1px solid #f1f5f9; text-align: right; font-weight: 600;">${p.quantity}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>` : ''}
+
+          <div class="detail-card-full">
+            <span class="detail-card-label">Attachments</span>
+            ${allAttachments.length > 0 ? `
+              <div style="margin-bottom: 12px;">
+                <button class="portal-btn-sm" onclick="downloadAllFiles(window.currentOrderAttachments)">Download All</button>
+              </div>
+            ` : ''}
+            <div class="detail-card-files">
+              ${renderFilePills(allAttachments)}
+            </div>
           </div>
 
           <div class="detail-card-full">
-            <span class="detail-card-label">Product Attachments</span>
-            <div class="detail-card-files">
-              ${renderFilePills(order.productImages)}
-            </div>
+            <span class="detail-card-label">Notes</span>
+            <p style="margin-top:8px; color:#475569; font-size: 14px; line-height: 1.5;">${order.notes || '-'}</p>
           </div>
         </div>
       `;
@@ -893,10 +943,20 @@ function renderFilePills(files) {
   return `<div class="file-pill-list">
     ${files.map(file => {
     const fileName = file.split('/').pop();
-    return `<a href="/uploads/${file}" target="_blank" class="file-pill">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>
-        <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${fileName}</span>
-      </a>`;
+    const fileType = getFileTypeFromName(fileName);
+    const isPreviewable = fileType === 'image' || fileType === 'pdf';
+    
+    if (isPreviewable) {
+      return `<a href="javascript:void(0)" onclick="openFileViewer('${fileName}', '${file}', '${fileType}')" class="file-pill" title="Click to preview or download: ${fileName}" style="cursor: pointer;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>
+          <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${fileName}</span>
+        </a>`;
+    } else {
+      return `<a href="/api/file/${encodeURIComponent(fileName)}" download="${fileName}" class="file-pill" title="Download: ${fileName}">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>
+          <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${fileName}</span>
+        </a>`;
+    }
   }).join('')}
   </div>`;
 }
@@ -1032,6 +1092,19 @@ function initFileManager(inputId, listId, zoneId, allowedTypes = [], maxSize = 5
 
 /* ─── File Viewer Modal ──────────────────────────────────── */
 
+// Helper to detect file type from extension
+function getFileTypeFromName(filename) {
+  if (!filename) return 'unknown';
+  const ext = filename.toLowerCase().split('.').pop();
+  
+  const imageExts = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg', 'webp'];
+  const pdfExts = ['pdf'];
+  
+  if (imageExts.includes(ext)) return 'image';
+  if (pdfExts.includes(ext)) return 'pdf';
+  return 'file';
+}
+
 function openFileViewer(name, url, type) {
   const modal = document.getElementById('fileViewerModal');
   const title = document.getElementById('modalFileName');
@@ -1040,14 +1113,28 @@ function openFileViewer(name, url, type) {
   title.innerText = name;
   content.innerHTML = '';
 
+  // Detect type from filename if not provided or is generic 'file'
+  if (!type || type === 'file') {
+    type = getFileTypeFromName(name);
+  }
+
+  const requestedName = url.split('/').pop();
+  const previewUrl = `/api/file/${encodeURIComponent(requestedName)}?inline=1`;
+  const downloadUrl = `/api/file/${encodeURIComponent(requestedName)}`;
+
   if (type.includes('image')) {
-    content.innerHTML = `<img src="${url}" style="max-width: 100%; max-height: 70vh; border-radius: 8px;">`;
+    content.innerHTML = `<img src="${previewUrl}" style="max-width: 100%; max-height: 70vh; border-radius: 8px; object-fit: contain;" alt="${name}" onerror="this.parentElement.innerHTML='<div class=empty-state><p>Failed to load image.</p><a href=\\'${downloadUrl}\\' download=\\'${name}\\' class=\\'portal-file-link\\'>Download File</a></div>'">`;
   } else if (type.includes('pdf')) {
-    content.innerHTML = `<iframe src="${url}" style="width: 100%; height: 70vh; border: none;"></iframe>`;
+    content.innerHTML = `<div style="width: 100%; height: 70vh; display: flex; flex-direction: column;">
+      <iframe src="${previewUrl}#toolbar=0&navpanes=0" style="flex: 1; border: none; border-radius: 4px;" onerror="alert('Failed to open PDF. Try downloading it instead.')"></iframe>
+      <div style="margin-top: 10px; text-align: center;">
+        <a href="${downloadUrl}" download="${requestedName}" class="portal-btn-sm" style="display: inline-block; margin: 5px;">Download PDF</a>
+      </div>
+    </div>`;
   } else {
     content.innerHTML = `<div class="empty-state">
       <p>Preview not available for this file type.</p>
-      <a href="${url}" download="${name}" class="portal-file-link">Download File</a>
+      <a href="${downloadUrl}" download="${name}" class="portal-btn-sm" style="display: inline-block; margin-top: 10px;">Download File</a>
     </div>`;
   }
 
@@ -1092,6 +1179,51 @@ async function handleLogout() {
   window.location.href = '/login.html';
 }
 
+function goToSubmitShipment(type) {
+  switchTab('submit-order');
+  selectShipmentTypeBox(type);
+}
+
+function validateQtyInput(inputEl) {
+  const row = inputEl.closest('tr');
+  const select = row.querySelector('.sku-name-input');
+  if (select.selectedIndex < 0) return;
+  const opt = select.options[select.selectedIndex];
+  if (!opt || !opt.value) return;
+
+  const availableQty = parseInt(opt.getAttribute('data-qty')) || 0;
+  const val = parseInt(inputEl.value) || 0;
+
+  // Clear previous errors
+  inputEl.classList.remove('error');
+  const errEl = inputEl.parentNode.querySelector('.error-msg');
+  if (errEl) errEl.remove();
+
+  if (val > availableQty) {
+    inputEl.classList.add('error');
+    const msg = document.createElement('span');
+    msg.className = 'error-msg';
+    //msg.innerText = `Max: ${availableQty}`;
+    inputEl.parentNode.appendChild(msg);
+  }
+}
+
+function downloadAllFiles(files) {
+  if (!files || files.length === 0) return;
+  files.forEach((file, index) => {
+    setTimeout(() => {
+      const filename = file.split('/').pop();
+      const a = document.createElement('a');
+      // Use the API download endpoint for proper file handling
+      a.href = `/api/download/${filename}`;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }, index * 300);
+  });
+}
+
 /* ─── Boot ───────────────────────────────────────────────── */
 
 window.addEventListener('DOMContentLoaded', () => {
@@ -1116,6 +1248,11 @@ window.addEventListener('DOMContentLoaded', () => {
   window.selectShipmentTypeBox = selectShipmentTypeBox;
   window.toggleShipmentFields = toggleShipmentFields;
   window.addInboundSkuRow = addInboundSkuRow;
+  window.goToSubmitShipment = goToSubmitShipment;
+  window.validateQtyInput = validateQtyInput;
+  window.downloadAllFiles = downloadAllFiles;
+  window.getFileTypeFromName = getFileTypeFromName;
+  window.openFileViewer = openFileViewer;
 
   // Also add initial empty row for Inbound SKUs if table is present
   if (document.getElementById('inboundSkuBody')) {

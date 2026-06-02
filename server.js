@@ -99,17 +99,26 @@ app.use((req, res, next) => {
 // Serve static files from the 'public' folder
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Serve uploads folder
+// Ensure uploads directory exists
 const uploadDir = path.join(__dirname, 'uploads');
 try {
   if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir);
+    fs.mkdirSync(uploadDir, { recursive: true });
+    console.log('Created uploads directory:', uploadDir);
   }
 } catch (e) {
-  // Vercel has a read-only filesystem - uploads dir may not be writable
-  console.warn('Could not create uploads directory (expected in serverless):', e.message);
+  console.error('Error with uploads directory:', e.message);
 }
-app.use('/uploads', express.static(uploadDir));
+
+// Serve uploaded files with proper MIME types and headers
+app.use('/uploads', (req, res, next) => {
+  // Set cache control and other headers for files
+  res.setHeader('Cache-Control', 'public, max-age=31536000');
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  
+  // Serve the file
+  express.static(uploadDir)(req, res, next);
+});
 
 // API Routes
 app.use('/api', apiRoutes);
