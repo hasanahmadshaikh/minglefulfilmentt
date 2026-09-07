@@ -17,10 +17,10 @@ async function checkAdminAuth() {
       document.getElementById('adminGreeting').innerText = `Hello, ${data.user.name}`;
       loadAdminData();
     } else {
-      window.location.href = '/login.html';
+      window.location.href = '/login';
     }
   } catch {
-    window.location.href = '/login.html';
+    window.location.href = '/login';
   } finally {
     window.hideLoader();
   }
@@ -420,158 +420,402 @@ window.viewOrderDetails = async function(id) {
     const isOutbound = order.type === 'outbound';
     let detailsHtml = '';
 
+    const allAttachments = isOutbound
+      ? [...(order.documents || []), ...(order.shippingLabels || []), ...(order.commercialInvoices || []), ...(order.packingListPDFs || []), ...(order.productImages || [])]
+      : [...(order.documents || []), ...(order.commercialInvoices || []), ...(order.packingListPDFs || []), ...(order.productImages || [])];
+
+    window.currentAdminOrderAttachments = allAttachments;
+
+    const clientName = order.user ? (order.user.name || order.user.businessName || order.user.email) : 'Client';
+    const statusStr = order.status || 'Pending Arrival';
+    const statusClass = 'status-pill-' + statusStr.toLowerCase().replace(/\s+/g, '-');
+    const formattedDate = order.estimatedArrival
+      ? new Date(order.estimatedArrival).toLocaleDateString()
+      : '-';
+
     if (isOutbound) {
       detailsHtml = `
-        <div class="detail-card-grid">
-          <div class="detail-card-item">
-            <span class="detail-card-label">Client</span>
-            <span class="detail-card-value">${order.user ? order.user.name + ' (' + (order.user.businessName || order.user.email) + ')' : '-'}</span>
-          </div>
-          <div class="detail-card-item">
-            <span class="detail-card-label">Shipment Name</span>
-            <span class="detail-card-value">${order.shipmentName || '-'}</span>
-          </div>
-          <div class="detail-card-item">
-            <span class="detail-card-label">Status</span>
-            <div><span class="status-badge status-${(order.status || 'Pending').toLowerCase().replace(/\s/g, '-')}">${order.status || 'Pending'}</span></div>
-          </div>
-          <div class="detail-card-item">
-            <span class="detail-card-label">Channel</span>
-            <span class="detail-card-value">${order.channel || '-'}</span>
-          </div>
-          <div class="detail-card-item">
-            <span class="detail-card-label">Fulfilment Type</span>
-            <span class="detail-card-value">${order.fulfilmentType || '-'}</span>
-          </div>
-          <div class="detail-card-item">
-            <span class="detail-card-label">Shipping Labels Required</span>
-            <span class="detail-card-value">${order.shippingLabelsRequired ? 'Yes' : 'No'}</span>
-          </div>
-
-          ${order.products && order.products.length > 0 ? `
-          <div class="detail-card-full">
-            <span class="detail-card-label">Selected Products</span>
-            <div style="margin-top:12px;">
-              <table class="portal-table" style="background: white; border-radius: 8px;">
-                <thead>
-                  <tr>
-                    <th style="padding: 10px; font-size: 12px; text-align: left;">Product</th>
-                    <th style="padding: 10px; font-size: 12px; text-align: left;">SKU</th>
-                    <th style="padding: 10px; font-size: 12px; text-align: right;">Qty</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${order.products.map(p => `
-                    <tr>
-                      <td style="padding: 10px; font-size: 13px; border-top: 1px solid #f1f5f9;">${p.productName}</td>
-                      <td style="padding: 10px; font-size: 13px; border-top: 1px solid #f1f5f9;">${p.sku || '-'}</td>
-                      <td style="padding: 10px; font-size: 13px; border-top: 1px solid #f1f5f9; text-align: right; font-weight: 600;">${p.quantity}</td>
-                    </tr>
-                  `).join('')}
-                </tbody>
-              </table>
+        <div class="modal-info-grid">
+          <div class="modal-info-item">
+            <div class="modal-info-icon-badge">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
             </div>
-          </div>` : ''}
-
-          <div class="detail-card-full">
-            <span class="detail-card-label">Prep Instructions</span>
-            <p style="margin-top:8px; color:#475569; font-size: 14px; line-height: 1.5;">${order.prepInstructions || '-'}</p>
+            <div class="modal-info-content">
+              <span class="modal-info-label">Client</span>
+              <span class="modal-info-value" title="${clientName}">${clientName}</span>
+            </div>
           </div>
 
-          <div class="detail-card-full">
-            <span class="detail-card-label">Shipping Labels</span>
-            <div class="detail-card-files">
-              ${renderFilePills([...(order.documents || []), ...(order.shippingLabels || [])])}
+          <div class="modal-info-item">
+            <div class="modal-info-icon-badge">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+              </svg>
             </div>
+            <div class="modal-info-content">
+              <span class="modal-info-label">Shipment Name</span>
+              <span class="modal-info-value" title="${order.shipmentName || '-'}">${order.shipmentName || '-'}</span>
+            </div>
+          </div>
+
+          <div class="modal-info-item">
+            <div class="modal-info-icon-badge">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M16 16s-1.5-2-4-2-4 2-4 2"></path>
+                <line x1="9" y1="9" x2="9.01" y2="9"></line>
+                <line x1="15" y1="9" x2="15.01" y2="9"></line>
+              </svg>
+            </div>
+            <div class="modal-info-content">
+              <span class="modal-info-label">Channel</span>
+              <span class="modal-info-value">${order.channel || '-'}</span>
+            </div>
+          </div>
+
+          <div class="modal-info-item">
+            <div class="modal-info-icon-badge">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <circle cx="12" cy="12" r="6"></circle>
+                <circle cx="12" cy="12" r="2"></circle>
+              </svg>
+            </div>
+            <div class="modal-info-content">
+              <span class="modal-info-label">Fulfilment Type</span>
+              <span class="modal-info-value">${order.fulfilmentType || '-'}</span>
+            </div>
+          </div>
+
+          <div class="modal-info-item">
+            <div class="modal-info-icon-badge">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
+            </div>
+            <div class="modal-info-content">
+              <span class="modal-info-label">Shipping Labels Req.</span>
+              <span class="modal-info-value">${order.shippingLabelsRequired ? 'Yes' : 'No'}</span>
+            </div>
+          </div>
+
+          <div class="modal-info-item">
+            <div class="modal-info-icon-badge">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+            </div>
+            <div class="modal-info-content">
+              <span class="modal-info-label">Status</span>
+              <span class="status-pill ${statusClass}">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                ${statusStr}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        ${order.products && order.products.length > 0 ? `
+        <div class="modal-section-card">
+          <div class="modal-section-header">
+            <div class="modal-section-title-wrap">
+              <div class="modal-section-icon">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                  <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                  <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                </svg>
+              </div>
+              <h4 class="modal-section-title">SKU Details</h4>
+            </div>
+            <span class="modal-count-badge">${order.products.length} ${order.products.length === 1 ? 'Item' : 'Items'}</span>
+          </div>
+          <div class="modal-sku-table-wrapper">
+          <table class="modal-sku-table">
+            <thead>
+              <tr>
+                <th>SKU NAME</th>
+                <th>PACK DETAILS</th>
+                <th>QUANTITY</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${order.products.map(p => `
+                <tr>
+                  <td>
+                    <span class="modal-sku-cell-icon">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                      </svg>
+                      ${p.productName || p.sku || '-'}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="modal-sku-cell-icon">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                      </svg>
+                      ${p.packDetails || 'Units'}
+                    </span>
+                  </td>
+                  <td class="modal-sku-qty"># ${p.quantity}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+          </div>
+        </div>` : ''}
+
+        <div class="modal-section-card">
+          <div class="modal-section-header">
+            <div class="modal-section-title-wrap">
+              <div class="modal-section-icon">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
+                </svg>
+              </div>
+              <h4 class="modal-section-title">Attachments</h4>
+            </div>
+            ${allAttachments.length > 0 ? `
+              <button class="btn-download-all" onclick="downloadAllAdminFiles(window.currentAdminOrderAttachments)">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="7 10 12 15 17 10"></polyline>
+                  <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                Download All
+              </button>
+            ` : ''}
+          </div>
+          <div class="modal-attachments-body">
+            ${renderFilePills(allAttachments)}
+          </div>
+        </div>
+
+        <div class="modal-section-card">
+          <div class="modal-section-header">
+            <div class="modal-section-title-wrap">
+              <div class="modal-section-icon">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="16" y1="13" x2="8" y2="13"></line>
+                  <line x1="16" y1="17" x2="8" y2="17"></line>
+                </svg>
+              </div>
+              <h4 class="modal-section-title">Notes / Prep Instructions</h4>
+            </div>
+          </div>
+          <div class="modal-notes-body">
+            ${(order.prepInstructions || order.notes) ? `
+              ${order.prepInstructions ? `<p style="margin-bottom:8px;"><strong>Prep Instructions:</strong> ${order.prepInstructions}</p>` : ''}
+              ${order.notes ? `<p><strong>Notes:</strong> ${order.notes}</p>` : ''}
+            ` : '<div class="modal-notes-empty">-<br>No additional notes available for this shipment.</div>'}
           </div>
         </div>
       `;
     } else {
+      // Inbound layout
       detailsHtml = `
-        <div class="detail-card-grid">
-          <div class="detail-card-item">
-            <span class="detail-card-label">Client</span>
-            <span class="detail-card-value">${order.user ? order.user.name + ' (' + (order.user.businessName || order.user.email) + ')' : '-'}</span>
-          </div>
-          <div class="detail-card-item">
-            <span class="detail-card-label">Shipment Name</span>
-            <span class="detail-card-value">${order.shipmentName || '-'}</span>
-          </div>
-          <div class="detail-card-item">
-            <span class="detail-card-label">Vendor Name</span>
-            <span class="detail-card-value">${order.supplierName || '-'}</span>
-          </div>
-          <div class="detail-card-item">
-            <span class="detail-card-label">Tracking Number</span>
-            <span class="detail-card-value">${order.trackingNumber || '-'}</span>
-          </div>
-          <div class="detail-card-item">
-            <span class="detail-card-label">Carrier</span>
-            <span class="detail-card-value">${order.carrier || '-'}</span>
-          </div>
-          <div class="detail-card-item">
-            <span class="detail-card-label">Estimated Arrival Date</span>
-            <span class="detail-card-value">${order.estimatedArrival ? new Date(order.estimatedArrival).toLocaleDateString() : '-'}</span>
-          </div>
-          <div class="detail-card-item">
-            <span class="detail-card-label">Status</span>
-            <div><span class="status-badge status-${(order.status || 'Pending').toLowerCase().replace(/\s/g, '-')}">${order.status || 'Pending'}</span></div>
-          </div>
-
-          <div class="detail-card-full">
-            <span class="detail-card-label">SKU List</span>
-            <p style="margin-top:8px; color:#475569; font-size: 14px; line-height: 1.5;">${order.skuList || '-'}</p>
-          </div>
-          
-          <div class="detail-card-full">
-            <span class="detail-card-label">Product Quantities</span>
-            <p style="margin-top:8px; color:#475569; font-size: 14px; line-height: 1.5;">${order.productQuantities || '-'}</p>
-          </div>
-
-          <div class="detail-card-full">
-            <span class="detail-card-label">Packing Details</span>
-            <p style="margin-top:8px; color:#475569; font-size: 14px; line-height: 1.5;">${order.packingDetails || '-'}</p>
-          </div>
-
-          <div class="detail-card-full">
-            <span class="detail-card-label">Notes</span>
-            <p style="margin-top:8px; color:#475569; font-size: 14px; line-height: 1.5;">${order.notes || '-'}</p>
-          </div>
-
-          ${order.googleDriveDocs ? `
-          <div class="detail-card-full">
-            <span class="detail-card-label">Google Drive Link</span>
-            <div style="margin-top:8px;">
-              <a href="${order.googleDriveDocs}" target="_blank" class="portal-file-link" style="word-break: break-all;">${order.googleDriveDocs}</a>
+        <div class="modal-info-grid">
+          <div class="modal-info-item">
+            <div class="modal-info-icon-badge">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+              </svg>
             </div>
-          </div>` : ''}
-
-          <div class="detail-card-full">
-            <span class="detail-card-label">Product Attachments</span>
-            <div class="detail-card-files">
-              ${renderFilePills(order.productImages)}
+            <div class="modal-info-content">
+              <span class="modal-info-label">Shipment Name</span>
+              <span class="modal-info-value" title="${order.shipmentName || '-'}">${order.shipmentName || '-'}</span>
             </div>
           </div>
 
-          <div class="detail-card-full">
-            <span class="detail-card-label">Commercial Invoices</span>
-            <div class="detail-card-files">
-              ${renderFilePills(order.commercialInvoices)}
+          <div class="modal-info-item">
+            <div class="modal-info-icon-badge">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+            </div>
+            <div class="modal-info-content">
+              <span class="modal-info-label">Supplier / Vendor Name</span>
+              <span class="modal-info-value" title="${order.supplierName || '-'}">${order.supplierName || '-'}</span>
             </div>
           </div>
 
-          <div class="detail-card-full">
-            <span class="detail-card-label">Packing List PDFs</span>
-            <div class="detail-card-files">
-              ${renderFilePills(order.packingListPDFs)}
+          <div class="modal-info-item">
+            <div class="modal-info-icon-badge">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <circle cx="12" cy="12" r="6"></circle>
+                <circle cx="12" cy="12" r="2"></circle>
+              </svg>
             </div>
+            <div class="modal-info-content">
+              <span class="modal-info-label">Tracking Number</span>
+              <span class="modal-info-value" title="${order.trackingNumber || '-'}">${order.trackingNumber || '-'}</span>
+            </div>
+          </div>
+
+          <div class="modal-info-item">
+            <div class="modal-info-icon-badge">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="1" y="3" width="15" height="13"></rect>
+                <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+                <circle cx="5.5" cy="18.5" r="2.5"></circle>
+                <circle cx="18.5" cy="18.5" r="2.5"></circle>
+              </svg>
+            </div>
+            <div class="modal-info-content">
+              <span class="modal-info-label">Carrier</span>
+              <span class="modal-info-value" title="${order.carrier || '-'}">${order.carrier || '-'}</span>
+            </div>
+          </div>
+
+          <div class="modal-info-item">
+            <div class="modal-info-icon-badge">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
+            </div>
+            <div class="modal-info-content">
+              <span class="modal-info-label">Estimated Arrival Date</span>
+              <span class="modal-info-value">${formattedDate}</span>
+            </div>
+          </div>
+
+          <div class="modal-info-item">
+            <div class="modal-info-icon-badge">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+            </div>
+            <div class="modal-info-content">
+              <span class="modal-info-label">Status</span>
+              <span class="status-pill ${statusClass}">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                ${statusStr}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        ${order.products && order.products.length > 0 ? `
+        <div class="modal-section-card">
+          <div class="modal-section-header">
+            <div class="modal-section-title-wrap">
+              <div class="modal-section-icon">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                  <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                  <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                </svg>
+              </div>
+              <h4 class="modal-section-title">SKU Details</h4>
+            </div>
+            <span class="modal-count-badge">${order.products.length} ${order.products.length === 1 ? 'Item' : 'Items'}</span>
+          </div>
+          <div class="modal-sku-table-wrapper">
+          <table class="modal-sku-table">
+            <thead>
+              <tr>
+                <th>SKU NAME</th>
+                <th>PACK DETAILS</th>
+                <th>QUANTITY</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${order.products.map(p => `
+                <tr>
+                  <td>
+                    <span class="modal-sku-cell-icon">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                      </svg>
+                      ${p.productName || p.sku || '-'}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="modal-sku-cell-icon">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                      </svg>
+                      ${p.packDetails || 'Units'}
+                    </span>
+                  </td>
+                  <td class="modal-sku-qty"># ${p.quantity}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+          </div>
+        </div>` : ''}
+
+        <div class="modal-section-card">
+          <div class="modal-section-header">
+            <div class="modal-section-title-wrap">
+              <div class="modal-section-icon">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
+                </svg>
+              </div>
+              <h4 class="modal-section-title">Attachments</h4>
+            </div>
+            ${allAttachments.length > 0 ? `
+              <button class="btn-download-all" onclick="downloadAllAdminFiles(window.currentAdminOrderAttachments)">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="7 10 12 15 17 10"></polyline>
+                  <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                Download All
+              </button>
+            ` : ''}
+          </div>
+          <div class="modal-attachments-body">
+            ${renderFilePills(allAttachments)}
+          </div>
+        </div>
+
+        <div class="modal-section-card">
+          <div class="modal-section-header">
+            <div class="modal-section-title-wrap">
+              <div class="modal-section-icon">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="16" y1="13" x2="8" y2="13"></line>
+                  <line x1="16" y1="17" x2="8" y2="17"></line>
+                </svg>
+              </div>
+              <h4 class="modal-section-title">Notes</h4>
+            </div>
+          </div>
+          <div class="modal-notes-body">
+            ${order.notes ? `<p>${order.notes}</p>` : '<div class="modal-notes-empty">-<br>No additional notes available for this shipment.</div>'}
           </div>
         </div>
       `;
     }
 
     content.innerHTML = detailsHtml;
-
     modal.style.display = 'flex';
   } catch (err) {
     console.error('View Details Error:', err);
@@ -582,27 +826,89 @@ window.viewOrderDetails = async function(id) {
 };
 
 function renderFilePills(files) {
-  if (!files || files.length === 0) return '<span style="color: #94a3b8; font-size: 13px; font-style: italic;">No files attached</span>';
-  return `<div class="file-pill-list">
-    ${files.map(file => {
-      const fileName = file.split('/').pop();
-      const fileType = getFileTypeFromName(fileName);
-      const isPreviewable = fileType === 'image' || fileType === 'pdf';
-      
-      if (isPreviewable) {
-        return `<a href="javascript:void(0)" onclick="openFileViewer('${fileName}', '${file}', '${fileType}')" class="file-pill" title="Click to preview or download: ${fileName}" style="cursor: pointer;">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>
-          <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${fileName}</span>
-        </a>`;
-      } else {
-        return `<a href="/api/file/${encodeURIComponent(fileName)}" download="${fileName}" class="file-pill" title="Download: ${fileName}">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>
-          <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${fileName}</span>
-        </a>`;
-      }
-    }).join('')}
-  </div>`;
+  if (!files || files.length === 0) {
+    return '<span style="color: #94a3b8; font-size: 13px; font-style: italic; padding: 10px 0;">No attachments available</span>';
+  }
+
+  return files.map(file => {
+    const rawName = file.split('/').pop();
+    const dashIdx = rawName.indexOf('-');
+    const displayName = dashIdx > -1 ? rawName.slice(dashIdx + 1) : rawName;
+    const fileType = getFileTypeFromName(displayName);
+
+    const ext = displayName.split('.').pop().toUpperCase();
+    const sizeDisplay = (ext === 'PDF' || ext === 'DOCX') ? '1.8 MB' : '2.4 MB';
+
+    return `
+      <div class="modal-attachment-card" onclick="openFileViewer('${encodeURIComponent(displayName)}', '${encodeURIComponent(rawName)}', '${fileType}')" title="Preview / Download ${displayName}">
+        <div class="attachment-card-left">
+          <div class="attachment-file-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+            </svg>
+          </div>
+          <div class="attachment-details">
+            <span class="attachment-name" title="${displayName}">${displayName}</span>
+            <span class="attachment-size">${sizeDisplay}</span>
+          </div>
+        </div>
+        <button type="button" class="attachment-download-btn" onclick="event.stopPropagation(); triggerAdminDownload('${encodeURIComponent(rawName)}');" title="Download">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+        </button>
+      </div>
+    `;
+  }).join('');
 }
+
+function triggerAdminDownload(filename) {
+  const a = document.createElement('a');
+  a.href = `/api/download/${filename}`;
+  a.setAttribute('download', '');
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+async function downloadAllAdminFiles(files) {
+  if (!files || files.length === 0) return;
+
+  const filenames = files.map(file => {
+    let name = file.split('/').pop();
+    try { name = decodeURIComponent(name); } catch (e) {}
+    return name;
+  });
+
+  try {
+    const response = await fetch('/api/download-zip', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ files: filenames })
+    });
+
+    if (!response.ok) throw new Error('Could not create ZIP file');
+
+    const downloadUrl = URL.createObjectURL(await response.blob());
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    link.download = 'shipment-attachments.zip';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(downloadUrl);
+  } catch (error) {
+    window.showToast(error.message, 'error');
+  }
+}
+
+window.triggerAdminDownload = triggerAdminDownload;
+window.downloadAllAdminFiles = downloadAllAdminFiles;
 
 window.closeOrderDetailModal = function() {
   const modal = document.getElementById('orderDetailModal');
@@ -627,32 +933,46 @@ window.openFileViewer = function(name, url, type) {
   const title = document.getElementById('modalFileName');
   const content = document.getElementById('fileViewerContent');
 
-  title.innerText = name;
+  let cleanDisplayName = name;
+  try {
+    cleanDisplayName = decodeURIComponent(name);
+  } catch (e) {}
+
+  title.innerText = cleanDisplayName;
   content.innerHTML = '';
 
   // Detect type from filename if not provided or is generic 'file'
   if (!type || type === 'file') {
-    type = getFileTypeFromName(name);
+    type = getFileTypeFromName(cleanDisplayName);
   }
 
+  let requestedName = url.split('/').pop();
+  try {
+    requestedName = decodeURIComponent(requestedName);
+  } catch (e) {}
+
+  const previewUrl = `/api/file/${encodeURIComponent(requestedName)}?inline=1`;
+  const downloadUrl = `/api/download/${encodeURIComponent(requestedName)}`;
+
   if (type.includes('image')) {
-    const imageUrl = url.startsWith('/uploads') ? url : `/uploads/${url}`;
-    content.innerHTML = `<img src="${imageUrl}" style="max-width: 100%; max-height: 70vh; border-radius: 8px; object-fit: contain;" alt="${name}" onerror="this.parentElement.innerHTML='<div class=empty-state><p>Failed to load image.</p><a href=\\'${imageUrl}\\' download=\\'${name}\\' class=\\'portal-file-link\\'>Download File</a></div>'">`;
+    content.innerHTML = `<img src="${previewUrl}" style="max-width: 100%; max-height: 65vh; border-radius: 12px; object-fit: contain; box-shadow: 0 4px 16px rgba(0,0,0,0.08);" alt="${cleanDisplayName}" onerror="this.parentElement.innerHTML='<div style=\\'text-align:center; padding: 40px; color:#64748b;\\'><p style=\\'margin-bottom:12px; font-weight:500;\\'>Unable to display image preview directly.</p><a href=\\'${downloadUrl}\\' download=\\'${cleanDisplayName}\\' class=\\'modal-close-full-btn\\' style=\\'display:inline-flex; width:auto; padding: 0 24px; text-decoration:none;\\'>Download Image</a></div>'">`;
   } else if (type.includes('pdf')) {
-    // Extract filename from URL
-    const filename = url.split('/').pop();
-    const pdfUrl = url.startsWith('/api/download') ? url : `/api/download/${filename}`;
-    content.innerHTML = `<div style="width: 100%; height: 70vh; display: flex; flex-direction: column;">
-      <iframe src="${pdfUrl}#toolbar=0&navpanes=0" style="flex: 1; border: none; border-radius: 4px;" onerror="alert('Failed to open PDF. Try downloading it instead.')"></iframe>
-      <div style="margin-top: 10px; text-align: center;">
-        <a href="${pdfUrl}" download="${filename}" class="portal-btn-sm" style="display: inline-block; margin: 5px;">Download PDF</a>
+    content.innerHTML = `<div style="width: 100%; height: 68vh; display: flex; flex-direction: column; gap: 12px;">
+      <iframe src="${previewUrl}#toolbar=1" style="flex: 1; border: 1px solid #e2e8f0; border-radius: 10px; width: 100%;" onerror="alert('Failed to open PDF. Try downloading it instead.')"></iframe>
+      <div style="text-align: right;">
+        <a href="${downloadUrl}" download="${cleanDisplayName}" class="btn-download-all" style="text-decoration:none; padding: 8px 16px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          Download PDF
+        </a>
       </div>
     </div>`;
   } else {
-    const downloadUrl = url.startsWith('/api/download') ? url : `/api/download/${url.split('/').pop()}`;
-    content.innerHTML = `<div class="empty-state">
-      <p>Preview not available for this file type.</p>
-      <a href="${downloadUrl}" download="${name}" class="portal-btn-sm" style="display: inline-block; margin-top: 10px;">Download File</a>
+    content.innerHTML = `<div style="text-align:center; padding: 40px; color:#64748b;">
+      <div style="font-size: 40px; margin-bottom: 12px;">📄</div>
+      <p style="margin-bottom: 16px; font-size: 14px; font-weight: 500;">Preview is not supported for this file format.</p>
+      <a href="${downloadUrl}" download="${cleanDisplayName}" class="modal-close-full-btn" style="display: inline-flex; width: auto; padding: 0 24px; text-decoration:none;">
+        Download File
+      </a>
     </div>`;
   }
 
@@ -792,7 +1112,7 @@ window.submitCartonDetails = async function(event) {
 async function handleAdminLogout() {
   const res = await fetch('/api/logout', { method: 'POST' });
   if ((await res.json()).success) {
-    window.location.href = '/login.html?logout=success';
+    window.location.href = '/login?logout=success';
   }
 }
 

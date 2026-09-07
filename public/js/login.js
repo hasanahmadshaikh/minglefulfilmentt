@@ -85,7 +85,7 @@ async function handleLoginInitiate(event) {
     } else {
       window.showToast(data.message, 'success');
       setTimeout(() => {
-        window.location.href = data.user.role === 'admin' ? '/admin.html' : '/dashboard.html';
+        window.location.href = data.user.role === 'admin' ? '/admin' : '/dashboard';
       }, 1000);
     }
   } else {
@@ -99,13 +99,18 @@ async function handleLoginInitiate(event) {
 
 async function handleSignupInitiate(event) {
   event.preventDefault();
+  if (!window.validateForm('signupForm')) return;
+
   const name            = document.getElementById('signupName').value;
   const email           = document.getElementById('signupEmail').value;
   const password        = document.getElementById('signupPassword').value;
   const confirmPassword = document.getElementById('signupConfirmPassword').value;
 
   if (password !== confirmPassword) {
-    window.showToast('Passwords do not match', 'error');
+    window.setFieldError(
+      document.getElementById('signupConfirmPassword'),
+      'Passwords do not match.'
+    );
     return;
   }
 
@@ -145,7 +150,7 @@ async function handleVerify(event) {
       if (currentFlow === 'signup') {
         showTab('login');
       } else {
-        window.location.href = '/dashboard.html';
+        window.location.href = '/dashboard';
       }
     }, 1500);
   } else {
@@ -194,6 +199,21 @@ async function handleForgot(event) {
   restore();
 }
 
+/* ─── Password Visibility Toggle ────────────────────────── */
+
+function togglePasswordVisibility(inputId, btn) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+  const isPass = input.type === 'password';
+  input.type = isPass ? 'text' : 'password';
+  const openEye = btn.querySelector('.eye-open');
+  const closedEye = btn.querySelector('.eye-closed');
+  if (openEye && closedEye) {
+    openEye.style.display = isPass ? 'none' : 'block';
+    closedEye.style.display = isPass ? 'block' : 'none';
+  }
+}
+
 /* ─── Boot ──────────────────────────────────────────────── */
 
 window.addEventListener('DOMContentLoaded', () => {
@@ -202,4 +222,17 @@ window.addEventListener('DOMContentLoaded', () => {
     window.showToast('You have been successfully logged out', 'success');
     window.history.replaceState({}, document.title, window.location.pathname);
   }
+
+  const sitename = window.ENV?.SITENAME || 'HASAN WAREHOUSE';
+  const heroBrand = document.getElementById('heroBrandName');
+  if (heroBrand) heroBrand.innerText = sitename;
+
+  const helpEmailLink = document.getElementById('helpEmailLink');
+  if (helpEmailLink) {
+    const domainUpper = sitename.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+    const domainLower = sitename.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+    helpEmailLink.href = `mailto:info@${domainLower}.com`;
+    helpEmailLink.innerText = `info@${domainUpper}.com`;
+  }
 });
+

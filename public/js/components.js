@@ -1,24 +1,38 @@
 class AppHeader extends HTMLElement {
   connectedCallback() {
-    const sitename = window.ENV?.SITENAME || 'Mingle Fulfilment';
+    const sitename = window.ENV?.SITENAME || 'ABC WAREHOUSE';
+    const portalWeb = window.ENV?.PORTAL_WEB !== false;
+
+    const navLinksHtml = portalWeb ? `
+      <ul class="nav-links">
+        <li><a href="/home">Home</a></li>
+        <li><a href="/about">About</a></li>
+        <li><a href="/services">Services</a></li>
+        <li><a href="/pricing">Pricing</a></li>
+        <li><a href="/contact">Contact</a></li>
+        <li><a href="/login">Login</a></li>
+      </ul>
+    ` : `
+      <ul class="nav-links">
+        <li><a href="/login">Login</a></li>
+      </ul>
+    `;
+
+    const getQuoteBtn = portalWeb ? `<a id="openModal" class="btn-primary" href="/getQuote">Get a Quote</a>` : '';
+
     this.innerHTML = `
       <header class="header">
         <div class="container nav">
           <div class="logo">
-            <img src="./svg/orderBox.svg" alt="${sitename} Logo" />
-            <span>${sitename}</span>
+            <a href="${portalWeb ? '/home' : '/login'}" style="display: flex; align-items: center; gap: 10px; text-decoration: none; color: inherit;">
+              <img src="./svg/orderBox.svg" alt="${sitename} Logo" />
+              <span>${sitename}</span>
+            </a>
           </div>
           <nav>
-            <ul class="nav-links">
-              <li><a href="./index.html">Home</a></li>
-              <li><a href="./about.html">About</a></li>
-              <li><a href="./services.html">Services</a></li>
-              <li><a href="./pricing.html">Pricing</a></li>
-              <li><a href="./contact.html">Contact</a></li>
-              <li><a href="./login.html">Login</a></li>
-            </ul>
+            ${navLinksHtml}
           </nav>
-          <a id="openModal" class="btn-primary" href="./getQuote.html">Get a Quote</a>
+          ${getQuoteBtn}
         </div>
       </header>
     `;
@@ -36,8 +50,24 @@ class AppHeader extends HTMLElement {
 
 class AppFooter extends HTMLElement {
   connectedCallback() {
-    const sitename = window.ENV?.SITENAME || 'Mingle Fulfilment';
+    const sitename = window.ENV?.SITENAME || 'ABC WAREHOUSE';
     const emailDomain = sitename.toLowerCase().replace(/\s+/g, '');
+    const portalWeb = window.ENV?.PORTAL_WEB !== false;
+
+    const quickLinksHtml = portalWeb ? `
+      <div class="footer-section">
+        <h4>Quick Links</h4>
+        <ul>
+          <li><a href="/home">Home</a></li>
+          <li><a href="/about">About</a></li>
+          <li><a href="/services">Services</a></li>
+          <li><a href="/pricing">Pricing</a></li>
+          <li><a href="/contact">Contact</a></li>
+          <li><a href="/login">Login</a></li>
+        </ul>
+      </div>
+    ` : '';
+
     this.innerHTML = `
       <footer class="footer">
         <div class="container footer-content">
@@ -45,17 +75,7 @@ class AppFooter extends HTMLElement {
             <h3>${sitename}</h3>
             <p>Reliable FBA & FBM Prep and Fulfilment Services based in Alexandria, VA</p>
           </div>
-          <div class="footer-section">
-            <h4>Quick Links</h4>
-            <ul>
-              <li><a href="./index.html">Home</a></li>
-              <li><a href="./about.html">About</a></li>
-              <li><a href="./services.html">Services</a></li>
-              <li><a href="./pricing.html">Pricing</a></li>
-              <li><a href="./contact.html">Contact</a></li>
-              <li><a href="./login.html">Login</a></li>
-            </ul>
-          </div>
+          ${quickLinksHtml}
           <div class="footer-section">
             <h4>Contact</h4>
             <p>info@${emailDomain}.com</p>
@@ -216,7 +236,7 @@ window.hideLoader = function () {
 
 /* Modern Form Validation Logic */
 window.validateForm = function (formId) {
-  const form = document.getElementById(formId);
+  const form = typeof formId === 'string' ? document.getElementById(formId) : formId;
   if (!form) return true;
 
   // Clear previous errors
@@ -233,24 +253,33 @@ window.validateForm = function (formId) {
     }
 
     // Helper to clear error state
+    const errorContainer = input.closest('.form-group, .form-field, .field-group') || input.parentNode;
+
     const clearError = () => {
       input.classList.remove('error');
-      const errorMsg = input.parentNode.querySelector('.error-msg');
+      const errorMsg = errorContainer.querySelector('.error-msg');
       if (errorMsg) errorMsg.remove();
     };
 
+    let message = '';
     if (!input.value.trim()) {
+      message = 'Please fill out this field.';
+    } else if (input.type === 'email' && !input.validity.valid) {
+      message = 'Please enter a valid email address.';
+    }
+
+    if (message) {
       isValid = false;
       input.classList.add('error');
 
       // Remove any existing msg before adding new one
-      const existingMsg = input.parentNode.querySelector('.error-msg');
+      const existingMsg = errorContainer.querySelector('.error-msg');
       if (existingMsg) existingMsg.remove();
 
       const errorMsg = document.createElement('span');
       errorMsg.className = 'error-msg';
-      errorMsg.innerText = 'Please fill out this field.';
-      input.parentNode.appendChild(errorMsg);
+      errorMsg.innerText = message;
+      errorContainer.appendChild(errorMsg);
 
       // Add dynamic clearing when user types
       input.oninput = () => {
@@ -265,3 +294,27 @@ window.validateForm = function (formId) {
 
   return isValid;
 };
+
+window.setFieldError = function (input, message) {
+  if (!input) return;
+  const errorContainer = input.closest('.form-group, .form-field, .field-group') || input.parentNode;
+  input.classList.add('error');
+  errorContainer.querySelectorAll('.error-msg').forEach(msg => msg.remove());
+  const errorMsg = document.createElement('span');
+  errorMsg.className = 'error-msg';
+  errorMsg.innerText = message;
+  errorContainer.appendChild(errorMsg);
+};
+
+// Disable browser-native validation popups and use the shared inline validator.
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('form').forEach(form => {
+    form.noValidate = true;
+    form.addEventListener('submit', event => {
+      if (!window.validateForm(form)) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+      }
+    }, true);
+  });
+});

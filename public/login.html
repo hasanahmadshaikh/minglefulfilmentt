@@ -4,176 +4,348 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Mingle Fulfilment</title>
+    <title>Customer Portal - ABC WAREHOUSE</title>
     <link rel="icon" type="image/png" href="./img/WhatsApp Image 2025-10-18 at 03.34.27_60aa88be.jpg">
     <link rel="stylesheet" href="./css/style.css" />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 
-<body>
-    <!-- Header -->
-    <app-header></app-header>
+<body class="login-body">
+    <div class="login-page-wrapper">
+        <!-- Left Hero Section with Warehouse Background -->
+        <div class="login-hero-container">
+            <!-- Diagonal blue accent stripe -->
+            <div class="hero-accent-wedge"></div>
 
-    <br />
-    <div class="login-container">
-        <!-- Header -->
-        <div class="login-header">
-            <h1 class="login-title">Customer Portal</h1>
-            <p class="login-subtitle">Access your account or create a new one</p>
-        </div>
-
-        <!-- Tab Buttons -->
-        <div class="tab-buttons" id="tab-nav">
-            <button class="tab-btn active" onclick="showTab('login')">Login</button>
-            <button class="tab-btn" onclick="showTab('signup')">Sign Up</button>
-        </div>
-
-        <!-- Form Card -->
-        <div class="form-card">
-            <!-- Login Form -->
-            <div id="login-form" class="form-section active">
-                <div class="form-header">
-                    <h2 class="form-title">Welcome Back</h2>
-                    <p class="form-description">Enter your credentials to access your account</p>
+            <div class="login-hero-panel">
+                <!-- Brand / Logo -->
+                <div class="hero-brand">
+                    <div class="brand-icon-box">
+                        <svg class="brand-cube" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                            <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                        </svg>
+                    </div>
+                    <span class="brand-title" id="heroBrandName">ABC WAREHOUSE</span>
                 </div>
 
-                <form onsubmit="handleLoginInitiate(event)">
-                    <div id="loginResult" class="form-result"></div>
-                    <div class="form-group">
-                        <label class="form-label">Email</label>
-                        <div class="input-wrapper">
-                            <span class="input-icon">✉️</span>
-                            <input type="email" id="loginEmail" class="form-input" placeholder="Enter your email"
-                                required>
+                <!-- Hero Main Headline -->
+                <div class="hero-center-content">
+                    <h1 class="hero-headline">
+                        <span class="headline-white">Your Inventory,</span>
+                        <span class="headline-blue">Our Priority</span>
+                    </h1>
+                    <p class="hero-subtitle">
+                        Streamlined access to your account, orders and warehouse services.
+                    </p>
+
+                    <!-- Feature Badges -->
+                    <div class="hero-features-list">
+                        <!-- Feature 1 -->
+                        <div class="hero-feature-item">
+                            <div class="feature-icon-wrapper">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                                </svg>
+                            </div>
+                            <div class="feature-text">
+                                <h3 class="feature-heading">Secure Access</h3>
+                                <p class="feature-subheading">Your data is always protected</p>
+                            </div>
+                        </div>
+
+                        <!-- Feature 2 -->
+                        <div class="hero-feature-item">
+                            <div class="feature-icon-wrapper">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                                </svg>
+                            </div>
+                            <div class="feature-text">
+                                <h3 class="feature-heading">Faster Operations</h3>
+                                <p class="feature-subheading">Get what you need, when you need it</p>
+                            </div>
+                        </div>
+
+                        <!-- Feature 3 -->
+                        <div class="hero-feature-item">
+                            <div class="feature-icon-wrapper">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                                    <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                                    <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                                </svg>
+                            </div>
+                            <div class="feature-text">
+                                <h3 class="feature-heading">Complete Visibility</h3>
+                                <p class="feature-subheading">Track and manage your orders with ease</p>
+                            </div>
                         </div>
                     </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Password</label>
-                        <div class="input-wrapper">
-                            <span class="input-icon">🔒</span>
-                            <input type="password" id="loginPassword" class="form-input" placeholder="••••••••"
-                                required>
-                        </div>
-                    </div>
-
-                    <button type="submit" class="submit-btn" id="loginSubmitBtn">Login</button>
-                    <a class="forgot-link" onclick="showTab('forgot')">Forgot password?</a>
-                </form>
-            </div>
-
-            <!-- Sign Up Form -->
-            <div id="signup-form" class="form-section">
-                <div class="form-header">
-                    <h2 class="form-title">Create Account</h2>
-                    <p class="form-description">Sign up to start using our services</p>
                 </div>
-
-                <form id="signupForm" onsubmit="handleSignupInitiate(event)">
-                    <div class="form-group">
-                        <label class="form-label">Full Name</label>
-                        <div class="input-wrapper">
-                            <span class="input-icon">👤</span>
-                            <input type="text" id="signupName" class="form-input" placeholder="Enter your full name"
-                                required>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Email</label>
-                        <div class="input-wrapper">
-                            <span class="input-icon">✉️</span>
-                            <input type="email" id="signupEmail" class="form-input" placeholder="Enter your email"
-                                required>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Password</label>
-                        <div class="input-wrapper">
-                            <span class="input-icon">🔒</span>
-                            <input type="password" id="signupPassword" class="form-input" placeholder="••••••••"
-                                required>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Confirm Password</label>
-                        <div class="input-wrapper">
-                            <span class="input-icon">🔒</span>
-                            <input type="password" id="signupConfirmPassword" class="form-input" placeholder="••••••••"
-                                required>
-                        </div>
-                    </div>
-
-                    <button type="submit" class="submit-btn">Continue to Verification</button>
-                </form>
-            </div>
-
-            <!-- OTP Verification Form -->
-            <div id="otp-form" class="form-section">
-                <div class="form-header">
-                    <h1 class="otp-title">Verify Identity</h1>
-                    <p class="otp-subtitle">We've sent a 6-digit code to your email.</p>
-                </div>
-
-                <form onsubmit="handleVerify(event)">
-                    <div class="form-group">
-                        <label class="form-label">Enter 6-Digit Code</label>
-                        <div class="input-wrapper">
-                            <span class="input-icon">🔑</span>
-                            <input type="text" id="otpCode" class="form-input otp-input" placeholder="000000"
-                                maxlength="6" pattern="\d{6}" required>
-                        </div>
-                    </div>
-
-                    <button type="submit" class="submit-btn" id="verifyBtn">Verify and Continue</button>
-                    <div class="timer-text" id="timer-container">
-                        <span id="expiry-text">OTP expires in: <span id="timer">120</span>s</span><br>
-                        <a id="resendBtn" class="resend-link disabled" onclick="handleResendOTP()">Resend Code</a>
-                    </div>
-                    <a class="back-link" onclick="cancelOTP()">← Go Back</a>
-                </form>
-            </div>
-
-            <!-- Forgot Password Form -->
-            <div id="forgot-form" class="form-section">
-                <div class="form-header">
-                    <h2 class="form-title">Reset Password</h2>
-                    <p class="form-description">Enter your email to receive reset instructions</p>
-                </div>
-
-                <form onsubmit="handleForgot(event)">
-                    <div class="form-group">
-                        <label class="form-label">Email</label>
-                        <div class="input-wrapper">
-                            <span class="input-icon">✉️</span>
-                            <input type="email" id="forgotEmail" class="form-input" placeholder="your@email.com"
-                                required>
-                        </div>
-                    </div>
-
-                    <button type="submit" class="submit-btn">Send Reset Link</button>
-                    <a class="back-link" onclick="showTab('login')">← Back to Login</a>
-                </form>
             </div>
         </div>
 
-        <!-- Help Text -->
-        <div class="help-text">
-            Need help? Contact us at <a href="mailto:info@minglefulfilment.com">info@minglefulfilment.com</a>
+        <!-- Right Section with Auth Card & Contact Info -->
+        <div class="login-form-panel">
+            <!-- Background faint cube watermark -->
+            <div class="watermark-cube" aria-hidden="true">
+                <svg viewBox="0 0 300 300" fill="none" stroke="#2563eb" stroke-width="1.8">
+                    <path d="M150 20 L270 90 L270 230 L150 295 L30 230 L30 90 Z" opacity="0.04" fill="#2563eb" />
+                    <path d="M150 20 L270 90 L270 230 L150 295 L30 230 L30 90 Z" />
+                    <line x1="150" y1="20" x2="150" y2="160" />
+                    <line x1="150" y1="160" x2="270" y2="230" />
+                    <line x1="150" y1="160" x2="30" y2="230" />
+                </svg>
+            </div>
+
+            <div class="auth-card-wrapper">
+                <!-- Tab Navigation Card -->
+                <div class="auth-card">
+                    <div class="auth-tabs" id="tab-nav">
+                        <button class="tab-btn active" type="button" onclick="showTab('login')">
+                            <svg class="tab-btn-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="12" cy="7" r="4"></circle>
+                            </svg>
+                            <span>Login</span>
+                        </button>
+                        <button class="tab-btn" type="button" onclick="showTab('signup')">
+                            <svg class="tab-btn-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="8.5" cy="7" r="4"></circle>
+                                <line x1="20" y1="8" x2="20" y2="14"></line>
+                                <line x1="23" y1="11" x2="17" y2="11"></line>
+                            </svg>
+                            <span>Sign Up</span>
+                        </button>
+                    </div>
+
+                    <div class="auth-card-content">
+                        <!-- Login Form -->
+                        <div id="login-form" class="form-section active">
+                            <div class="form-header">
+                                <h2 class="form-title">Welcome Back</h2>
+                                <p class="form-description">Enter your credentials to access your account</p>
+                            </div>
+
+                            <form onsubmit="handleLoginInitiate(event)">
+                                <div id="loginResult" class="form-result"></div>
+                                <div class="form-group">
+                                    <label class="form-label" for="loginEmail">Email</label>
+                                    <div class="input-wrapper">
+                                        <span class="input-icon">
+                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+                                                <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+                                            </svg>
+                                        </span>
+                                        <input type="email" id="loginEmail" class="form-input" placeholder="Enter your email" required autocomplete="email">
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label" for="loginPassword">Password</label>
+                                    <div class="input-wrapper">
+                                        <span class="input-icon">
+                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                                            </svg>
+                                        </span>
+                                        <input type="password" id="loginPassword" class="form-input" placeholder="Enter your password" required autocomplete="current-password">
+                                        <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('loginPassword', this)" aria-label="Toggle password visibility">
+                                            <svg class="eye-open" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                                <circle cx="12" cy="12" r="3"></circle>
+                                            </svg>
+                                            <svg class="eye-closed" style="display:none;" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                                                <line x1="1" y1="1" x2="23" y2="23"></line>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <button type="submit" class="submit-btn login-action-btn" id="loginSubmitBtn">
+                                    <span>Login</span>
+                                    <svg class="btn-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                                        <polyline points="12 5 19 12 12 19"></polyline>
+                                    </svg>
+                                </button>
+                                <a class="forgot-link" onclick="showTab('forgot')">Forgot password?</a>
+                            </form>
+                        </div>
+
+                        <!-- Sign Up Form -->
+                        <div id="signup-form" class="form-section">
+                            <div class="form-header">
+                                <h2 class="form-title">Create Account</h2>
+                                <p class="form-description">Sign up to start using our services</p>
+                            </div>
+
+                            <form id="signupForm" onsubmit="handleSignupInitiate(event)">
+                                <div class="form-group">
+                                    <label class="form-label" for="signupName">Full Name</label>
+                                    <div class="input-wrapper">
+                                        <span class="input-icon">
+                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                                <circle cx="12" cy="7" r="4"></circle>
+                                            </svg>
+                                        </span>
+                                        <input type="text" id="signupName" class="form-input" placeholder="Enter your full name" required autocomplete="name">
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label" for="signupEmail">Email</label>
+                                    <div class="input-wrapper">
+                                        <span class="input-icon">
+                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+                                                <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+                                            </svg>
+                                        </span>
+                                        <input type="email" id="signupEmail" class="form-input" placeholder="Enter your email" required autocomplete="email">
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label" for="signupPassword">Password</label>
+                                    <div class="input-wrapper">
+                                        <span class="input-icon">
+                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                                            </svg>
+                                        </span>
+                                        <input type="password" id="signupPassword" class="form-input" placeholder="••••••••" required autocomplete="new-password">
+                                        <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('signupPassword', this)" aria-label="Toggle password visibility">
+                                            <svg class="eye-open" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                                <circle cx="12" cy="12" r="3"></circle>
+                                            </svg>
+                                            <svg class="eye-closed" style="display:none;" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                                                <line x1="1" y1="1" x2="23" y2="23"></line>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label" for="signupConfirmPassword">Confirm Password</label>
+                                    <div class="input-wrapper">
+                                        <span class="input-icon">
+                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                                            </svg>
+                                        </span>
+                                        <input type="password" id="signupConfirmPassword" class="form-input" placeholder="••••••••" required autocomplete="new-password">
+                                    </div>
+                                </div>
+
+                                <button type="submit" class="submit-btn login-action-btn">
+                                    <span>Continue to Verification</span>
+                                    <svg class="btn-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                                        <polyline points="12 5 19 12 12 19"></polyline>
+                                    </svg>
+                                </button>
+                                <a class="back-link" onclick="showTab('login')">Already have an account? Log in</a>
+                            </form>
+                        </div>
+
+                        <!-- OTP Verification Form -->
+                        <div id="otp-form" class="form-section">
+                            <div class="form-header">
+                                <h2 class="form-title">Verify Identity</h2>
+                                <p class="form-description">We've sent a 6-digit code to your email.</p>
+                            </div>
+
+                            <form onsubmit="handleVerify(event)">
+                                <div class="form-group">
+                                    <label class="form-label" for="otpCode">Enter 6-Digit Code</label>
+                                    <div class="input-wrapper">
+                                        <span class="input-icon">
+                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="m21 2-2 2m-1.5 1.5L10 13l-4 4-2-2 4-4 7.5-7.5"></path>
+                                                <circle cx="15.5" cy="8.5" r="2.5"></circle>
+                                            </svg>
+                                        </span>
+                                        <input type="text" id="otpCode" class="form-input otp-input" placeholder="000000" maxlength="6" pattern="\d{6}" required>
+                                    </div>
+                                </div>
+
+                                <button type="submit" class="submit-btn login-action-btn" id="verifyBtn">
+                                    <span>Verify and Continue</span>
+                                    <svg class="btn-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                                        <polyline points="12 5 19 12 12 19"></polyline>
+                                    </svg>
+                                </button>
+                                <div class="timer-text" id="timer-container">
+                                    <span id="expiry-text">OTP expires in: <span id="timer">120</span>s</span><br>
+                                    <a id="resendBtn" class="resend-link disabled" onclick="handleResendOTP()">Resend Code</a>
+                                </div>
+                                <a class="back-link" onclick="cancelOTP()">← Go Back</a>
+                            </form>
+                        </div>
+
+                        <!-- Forgot Password Form -->
+                        <div id="forgot-form" class="form-section">
+                            <div class="form-header">
+                                <h2 class="form-title">Reset Password</h2>
+                                <p class="form-description">Enter your email to receive reset instructions</p>
+                            </div>
+
+                            <form onsubmit="handleForgot(event)">
+                                <div class="form-group">
+                                    <label class="form-label" for="forgotEmail">Email</label>
+                                    <div class="input-wrapper">
+                                        <span class="input-icon">
+                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+                                                <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+                                            </svg>
+                                        </span>
+                                        <input type="email" id="forgotEmail" class="form-input" placeholder="your@email.com" required autocomplete="email">
+                                    </div>
+                                </div>
+
+                                <button type="submit" class="submit-btn login-action-btn">
+                                    <span>Send Reset Link</span>
+                                    <svg class="btn-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                                        <polyline points="12 5 19 12 12 19"></polyline>
+                                    </svg>
+                                </button>
+                                <a class="back-link" onclick="showTab('login')">← Back to Login</a>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Support / Help Text below Card -->
+                <div class="login-help-footer">
+                    <svg class="help-mail-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+                        <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+                    </svg>
+                    <span>Need help? Contact us at <a id="helpEmailLink" href="mailto:info@ABCWAREHOUSE.com">info@ABCWAREHOUSE.com</a></span>
+                </div>
+            </div>
         </div>
     </div>
-    <br />
 
-    <!-- Footer -->
-    <app-footer></app-footer>
-
+    <!-- Scripts (no app-footer) -->
     <script src="./js/components.js"></script>
     <script src="./js/api.js"></script>
     <script src="./js/login.js"></script>
-
 </body>
 
 </html>

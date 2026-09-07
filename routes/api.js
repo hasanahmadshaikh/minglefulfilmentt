@@ -11,6 +11,7 @@ const multer = require('multer');
 const path = require('path');
 const crypto = require('crypto');
 const fs = require('fs');
+const { ZipArchive } = require('archiver');
 const { sendOTP, sendResetLink } = require('../utils/mailer');
 const Counter = require('../models/Counter');
 const mongoose = require('mongoose');
@@ -40,19 +41,69 @@ const upload = multer({
 });
 
 function resolveUploadPath(filename) {
-  if (!filename || filename.includes('..') || filename.includes('/')) {
+  if (!filename) return null;
+
+  try {
+    filename = decodeURIComponent(filename);
+  } catch (e) {
+    // Keep as is if decoding fails
+  }
+
+  // Clean away any prepended slashes or path separators
+  filename = filename.replace(/^(\.\.[\/\\])+/, '').replace(/^[\/\\]+/, '');
+  // Also strip /uploads/ or uploads/ prefix if included
+  filename = filename.replace(/^uploads[\/\\]/i, '');
+
+  const baseCleanName = path.basename(filename);
+  if (!baseCleanName || baseCleanName === '.' || baseCleanName.includes('..')) {
     return null;
   }
 
-  const candidate = path.join(uploadsDir, filename);
+  // 1. Direct match
+  const candidate = path.join(uploadsDir, baseCleanName);
   if (fs.existsSync(candidate)) {
     return candidate;
   }
 
-  const normalizedSuffix = `-${filename}`;
-  const matches = fs.readdirSync(uploadsDir).filter(file => file.endsWith(normalizedSuffix));
+  // 2. Try match without query parameters if any were passed in filename
+  const cleanParam = baseCleanName.split('?')[0];
+  const candidateClean = path.join(uploadsDir, cleanParam);
+  if (fs.existsSync(candidateClean)) {
+    return candidateClean;
+  }
 
-  return matches.length > 0 ? path.join(uploadsDir, matches[0]) : null;
+  // 3. Search for files ending with -filename or matching original name without timestamp
+  try {
+    const files = fs.readdirSync(uploadsDir);
+    const targetLower = cleanParam.toLowerCase();
+
+    // Match -<name> suffix (case-insensitive)
+    const suffixMatch = files.find(file => {
+      const fl = file.toLowerCase();
+      return fl.endsWith(`-${targetLower}`) || fl === targetLower;
+    });
+    if (suffixMatch) {
+      return path.join(uploadsDir, suffixMatch);
+    }
+
+    // Match stripping potential timestamp prefix from existing files
+    const fuzzyMatch = files.find(file => {
+      const fl = file.toLowerCase();
+      const dashIdx = fl.indexOf('-');
+      if (dashIdx > -1) {
+        const withoutTs = fl.slice(dashIdx + 1);
+        if (withoutTs === targetLower) return true;
+      }
+      return false;
+    });
+    if (fuzzyMatch) {
+      return path.join(uploadsDir, fuzzyMatch);
+    }
+  } catch (err) {
+    console.error('Error reading uploads directory in resolveUploadPath:', err);
+  }
+
+  return null;
 }
 
 // Helper to check auth
@@ -1073,8 +1124,8 @@ router.post('/logout', (req, res) => {
 // GET /api/file/:filename - Serve file for preview or download
 router.get('/file/:filename', (req, res) => {
   try {
-    const filename = req.params.filename;
-    const filePath = resolveUploadPath(filename);
+    const rawFilename = req.params.filename;
+    const filePath = resolveUploadPath(rawFilename);
 
     if (!filePath) {
       return res.status(404).json({ success: false, message: 'File not found' });
@@ -1100,10 +1151,16 @@ router.get('/file/:filename', (req, res) => {
     };
 
     const mimeType = mimeTypes[ext] || 'application/octet-stream';
-    const dispositionType = req.query.inline === '1' ? 'inline' : 'attachment';
+    const isInline = req.query.inline === '1' || ext === '.pdf' || ext === '.jpg' || ext === '.jpeg' || ext === '.png' || ext === '.webp' || ext === '.svg';
+    const dispositionType = isInline ? 'inline' : 'attachment';
+
+    // Get a clean display name without timestamp prefix if possible
+    const actualBaseName = path.basename(filePath);
+    const dashIdx = actualBaseName.indexOf('-');
+    const clientFileName = dashIdx > -1 ? actualBaseName.slice(dashIdx + 1) : actualBaseName;
 
     res.setHeader('Content-Type', mimeType);
-    res.setHeader('Content-Disposition', `${dispositionType}; filename="${filename}"`);
+    res.setHeader('Content-Disposition', `${dispositionType}; filename="${encodeURIComponent(clientFileName)}"`);
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Cache-Control', 'public, max-age=31536000');
 
@@ -1117,42 +1174,74 @@ router.get('/file/:filename', (req, res) => {
 // GET /api/download/:filename - Download file with proper headers
 router.get('/download/:filename', (req, res) => {
   try {
-    const filename = req.params.filename;
-    const filePath = resolveUploadPath(filename);
+    const rawFilename = req.params.filename;
+    const filePath = resolveUploadPath(rawFilename);
 
     if (!filePath) {
       return res.status(404).json({ success: false, message: 'File not found' });
     }
 
-    const ext = path.extname(filePath).toLowerCase();
-    const mimeTypes = {
-      '.pdf': 'application/pdf',
-      '.jpg': 'image/jpeg',
-      '.jpeg': 'image/jpeg',
-      '.png': 'image/png',
-      '.gif': 'image/gif',
-      '.bmp': 'image/bmp',
-      '.svg': 'image/svg+xml',
-      '.webp': 'image/webp',
-      '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      '.xls': 'application/vnd.ms-excel',
-      '.csv': 'text/csv',
-      '.txt': 'text/plain',
-      '.doc': 'application/msword',
-      '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-      '.zip': 'application/zip'
-    };
+    const actualBaseName = path.basename(filePath);
+    const dashIdx = actualBaseName.indexOf('-');
+    const clientFileName = dashIdx > -1 ? actualBaseName.slice(dashIdx + 1) : actualBaseName;
 
-    const mimeType = mimeTypes[ext] || 'application/octet-stream';
-    res.setHeader('Content-Type', mimeType);
-    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Cache-Control', 'public, max-age=31536000');
-
-    return res.sendFile(filePath);
+    res.download(filePath, clientFileName, (err) => {
+      if (err && !res.headersSent) {
+        console.error('Download callback error:', err);
+        res.status(500).json({ success: false, message: 'Download failed' });
+      }
+    });
   } catch (error) {
     console.error('Download error:', error);
     res.status(500).json({ success: false, message: 'Download failed' });
+  }
+});
+
+// POST /api/download-zip - Download multiple uploaded files as one ZIP archive
+router.post('/download-zip', (req, res) => {
+  try {
+    let requestedFiles = req.body.files;
+    if (typeof requestedFiles === 'string') {
+      requestedFiles = JSON.parse(requestedFiles);
+    }
+
+    if (!Array.isArray(requestedFiles) || requestedFiles.length === 0) {
+      return res.status(400).json({ success: false, message: 'No files selected' });
+    }
+
+    const files = requestedFiles
+      .map(filename => resolveUploadPath(filename))
+      .filter(Boolean);
+
+    if (files.length === 0) {
+      return res.status(404).json({ success: false, message: 'No requested files were found' });
+    }
+
+    const archive = new ZipArchive({ zlib: { level: 9 } });
+    archive.on('error', error => {
+      if (!res.headersSent) {
+        res.status(500).json({ success: false, message: 'Could not create ZIP file' });
+      } else {
+        res.destroy(error);
+      }
+    });
+
+    res.attachment('shipment-attachments.zip');
+    archive.pipe(res);
+
+    files.forEach(filePath => {
+      const archiveBaseName = path.basename(filePath);
+      const dashIndex = archiveBaseName.indexOf('-');
+      const archiveName = dashIndex > -1
+        ? archiveBaseName.slice(dashIndex + 1)
+        : archiveBaseName;
+      archive.file(filePath, { name: archiveName });
+    });
+
+    archive.finalize();
+  } catch (error) {
+    console.error('ZIP download error:', error);
+    res.status(400).json({ success: false, message: 'Could not create ZIP file' });
   }
 });
 

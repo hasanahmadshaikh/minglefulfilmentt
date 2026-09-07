@@ -40,37 +40,141 @@ app.use(session({
   }
 }));
 
-// Middleware to dynamically inject environment configuration and rewrite sitename in HTML files
+// --- Dynamic Environment Config & Portal Web Helper ---
+let lastEnvMtime = 0;
+let cachedEnv = {};
+
+function getLiveEnv() {
+  try {
+    const envPath = path.join(__dirname, '.env');
+    if (fs.existsSync(envPath)) {
+      const stat = fs.statSync(envPath);
+      if (stat.mtimeMs > lastEnvMtime) {
+        lastEnvMtime = stat.mtimeMs;
+        const content = fs.readFileSync(envPath, 'utf8');
+        const dotenv = require('dotenv');
+        cachedEnv = dotenv.parse(content);
+      }
+    }
+  } catch (e) {
+    // Ignore error, fallback to process.env
+  }
+  return { ...process.env, ...cachedEnv };
+}
+
+function isPortalWebEnabled() {
+  const env = getLiveEnv();
+  const val = env.portal_web !== undefined ? env.portal_web : env.PORTAL_WEB;
+  if (val === undefined || val === null) return true;
+  const normalized = String(val).trim().toLowerCase();
+  return normalized === 'true' || normalized === '1' || normalized === 'yes';
+}
+
+function getSitename() {
+  const env = getLiveEnv();
+  return (env.SITENAME || 'ABC WAREHOUSE').replace(/^["']|["']$/g, '');
+}
+
+function getToastDuration() {
+  const env = getLiveEnv();
+  return parseInt(env.TOAST_DURATION) || 10000;
+}
+
+// Clean Routes Mapping
+const cleanRoutesMap = {
+  '/home': 'index.html',
+  '/about': 'about.html',
+  '/services': 'services.html',
+  '/pricing': 'pricing.html',
+  '/contact': 'contact.html',
+  '/getquote': 'getQuote.html',
+  '/get-quote': 'getQuote.html',
+  '/quote': 'getQuote.html',
+  '/login': 'login.html',
+  '/dashboard': 'dashboard.html',
+  '/admin': 'admin.html',
+  '/reset-password': 'reset-password.html'
+};
+
+const marketingCleanRoutes = new Set([
+  '/',
+  '/home',
+  '/about',
+  '/services',
+  '/pricing',
+  '/contact',
+  '/getquote',
+  '/get-quote',
+  '/quote'
+]);
+
+// 1. Clean URL Enforcer: Redirect any direct *.html request to clean URL
 app.use((req, res, next) => {
-  if (req.method !== 'GET' || req.path.startsWith('/api') || req.path.startsWith('/uploads')) {
+  if (req.method !== 'GET' && req.method !== 'HEAD') {
     return next();
   }
-
-  const ext = path.extname(req.path);
-  if (ext === '' || ext === '.html') {
-    const filename = ext === '.html' ? req.path : '/index.html';
-    const filePath = path.join(__dirname, 'public', filename);
-
-    // Safeguard against directory traversal
-    const publicDir = path.join(__dirname, 'public');
-    if (!filePath.startsWith(publicDir)) {
-      return next();
+  if (req.path.endsWith('.html')) {
+    const baseName = path.basename(req.path, '.html').toLowerCase();
+    const query = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
+    let target = `/${baseName}`;
+    if (baseName === 'index') {
+      target = '/home';
+    } else if (baseName === 'getquote') {
+      target = '/getQuote';
     }
+    return res.redirect(301, target + query);
+  }
+  next();
+});
 
-    if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
-      fs.readFile(filePath, 'utf8', (err, html) => {
-        if (err) {
-          return next();
-        }
+// 2. Route root "/" cleanly
+app.use((req, res, next) => {
+  if (req.method !== 'GET' && req.method !== 'HEAD') return next();
+  if (req.path === '/') {
+    if (!isPortalWebEnabled()) {
+      return res.redirect('/login');
+    }
+    return res.redirect('/home');
+  }
+  next();
+});
 
-        const sitename = (process.env.SITENAME || 'Mingle Fulfilment').replace(/^["']|["']$/g, '');
-        const toastDuration = parseInt(process.env.TOAST_DURATION) || 10000;
+// 3. Portal Web Access Control: Block marketing routes if portal_web is FALSE
+app.use((req, res, next) => {
+  if (req.method !== 'GET' && req.method !== 'HEAD') return next();
+  if (!isPortalWebEnabled()) {
+    const cleanPath = req.path.toLowerCase().replace(/\/+$/, '') || '/';
+    if (marketingCleanRoutes.has(cleanPath)) {
+      return res.redirect('/login');
+    }
+  }
+  next();
+});
+
+// 4. Clean Route Renderer with Dynamic HTML Injection
+app.use((req, res, next) => {
+  if (req.method !== 'GET' && req.method !== 'HEAD') return next();
+  if (req.path.startsWith('/api') || req.path.startsWith('/uploads')) return next();
+
+  const cleanPath = req.path.toLowerCase().replace(/\/+$/, '');
+  const mappedHtmlFile = cleanRoutesMap[cleanPath];
+
+  if (mappedHtmlFile) {
+    const filePath = path.join(__dirname, 'public', mappedHtmlFile);
+    if (fs.existsSync(filePath)) {
+      return fs.readFile(filePath, 'utf8', (err, html) => {
+        if (err) return next();
+
+        const sitename = getSitename();
+        const toastDuration = getToastDuration();
+        const portalWeb = isPortalWebEnabled();
 
         const envScript = `
   <script>
     window.ENV = {
       SITENAME: ${JSON.stringify(sitename)},
-      TOAST_DURATION: ${toastDuration}
+      TOAST_DURATION: ${toastDuration},
+      PORTAL_WEB: ${portalWeb}
     };
   </script>`;
 
@@ -81,20 +185,16 @@ app.use((req, res, next) => {
           modifiedHtml = modifiedHtml.replace('<HEAD>', `<HEAD>${envScript}`);
         }
 
-        // Replace all case-insensitive occurrences of "Mingle Fulfilment" with/without space
         modifiedHtml = modifiedHtml.replace(/Mingle\s*Fulfilment/gi, sitename);
 
         res.setHeader('Content-Type', 'text/html');
         return res.send(modifiedHtml);
       });
-    } else {
-      next();
     }
-  } else {
-    next();
   }
-});
 
+  next();
+});
 
 // Serve static files from the 'public' folder
 app.use(express.static(path.join(__dirname, 'public')));
@@ -123,14 +223,18 @@ app.use('/uploads', (req, res, next) => {
 // API Routes
 app.use('/api', apiRoutes);
 
-// Fallback to index.html
+// Fallback route
 app.use((req, res) => {
   // If it's an API request, return JSON 404
   if (req.path.startsWith('/api')) {
     return res.status(404).json({ success: false, message: `API Route ${req.path} not found` });
   }
-  // Otherwise serve index.html
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  // If portal_web is disabled, fallback to login
+  if (!isPortalWebEnabled()) {
+    return res.redirect('/login');
+  }
+  // Otherwise fallback to home
+  return res.redirect('/home');
 });
 
 const PORT = process.env.PORT || 3000;

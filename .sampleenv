@@ -10,3 +10,10 @@ SMTP_PASS=
 BYPASS_OTP=
 SESSION_TIMEOUT_CUSTOMER=
 SESSION_TIMEOUT_ADMIN=
+
+# --- SITE CONFIG ---
+SITENAME="ABC WAREHOUSE"
+TOAST_DURATION=10000
+# When FALSE, public marketing pages (Home, About, Services, Pricing, Contact, Get Quote) are hidden/inaccessible and only login is visible.
+# When TRUE, the full public website is available.
+portal_web=TRUE
